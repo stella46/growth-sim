@@ -188,6 +188,12 @@ body[data-lay=pc] #toast{bottom:28px}
   .sheet{left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);width:min(680px,92vw);max-height:86vh;border-radius:18px;border:2px solid var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
   .title{padding-top:60px}
 }
+
+.ffrow{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.ffrow .chip{min-height:34px}
+.ffm{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:10px;font-size:18px;min-width:44px;min-height:44px;cursor:pointer}
+.next2.stop{background:#ff8c8c;box-shadow:0 4px 0 #c24a4a;color:#2b0d0d}
+.ffbig{width:100%;margin:2px 0 8px}
+.t2a{gap:6px}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -199,8 +205,12 @@ body[data-lay=pc] #toast{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.5.0", SAVE_VER = 1;
+var GAME_VER = "0.5.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.5.1", date: "2026-11-01", notes: [
+    "「まとめて進める」を追加しました(4週・12週・1年・3年)。体力・お金・連載の状況を見て、おまかせで行動しながらいっきに進みます。終わると、期間のまとめが出ます。",
+    "予定モードに「おまかせで埋める」「前回と同じ」を追加しました。1タップで今週の予定がそろいます。"
+  ] },
   { ver: "0.5.0", date: "2026-11-01", notes: [
     "「行動のしくみ」を選べるようにしました。予定を組む(既定)／自由(行動値なし・体力とお金が制限)／行動値(週3回)／行動値(週6回・ゆったり)。設定からいつでも変えられます。",
     "画面を整理しました。タブは「ホーム・作品・編集部・パーク・殿堂」の5つ。展開(アニメ化など)は作品の中に、メニューは右上の☰に移しました。",
@@ -3338,6 +3348,140 @@ document.addEventListener("keydown", function (e) {
   var map = { "1": "home", "2": "works", "3": "scout", "4": "park", "5": "hall", "0": "menu" };
   if (map[e.key]) { act("tab", { dataset: { t: map[e.key] } }); }
 });
+
+/* ===== v0.5.1 サクサク進行: まとめて進める・おまかせ行動 ===== */
+function autoForm(S) {
+  var g = (S.trend.hot && S.trend.hot.length && ch(0.7)) ? pick(S.trend.hot) : pick(GENRES).id;
+  return { title: mkTitle(), medium: "novel", genre: g, theme: S.trend.th || pick(THEMES).id, hero: pick(HEROES).id, illusId: "", gim: pick(GIMMICKS).id, chars: genChars().map(function (c) { return c.name; }) };
+}
+function autoActions(S, cap) {
+  var me = S.player, out = [], live = liveWorks(S).filter(function (w) { return w.author.type === "player"; }), sta = me.sta, money = S.money;
+  function add(a, d) { if (out.length < cap) out.push({ a: a, d: d || {}, label: actLabel(a, d || {}, S) }); }
+  if (sta < 35) add("rest");
+  if (money < 40) add("job");
+  var wantP = !S.unlock.write && me.wrote < 4, wantS = !S.unlock.edit && me.read < 4;
+  if (wantP && wantS) { add(me.wrote <= me.read ? "practice" : "slush"); add(me.wrote <= me.read ? "slush" : "practice"); } else if (wantP) { add("practice"); add("practice"); } else if (wantS) { add("slush"); add("slush"); }
+  if (S.unlock.write) {
+    if (!live.length && money >= 15) add("doplan", { form: autoForm(S) });
+    live.forEach(function (w) { if (!S.written[w.id] && sta >= 20) add("write", { id: w.id, s: "royal" }); });
+    live.forEach(function (w) { if (w.pop < 40 && money > 300 && ch(0.35)) add("promo", { id: w.id, l: 0 }); });
+    live.forEach(function (w) { if (ch(0.25)) add("meet", { id: w.id, d: pick(["story", "hook", "art"]) }); });
+  }
+  if (S.unlock.edit) {
+    if (S.pool.length < 3 && money > 60) add("scout", { kind: "net" });
+    if (liveWorks(S).length) add("meet", { id: pick(liveWorks(S)).id, d: pick(["story", "hook"]) });
+  }
+  var ks = Object.keys(SKILLS).sort(function (a, b) { return me.sk[a] - me.sk[b]; });
+  var i = 0; while (out.length < cap && i < 6) { add("study", { k: ks[i % ks.length] }); i++; if (SET.am === "free") break; }
+  return out;
+}
+function runItems(S, items) {
+  var msgs = [];
+  items.forEach(function (it) {
+    var fn = EXEC[it.a], r; if (!fn) return;
+    if (SET.am === "free") { var c = FREE_STA[it.a] || 0; if (it.a === "rest" && S.flags.restT === S.t) return; if (c && S.player.sta < c) return; S.ap = 50; }
+    try { r = fn(S, it.d); } catch (e) { r = { ok: false, msg: "うまくいかなかった" }; }
+    if (SET.am === "free") { S.ap = 50; if (r.ok) { var c2 = FREE_STA[it.a] || 0; if (c2) S.player.sta = Math.max(0, S.player.sta - c2); if (it.a === "rest") S.flags.restT = S.t; } }
+    if (r.ok) msgs.push("✔ " + it.label + "…" + r.msg);
+  });
+  return msgs;
+}
+function autoPlanFill() {
+  var S = G.S, pl = planOf(S), need = S.ap - pl.length; if (need <= 0) { toast("予定はもういっぱいです", false); return; }
+  var have = pl.map(function (x) { return x.a + (x.d.id || ""); });
+  autoActions(S, need + pl.length + 2).forEach(function (it) { var key = it.a + (it.d.id || ""); if (pl.length < S.ap && have.indexOf(key) < 0) { pl.push(it); have.push(key); } });
+  se("ok"); toast("おまかせで予定を入れました", true); render();
+}
+var _runPlan4 = runPlan;
+runPlan = function (S) { var pl = planOf(S).slice(); if (pl.length) S.flags.lastPlan = pl.filter(function (x) { return x.a !== "doplan"; }); return _runPlan4(S); };
+XACT.autoplan = function () { autoPlanFill(); };
+XACT.repeatplan = function () {
+  var S = G.S, lp = (S.flags.lastPlan || []).filter(function (x) { return !x.d.id || W(S, x.d.id); }), pl = planOf(S);
+  if (!lp.length) { toast("前回の予定がありません", false); return; }
+  lp.forEach(function (it) { if (pl.length < S.ap) pl.push({ a: it.a, d: it.d, label: it.label }); });
+  se("ok"); toast("前回と同じ予定を入れました", true); render();
+};
+
+/* ----- まとめて進める ----- */
+function autoWeek(S) {
+  var msgs = [], items;
+  if (SET.am === "plan" && planOf(S).length) { items = planOf(S).slice(); S.flags.plan = []; } else items = autoActions(S, SET.am === "free" ? 4 : S.ap);
+  msgs = runItems(S, items);
+  S.flags.plan = [];
+  tick(S);
+  if (msgs.length) S.news = msgs.concat(S.news).slice(0, 10);
+  return msgs;
+}
+function ffSched(ms) { clearTimeout(G.ffT); G.ffT = setTimeout(ffStep, ms); }
+function ffStart(n) {
+  var S = G.S; if (!S || G.ff > 0) return;
+  G.ff = n; G.ffSnap = { t: S.t, money: S.money, fame: S.fame, works: S.works.length, hall: S.hall.works.length + S.hall.people.length, ach: Object.keys(ga()).length, offers: S.offers.length };
+  G.modal = G.modal.filter(function (m) { return m.t !== "ff"; }); se("page"); render(); ffSched(30);
+}
+function ffEnd(reason) {
+  var S = G.S; clearTimeout(G.ffT); var sn = G.ffSnap; G.ff = 0; G.ffSnap = null; if (!S || !sn) return;
+  autosave(); window.scrollTo(0, 0);
+  G.modal.push({ t: "ffsum", sn: sn, to: S.t, why: reason || "" }); render();
+}
+function ffStep() {
+  var S = G.S; if (!S || !(G.ff > 0)) return;
+  if (G.cur || G.cine || S.queue.length) { return; }
+  if (S.money < -300) { ffEnd("資金が大きくマイナスになったので止めました"); return; }
+  var o0 = S.offers.length;
+  autoWeek(S); G.ff--;
+  if (S.t % 12 === 0) autosave();
+  if (S.queue.length) { if (G.ff <= 0) G.ffPend = true; render(); pump(); return; }
+  if (S.offers.length > o0) { ffEnd("展開の打診が届いたので止めました"); return; }
+  if (G.ff <= 0) { ffEnd(""); return; }
+  if (G.ff % 4 === 0) render();
+  ffSched(15);
+}
+var _pump4 = pump;
+pump = function () { _pump4(); if (G.ffPend && !G.cine && !G.cur && G.S && !G.S.queue.length) { G.ffPend = false; ffEnd(""); return; } if (G.ff > 0 && !G.cine && !G.cur && G.S && !G.S.queue.length) ffSched(250); };
+XACT.ffmenu = function () { G.modal = G.modal.filter(function (m) { return m.t !== "ff"; }); G.modal.push({ t: "ff" }); render(); };
+XACT.ffgo = function (d) { ffStart(+d.n); };
+XACT.ffstop = function () { if (G.ff > 0) ffEnd("止めました"); };
+var _next4 = XACT.next; XACT.next = function () { if (G.ff > 0) return; _next4(); };
+
+function vFF() {
+  return '<div class="mono small muted">FAST FORWARD</div><h3 class="h2">まとめて進める</h3><p class="small">「おまかせ行動」で、複数の週をいっきに進めます。体力を見て休み、お金が少なければアルバイトをし、連載の執筆や腕みがきを自動で行います。</p>' +
+    '<p class="small muted">イベントの選択が出たときは、そこで確認してから続きます。展開の打診が届いたときや、資金が大きく減ったときは止まります。契約・採用・展開・パークの判断は、あなたが行います。</p>' +
+    '<div class="grid2">' + btn("4週(1か月)", "ffgo", { n: 4 }, "pri") + btn("12週(3か月)", "ffgo", { n: 12 }, "pri") + btn("48週(1年)", "ffgo", { n: 48 }, "pri") + btn("144週(3年)", "ffgo", { n: 144 }) + '</div>';
+}
+function vFFSum(m) {
+  var S = G.S, sn = m.sn, a = dinfo(sn.t), b = dinfo(S.t), n = S.t - sn.t, ha = Object.keys(ga()).length;
+  var rows = [["期間", a.label + " → " + b.label + "(" + n + "週)"], ["資金", fmtMoney(sn.money) + " → " + fmtMoney(S.money)], ["名声", Math.round(sn.fame) + " → " + Math.round(S.fame)], ["作品数", sn.works + " → " + S.works.length], ["殿堂入り", sn.hall + " → " + (S.hall.works.length + S.hall.people.length)]];
+  if (ha > sn.ach) rows.push(["新しい実績", "+" + (ha - sn.ach)]);
+  var logs = S.log.filter(function (l) { return l.t >= sn.t; }).slice(-8).reverse();
+  var adv = nextAdvice(S);
+  return '<div class="mono small muted">SUMMARY</div><h3 class="h2">この期間のまとめ</h3>' + (m.why ? '<p class="small warn">' + esc(m.why) + '</p>' : "") +
+    '<div class="card">' + rows.map(function (r) { return '<div class="fin-row"><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b></div>'; }).join("") + '</div>' +
+    (logs.length ? '<h4 class="h3">主なできごと</h4><ul class="logl">' + logs.map(function (l) { return '<li><span class="mono small muted">' + dinfo(l.t).label + '</span> ' + esc(l.text) + '</li>'; }).join("") + '</ul>' : "") +
+    '<div class="note small"><b>次のおすすめ:</b> ' + esc(adv.t) + '</div><div class="grid2">' + btn("もう一度まとめて進める", "ffmenu") + btn("閉じる", "close", null, "pri") + '</div>';
+}
+var _vModal4 = vModal;
+vModal = function (m) {
+  var close = '<button class="x" data-act="close" aria-label="閉じる">×</button>';
+  if (m.t === "ff") return close + vFF();
+  if (m.t === "ffsum") return close + vFFSum(m);
+  return _vModal4(m);
+};
+
+/* ----- ボタンの配置 ----- */
+var _planCard4 = planCard;
+planCard = function (S) {
+  var o = _planCard4(S), ff = '<div class="ffrow"><span class="small">まとめて進める</span>' + [4, 12, 48].map(function (n) { return '<button class="chip" data-act="ffgo" data-n="' + n + '">' + (n === 48 ? "1年" : n + "週") + '</button>'; }).join("") + '</div>';
+  var tools = "";
+  if (SET.am === "plan") tools = '<div class="grid2">' + btn("おまかせで埋める", "autoplan", null, "sm") + btn("前回と同じ", "repeatplan", null, "sm" + ((S.flags.lastPlan || []).length ? "" : " dis")) + '</div>';
+  return o.replace(/<\/section>$/, tools + ff + '</section>');
+};
+var _vGame4 = vGame;
+vGame = function () {
+  var o = _vGame4(), S = G.S, stop = '<button class="next2 stop" data-act="ffstop">■ 止める(残り' + Math.max(0, G.ff) + '週)</button>';
+  if (G.ff > 0) return o.replace('<button class="next2" data-act="next">週を進める ▶</button>', stop).replace('<button class="next2 big" data-act="next">週を進める ▶</button>', stop.replace("next2 stop", "next2 big stop"));
+  return o.replace('<button class="next2" data-act="next">週を進める ▶</button>', '<button class="ffm" data-act="ffmenu" aria-label="まとめて進める">⏩</button><button class="next2" data-act="next">週を進める ▶</button>')
+    .replace('<button class="next2 big" data-act="next">週を進める ▶</button>', '<button class="next2 big" data-act="next">週を進める ▶</button><button class="btn ffbig" data-act="ffmenu">⏩ まとめて進める(4週・12週・1年…)</button>');
+};
 
 function boot() {
   loadSettings();
