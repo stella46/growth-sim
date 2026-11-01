@@ -208,6 +208,8 @@ body[data-lay=pc] #scrl{bottom:28px}
 .btn,.chip,.rowbtn,.mcard,.wcard,.sb,.backbar,.sh,.tabs2 button,.ps-nav button,.menub,.ffm,.next2{transition:transform .08s ease,box-shadow .08s ease}
 .btn:active,.chip:active,.rowbtn:active,.mcard:active,.wcard:active,.sb:active,.backbar:active,.sh:active{transform:scale(.97)}
 @media (min-width:900px){.sheet.fixed{height:min(80vh,720px)}}
+.card.lock{border-style:dashed;background:var(--panel)}
+.fld input{width:100%;min-height:48px;font-size:16px}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -219,8 +221,14 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.5.2", SAVE_VER = 1;
+var GAME_VER = "0.5.3", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.5.3", date: "2026-11-01", notes: [
+    "標準の遊び方を、その場で自分で行動する「自由」にしました。設定でいつでも予定制などに戻せます。",
+    "「まとめて進める」は、標準では休む・アルバイトだけを自動にしました。新しい機能が開いたときも止まります。",
+    "パークや展開がまだできないとき、足りない条件を表示するようにしました。",
+    "メニューから、自分の名前と会社名をいつでも変えられます。"
+  ] },
   { ver: "0.5.2", date: "2026-11-01", notes: [
     "画面の「戻る」を追加しました。ポップアップの上部バー、各タブの「← 戻る」、スマホの戻るスワイプ・ブラウザの戻るキーに対応しています。",
     "画面の右下に、一番上へ・一番下へ移動するボタンを追加しました(長い画面でだけ出ます)。",
@@ -3434,7 +3442,7 @@ function autoWeek(S) {
 function ffSched(ms) { clearTimeout(G.ffT); G.ffT = setTimeout(ffStep, ms); }
 function ffStart(n) {
   var S = G.S; if (!S || G.ff > 0) return;
-  G.ff = n; G.ffSnap = { t: S.t, money: S.money, fame: S.fame, works: S.works.length, hall: S.hall.works.length + S.hall.people.length, ach: Object.keys(ga()).length, offers: S.offers.length };
+  G.ff = n; G.ffSnap = { t: S.t, money: S.money, fame: S.fame, works: S.works.length, hall: S.hall.works.length + S.hall.people.length, ach: Object.keys(ga()).length, offers: S.offers.length, u: JSON.stringify(S.unlock), pk: parkReady(S) };
   G.modal = G.modal.filter(function (m) { return m.t !== "ff"; }); se("page"); render(); ffSched(30);
 }
 function ffEnd(reason) {
@@ -3451,6 +3459,8 @@ function ffStep() {
   if (S.t % 12 === 0) autosave();
   if (S.queue.length) { if (G.ff <= 0) G.ffPend = true; render(); pump(); return; }
   if (S.offers.length > o0) { ffEnd("展開の打診が届いたので止めました"); return; }
+  if (G.ffSnap && JSON.stringify(S.unlock) !== G.ffSnap.u) { ffEnd("新しいことができるようになったので止めました"); return; }
+  if (G.ffSnap && parkReady(S) > G.ffSnap.pk) { ffEnd("パークを開園できる作品が出たので止めました"); return; }
   if (G.ff <= 0) { ffEnd(""); return; }
   if (G.ff % 4 === 0) render();
   ffSched(15);
@@ -3471,7 +3481,7 @@ function vFFSum(m) {
   var S = G.S, sn = m.sn, a = dinfo(sn.t), b = dinfo(S.t), n = S.t - sn.t, ha = Object.keys(ga()).length;
   var rows = [["期間", a.label + " → " + b.label + "(" + n + "週)"], ["資金", fmtMoney(sn.money) + " → " + fmtMoney(S.money)], ["名声", Math.round(sn.fame) + " → " + Math.round(S.fame)], ["作品数", sn.works + " → " + S.works.length], ["殿堂入り", sn.hall + " → " + (S.hall.works.length + S.hall.people.length)]];
   if (ha > sn.ach) rows.push(["新しい実績", "+" + (ha - sn.ach)]);
-  var logs = S.log.filter(function (l) { return l.t >= sn.t; }).slice(-8).reverse();
+  var logs = S.log.filter(function (l) { return l.t >= sn.t; }).slice(-30).reverse();
   var adv = nextAdvice(S);
   return '<div class="mono small muted">SUMMARY</div><h3 class="h2">この期間のまとめ</h3>' + (m.why ? '<p class="small warn">' + esc(m.why) + '</p>' : "") +
     '<div class="card">' + rows.map(function (r) { return '<div class="fin-row"><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b></div>'; }).join("") + '</div>' +
@@ -3595,6 +3605,92 @@ function scrlSoon() { setTimeout(scrlUpd, 60); }
 })();
 var _render5 = render;
 render = function () { _render5(); syncHistory(); scrlSoon(); };
+
+/* ===== v0.5.3 自分で動く・ロック案内・名前変更・まとめて進めるの見直し ===== */
+function parkReady(S) { var n = 0; S.works.forEach(function (w) { if (parkAvail(S, w).ok) n++; }); return n; }
+
+/* ----- 初期設定: 自分で行動する「自由」を標準に(一度だけ) ----- */
+var _ls6 = loadSettings;
+loadSettings = function () { _ls6(); if (!SET.amV3) { SET.am = "free"; SET.amV3 = 1; SET.ffAuto = SET.ffAuto || "safe"; saveSettings(); } if (!SET.ffAuto) SET.ffAuto = "safe"; };
+
+/* ----- 解放前の案内 ----- */
+function parkWhy(S) {
+  if (!S.works.length) return "まだ開園できません。まず作品を世に出して育てましょう。";
+  var best = null; S.works.forEach(function (w) { var a = parkAvail(S, w); if (!a.ok && (!best || a.why.length < best.a.why.length)) best = { w: w, a: a }; });
+  if (!best) return "";
+  return "まだ開園できません。いちばん近い『" + best.w.title + "』に足りないもの: " + best.a.why.join(" / ");
+}
+var _parkbuild6 = XACT.parkbuild;
+XACT.parkbuild = function (d, el) {
+  var S = G.S;
+  if (S.park.areas.length < 9 && !parkReady(S)) { var m = parkWhy(S); if (m) { toast(m, false); se("ng"); return; } }
+  return _parkbuild6 ? _parkbuild6(d, el) : undefined;
+};
+var _mstart6 = XACT.mstart;
+XACT.mstart = function (d, el) {
+  var S = G.S, t = d.t, ok = S.works.some(function (w) { return canMedia(S, w, t).ok; });
+  if (!ok) {
+    var why = !S.works.length ? "まだ作品がありません。" : "『" + S.works[0].title + "』の場合: " + canMedia(S, S.works[0], t).reason;
+    toast("まだ「" + MEDIA[t].name + "」はできません。" + why, false); se("ng"); return;
+  }
+  return _mstart6 ? _mstart6(d, el) : undefined;
+};
+var _vPark6 = vPark;
+vPark = function (S) {
+  var o = _vPark6(S);
+  if (S.park.areas.length || parkReady(S)) return o;
+  var m = parkWhy(S);
+  return o.replace('<section class="card">', '<section class="card lock"><b>🔒 まだ開園できません</b><p class="small">' + esc(m.replace("まだ開園できません。", "")) + '</p></section><section class="card">');
+};
+var _vMedia6 = vMedia;
+vMedia = function (S) {
+  var o = _vMedia6(S);
+  if (MEDIA_ORDER.some(function (t) { return S.works.some(function (w) { return canMedia(S, w, t).ok; }); })) return o;
+  return o.replace('<h3 class="h3">展開を企画する</h3>', '<section class="card lock"><b>🔒 まだ展開できません</b><p class="small">' + (S.works.length ? "作品の人気やファンがまだ足りません。『" + esc(S.works[0].title) + "』は " + esc(canMedia(S, S.works[0], MEDIA_ORDER[0]).reason) : "まず作品を世に出しましょう。") + '</p></section><h3 class="h3">展開を企画する</h3>');
+};
+
+/* ----- 名前の変更 ----- */
+function renameBox() {
+  var S = G.S;
+  return '<div class="mono small muted">NAME</div><h3 class="h2">名前を変える</h3><p class="small muted">いつでも変えられます。これからの作品や記録に反映されます。</p>' +
+    '<label class="fld"><span>あなたの名前(10文字まで)</span><input id="rn-name" maxlength="10" value="' + esc(S.player.name) + '"></label>' +
+    '<label class="fld"><span>会社・工房の名前(14文字まで)</span><input id="rn-co" maxlength="14" value="' + esc(S.company) + '"></label>' +
+    '<div class="grid2">' + btn("変更する", "renamego", null, "pri") + btn("やめる", "close") + '</div>';
+}
+XACT.rename = function () { G.modal.push({ t: "rename" }); render(); };
+XACT.renamego = function () {
+  var S = G.S, n = ($("#rn-name").value || "").trim().slice(0, 10), c = ($("#rn-co").value || "").trim().slice(0, 14);
+  if (!n || !c) { toast("名前を入力してください", false); return; }
+  S.player.name = n; S.company = c;
+  S.works.forEach(function (w) { if (w.author && w.author.type === "player") w.author.name = n; });
+  (S.hall.people || []).forEach(function (p) { if (p.id === "p0") p.name = n; });
+  autosave(); se("ok"); toast("名前を変更しました", true); G.modal = []; render();
+};
+var _vModal6 = vModal;
+vModal = function (m) {
+  if (m.t === "rename") return '<div class="sbar"><button class="sb" data-act="close">← 戻る</button><button class="sb" data-act="close">✕ 閉じる</button></div>' + renameBox();
+  return _vModal6(m);
+};
+var _vMenu6 = vMenu;
+vMenu = function (S) {
+  var o = _vMenu6(S);
+  return o.replace('<div class="grid2">', '<div class="grid2">' + btn("名前を変える <small>" + esc(S.player.name) + " / " + esc(S.company) + "</small>", "rename"));
+};
+
+/* ----- まとめて進める: 標準は「体力とお金の維持だけ」を自動 ----- */
+var _aa6 = autoActions;
+autoActions = function (S, cap) {
+  var r = _aa6(S, cap);
+  if (G.ff > 0 && SET.ffAuto !== "all") r = r.filter(function (x) { return x.a === "rest" || x.a === "job"; });
+  return r;
+};
+XACT.ffauto = function (d) { SET.ffAuto = d.v; saveSettings(); render(); };
+var _vFF6 = vFF;
+vFF = function () {
+  var o = _vFF6(), all = SET.ffAuto === "all";
+  o = o.replace(/<p class="small">[\s\S]*?<\/p><p class="small muted">[\s\S]*?<\/p>/, '<p class="small">時間だけを進めます。自動で行うのは「体力が低いときに休む」「お金が少ないときにアルバイト」だけです(標準)。新しいことができるようになったときや打診が届いたときは、そこで止まります。</p>');
+  return o.replace('<div class="grid2">', '<div class="fld"><span>進めている間の自動行動</span><div class="chips">' + chip("休む・バイトだけ", "ffauto", { v: "safe" }, !all) + chip("執筆・腕みがきも任せる", "ffauto", { v: "all" }, all) + '</div></div><div class="grid2">');
+};
 
 function boot() {
   loadSettings();
