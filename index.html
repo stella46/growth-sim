@@ -246,7 +246,12 @@ body[data-lay=pc] #scrl{bottom:28px}
 .hseg button{border:0;background:none;padding:9px 0;font:700 14px "Zen Kaku Gothic New";border-radius:10px;color:var(--ink);cursor:pointer;position:relative}
 .hseg button.on{background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .bdg{font-style:normal;font:700 10px "IBM Plex Mono";background:#E4572E;color:#fff;border-radius:9px;padding:1px 6px;margin-left:5px;vertical-align:2px}
-.fin-row.sub{padding-left:10px;opacity:.85}.pitch{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}.where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
+.fin-row.sub{padding-left:10px;opacity:.85}.pitch{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}.need{display:flex;flex-direction:column;gap:1px;margin-top:4px;text-align:left}.need .ok{color:var(--ok)}.need .ng{color:#B3371F}.need b{font-weight:800}
+.gstat{padding:8px 12px;margin-bottom:10px}.gs-h{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:2px 0;text-align:left}.gs-h b{font-size:14px}.gs-h span{margin-left:auto;opacity:.75}.gs-b{margin-top:6px}
+.srow{display:grid;grid-template-columns:64px 1fr 56px;gap:8px;align-items:center;padding:2px 0;font-size:13px}.srow em{font-style:normal;text-align:right}
+.ps-stat{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-top:1px solid rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.2)}.ps-stat .srow{grid-template-columns:52px 1fr 52px;font-size:12px;color:#fff}.pc-side .ps-stat .bar{width:auto}
+.t2n2{font-size:11px;color:#fff;margin-left:4px}.pc-side .t2n2{display:none}.gs-h b{white-space:nowrap}.gs-h span{font-size:11px;text-align:right}
+.where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
 .slotmode{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.slotmode .chips{margin:4px 0}
 </style>
 
@@ -259,8 +264,12 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.9.6", SAVE_VER = 1;
+var GAME_VER = "0.9.7", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.9.7", date: "2026-11-02", notes: [
+    "画面の情報表示を充実させました。",
+    "分かりにくかった部分に説明を加えました。"
+  ] },
   { ver: "0.9.6", date: "2026-11-02", notes: [
     "展開の画面で、一部の操作が反応しない不具合を修正しました。"
   ] },
@@ -850,8 +859,8 @@ function rollOffers(S, news) {
 function canMedia(S, w, type) {
   var m = MEDIA[type];
   if (w.state === "canceled") return { ok: false, reason: "打ち切りになった作品は展開できない" };
-  if (w.pop < m.req.pop) return { ok: false, reason: "人気がまだ足りない" };
-  if (w.fans < m.req.fans * 10000) return { ok: false, reason: "ファンが足りない(目安 " + m.req.fans + "万人)" };
+  if (w.pop < m.req.pop) return { ok: false, reason: "人気がまだ足りない(必要 " + m.req.pop + "・現在 " + Math.round(w.pop) + ")" };
+  if (w.fans < m.req.fans * 10000) return { ok: false, reason: "ファンが足りない(必要 " + m.req.fans + "万人・現在 " + (Math.round(w.fans / 1000) / 10) + "万人)" };
   if (type === "overseas" && bestTier(w) < 2) return { ok: false, reason: "国内で大きな展開の実績が必要" };
   var md = w.media[type]; if (md && S.t - md.week < 24) return { ok: false, reason: "しばらく間をあけたい" };
   if (S.projects.some(function (p) { return p.wid === w.id && p.type === type; })) return { ok: false, reason: "すでに進行中" };
@@ -4261,9 +4270,9 @@ function buildGuide() {
   pages.push({ h: "チャンス・スタッフ・イベント", b: ["期限つきの「チャンス」が届くことがあります。引き受けると作業枠を使い、取材や講演、書店フェアなどで名声やお金が得られます。", "スタッフは自動で働きます。編集者と宣伝担当は、担当する作品を指定できます。", "イベントは「おまかせで決める(スキップ)」で飛ばせます。設定で、重要なもの以外を自動にすることもできます。"] });
   pages.push({ h: "ランキングと時代", b: ["ホームの「週刊ランキング」では、毎週、自社と他社の連載が順位を争います。看板作品を「巻頭に飾る」などで押し上げましょう。1位をとると名声やお金が入ります。", "3か月に1回、「編集会議」が開かれます。看板に力を入れる・新人に枠を空ける・不調な作品を整理するなど、方針を決められます。", "時代は数年ごとに変わり、追い風・向かい風のジャンルが入れ替わります。ときどきブームも起きます。流行は大切ですが、追いかけすぎないことも大切です。", "連載を長く続けて人気を保つと、流行に左右されない「不朽の名作」になります。世代を超えて読まれ、周年のお祝いもあります。"] });
   pages.push({ h: "人との関係と会社の成長", b: ["作家やスタッフは、「食事に誘う」「話を聞く」で信頼が深まります(編集部タブ)。信頼が高いと、作品が伸びやすくなり、スタッフの働きも良くなります。時間がたつと、少しずつ薄れます。", "名声が上がると、会社は自宅の一室から自社ビル、本社ビルへと成長します。ホームの街の景色も変わります。"] });
-  pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。条件が足りないときは、足りないものが表示されます。", "企画画面の「この相手に売り込む」で、こちらから先方に打診できます。少額の費用と数週間かかり、通れば先方が費用の一部を持つ条件が届きます(見送りもあります)。交渉の腕や名声、作品の人気が高いほど通りやすくなります。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
+  pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。各展開のカードに、必要な人気とファン数、いまの作品の数値が出ています。✔がそろうと企画できます。", "企画画面の「この相手に売り込む」で、こちらから先方に打診できます。少額の費用と数週間かかり、通れば先方が費用の一部を持つ条件が届きます(見送りもあります)。交渉の腕や名声、作品の人気が高いほど通りやすくなります。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
   pages.push({ h: "殿堂入りと競争", b: ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。"] });
-  pages.push({ h: "困ったときは", b: ["お金の出入りは、ホームの「状況」にあります。収入は「作品の売上」「パークの収益」「メディア化の収益」「行動・副業の報酬」などに分けて、作品ごとの売上も見られます。", "スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
+  pages.push({ h: "困ったときは", b: ["自分のステータス(体力・名声・各能力の数値)は、どの画面でも上の「自分のステータス」(パソコンは左の欄)で見られます。", "お金の出入りは、ホームの「状況」にあります。収入は「作品の売上」「パークの収益」「メディア化の収益」「行動・副業の報酬」などに分けて、作品ごとの売上も見られます。", "スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
   GUIDE.length = 0; pages.forEach(function (p) { GUIDE.push(p); });
 }
 guideModal = function (i) {
@@ -4808,6 +4817,57 @@ var _label19b = 0;
 /* ---- ゲームに入ったときは一時停止から ---- */
 var _enter19 = enterGame;
 enterGame = function (S, slot) { G.rtPause = true; G.rtAcc = 0; _enter19(S, slot); };
+
+/* ===== v0.9.7 展開の条件表示・どのタブでも自分のステータス ===== */
+G.statOpen = false;
+XACT.statopen = function () { G.statOpen = !G.statOpen; render(); };
+
+/* ---- 展開カードに必要条件と現在値を出す ---- */
+function mediaNeed(S, t) {
+  var m = MEDIA[t], best = null, anyOk = false;
+  S.works.forEach(function (w) { if (canMedia(S, w, t).ok) { anyOk = true; if (!best || canMedia(S, best, t).ok === false || w.pop > best.pop) best = w; } });
+  if (!best) S.works.forEach(function (w) { if (!best || w.pop > best.pop) best = w; });
+  var h = '<span class="need small">';
+  if (!best) return h + '作品がまだありません</span>';
+  var okP = best.pop >= m.req.pop, okF = best.fans >= m.req.fans * 10000;
+  h += '<b class="' + (anyOk ? "ok" : "ng") + '">' + (anyOk ? "✔ 企画できます" : "✖ まだ条件が足りません") + '</b>' +
+    '<span class="' + (okP ? "ok" : "ng") + '">人気 ' + m.req.pop + '以上(『' + esc(best.title) + '』は ' + Math.round(best.pop) + ')' + (okP ? " ✔" : "") + '</span>' +
+    '<span class="' + (okF ? "ok" : "ng") + '">ファン ' + m.req.fans + '万人以上(現在 ' + (Math.round(best.fans / 1000) / 10) + '万人)' + (okF ? " ✔" : "") + '</span>';
+  if (t === "overseas") h += '<span class="' + (bestTier(best) >= 2 ? "ok" : "ng") + '">国内で大きな展開の実績が必要' + (bestTier(best) >= 2 ? " ✔" : "") + '</span>';
+  var md = best.media[t]; if (md && S.t - md.week < 24) h += '<span class="ng">前回から間をあける(あと' + (24 - (S.t - md.week)) + '週)</span>';
+  return h + '</span>';
+}
+var _vMedia20 = vMedia;
+vMedia = function (S) {
+  var o = _vMedia20(S);
+  MEDIA_ORDER.forEach(function (t) {
+    var re = new RegExp('(data-act="mstart" data-t="' + t + '">[\\s\\S]*?)</button>');
+    o = o.replace(re, function (all, a) { return a + mediaNeed(S, t) + '</button>'; });
+  });
+  return o;
+};
+
+/* ---- 自分のステータス(どのタブでも) ---- */
+function statRows(S) {
+  var me = S.player, h = '<div class="srow"><span>体力</span>' + bar(me.sta, 100, me.sta < 30 ? "warn" : "") + '<em class="mono">' + Math.round(me.sta) + '/100</em></div>' +
+    '<div class="srow"><span>名声</span><i></i><em class="mono">' + Math.round(S.fame) + '</em></div>';
+  Object.keys(SKILLS).forEach(function (k) { h += '<div class="srow"><span>' + SKILLS[k] + '</span>' + bar(me.sk[k], 100, "") + '<em class="mono">' + Math.round(me.sk[k]) + '</em></div>'; });
+  return h;
+}
+function statPanel(S) {
+  var me = S.player;
+  return '<section class="card gstat"><button class="gs-h" data-act="statopen"><b>自分のステータス</b><span class="small mono">体力 ' + Math.round(me.sta) + ' ・ 名声 ' + Math.round(S.fame) + ' ・ ' + esc(fmtMoney(S.money)) + '</span><i>' + (G.statOpen ? "▲" : "▼") + '</i></button>' +
+    (G.statOpen ? '<div class="gs-b">' + statRows(S) + '</div>' : '') + '</section>';
+}
+var _vGame20 = vGame;
+vGame = function () {
+  var o = _vGame20(), S = G.S; if (!S) return o;
+  if (G.pc) return o.replace('<nav class="ps-nav">', '<div class="ps-stat"><b class="small">自分のステータス</b>' + statRows(S) + '</div><nav class="ps-nav">');
+  return o.replace(/(<main class="wrap navtop[^>]*>)/, '$1' + statPanel(S));
+};
+/* 体力バーの横に数字 */
+var _staBar20 = staBar;
+staBar = function (S) { return _staBar20(S) + '<span class="t2n2 mono">' + Math.round(S.player.sta) + '</span>'; };
 
 function boot() {
   loadSettings();
