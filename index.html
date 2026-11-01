@@ -246,7 +246,7 @@ body[data-lay=pc] #scrl{bottom:28px}
 .hseg button{border:0;background:none;padding:9px 0;font:700 14px "Zen Kaku Gothic New";border-radius:10px;color:var(--ink);cursor:pointer;position:relative}
 .hseg button.on{background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .bdg{font-style:normal;font:700 10px "IBM Plex Mono";background:#E4572E;color:#fff;border-radius:9px;padding:1px 6px;margin-left:5px;vertical-align:2px}
-.where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
+.fin-row.sub{padding-left:10px;opacity:.85}.where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
 .slotmode{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.slotmode .chips{margin:4px 0}
 </style>
 
@@ -259,8 +259,11 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.9.2", SAVE_VER = 1;
+var GAME_VER = "0.9.3", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.9.3", date: "2026-11-02", notes: [
+    "お金の収入まわりの表示を見やすくしました。"
+  ] },
   { ver: "0.9.2", date: "2026-11-02", notes: [
     "画面の分かりやすさを改善しました。",
     "ゲーム開始時の動作を調整しました。"
@@ -748,7 +751,7 @@ function tick(S) {
   var exp = S.staff.reduce(function (a, s) { return a + salary(s); }, 0) + (S.unlock.edit ? 3 : 1);
   if (S.money < 0) S.money += S.money * 0.004;
   if (S.debt > 0) S.money -= S.debt * 0.003;
-  S.money += inc - exp; S.yearRev += inc; S.totalRev += inc;
+  if (typeof INC !== "undefined") INC.mute++; S.money += inc - exp; if (typeof INC !== "undefined") INC.mute--; S.yearRev += inc; S.totalRev += inc;
   S.projects.slice().forEach(function (p) { if (S.t >= p.end) finishProject(S, p); });
   if (S.t % 4 === 0) { S.hist.push({ t: S.t, m: Math.round(S.money), i: Math.round(inc * 4) }); if (S.hist.length > 150) S.hist.shift(); }
   if (S.t % 4 === 3) hallCheck(S);
@@ -4251,7 +4254,7 @@ function buildGuide() {
   pages.push({ h: "人との関係と会社の成長", b: ["作家やスタッフは、「食事に誘う」「話を聞く」で信頼が深まります(編集部タブ)。信頼が高いと、作品が伸びやすくなり、スタッフの働きも良くなります。時間がたつと、少しずつ薄れます。", "名声が上がると、会社は自宅の一室から自社ビル、本社ビルへと成長します。ホームの街の景色も変わります。"] });
   pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。条件が足りないときは、足りないものが表示されます。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
   pages.push({ h: "殿堂入りと競争", b: ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。"] });
-  pages.push({ h: "困ったときは", b: ["スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
+  pages.push({ h: "困ったときは", b: ["お金の出入りは、ホームの「状況」にあります。収入は「作品の売上」「パークの収益」「メディア化の収益」「行動・副業の報酬」などに分けて、作品ごとの売上も見られます。", "スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
   GUIDE.length = 0; pages.forEach(function (p) { GUIDE.push(p); });
 }
 guideModal = function (i) {
@@ -4682,6 +4685,60 @@ var _tabBody18 = tabBody;
 tabBody = function (S) {
   var o = _tabBody18(S), w = TABWHERE[G.tab];
   return w ? '<p class="where small muted">' + w + '</p>' + o : o;
+};
+
+/* ===== 収入の内訳 =====
+   お金が増えた分を、どこから来たか分けて記録する */
+var INC = { acc: {}, w: {}, mute: 0, ctx: "act", lab: "" };
+function incAdd(k, v) { if (v > 0) INC.acc[k] = (INC.acc[k] || 0) + v; }
+function incHook(S) {
+  var d = Object.getOwnPropertyDescriptor(S, "money"); if (d && d.get) return;
+  Object.defineProperty(S, "_m", { value: S.money, writable: true, enumerable: false, configurable: true });
+  Object.defineProperty(S, "money", {
+    enumerable: true, configurable: true,
+    get: function () { return this._m; },
+    set: function (x) {
+      var dv = x - this._m; this._m = x;
+      if (dv > 0 && !INC.mute) incAdd(INC.lab || (INC.ctx === "tick" ? "その他の収入" : "行動・イベント"), dv);
+    }
+  });
+}
+function incWrap(name, label) {
+  var f = window[name]; if (typeof f !== "function") return;
+  window[name] = function () { var o = INC.lab; INC.lab = label; try { return f.apply(this, arguments); } finally { INC.lab = o; } };
+}
+incWrap("finishProject", "メディア化の収益");
+incWrap("finishJob", "行動・副業の報酬");
+var _simWork18 = simWork;
+simWork = function (S, w, news) { var r = _simWork18(S, w, news); INC.w[w.id] = (INC.w[w.id] || 0) + r; incAdd("作品の売上", r); return r; };
+var _simPark18 = simPark;
+simPark = function (S) { var r = _simPark18(S); incAdd("パークの収益", r); return r; };
+var _enter18b = enterGame;
+enterGame = function (S, slot) { incHook(S); INC.acc = {}; INC.w = {}; _enter18b(S, slot); };
+var _tick18 = tick;
+tick = function (S) {
+  incHook(S); INC.ctx = "tick";
+  var news; try { news = _tick18(S); } finally { INC.ctx = "act"; }
+  if (S.fin) {
+    var tot = 0, src = {}; Object.keys(INC.acc).forEach(function (k) { src[k] = Math.round(INC.acc[k] * 10) / 10; tot += INC.acc[k]; });
+    var ws = Object.keys(INC.w).map(function (id) { var w = W(S, id); return w && INC.w[id] > 0.05 ? [w.title, Math.round(INC.w[id] * 10) / 10] : null; }).filter(Boolean).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 5);
+    S.fin.src = src; S.fin.works = ws; S.fin.inc2 = Math.round(tot * 10) / 10;
+  }
+  INC.acc = {}; INC.w = {};
+  return news;
+};
+
+var _finCard18 = finCard;
+finCard = function (S) {
+  var o = _finCard18(S), f = S.fin; if (!f || !f.src) return o;
+  var keys = Object.keys(f.src).sort(function (a, b) { return f.src[b] - f.src[a]; });
+  var rows = keys.map(function (k) { return '<div class="fin-row small"><span>' + esc(k) + '</span><span>+' + mny(f.src[k]) + '</span></div>'; }).join("");
+  var wrows = (f.works || []).map(function (x) { return '<div class="fin-row small sub"><span>└ 『' + esc(x[0]) + '』</span><span>+' + mny(x[1]) + '</span></div>'; }).join("");
+  var det = '<details open><summary class="small muted">収入の内訳(前の週)</summary>' + (rows || '<p class="small muted">収入はありませんでした。</p>') + wrows + '</details>';
+  o = o.replace(/<div class="fin-row"><span>収入<\/span><b class="up">\+[^<]*<\/b><\/div>/, '<div class="fin-row"><span>収入</span><b class="up">+' + mny(f.inc2 || 0) + '</b></div>' + det);
+  var out = f.base + f.extra + (f.tax || 0) + (f.bonus || 0), nt = (f.inc2 || 0) - out;
+  o = o.replace(/<div class="fin-row tot">[\s\S]*?<\/div>/, '<div class="fin-row tot"><span>差し引き(前の週)</span><b class="' + (nt >= 0 ? "up" : "dn") + '">' + (nt >= 0 ? "+" : "−") + mny(Math.abs(nt)) + '</b></div>');
+  return o;
 };
 
 function boot() {
