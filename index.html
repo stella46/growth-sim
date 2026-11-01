@@ -275,8 +275,11 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.4.0", SAVE_VER = 1;
+var GAME_VER = "1.4.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.4.1", date: "2026-11-03", notes: [
+    "通信が遅いときやオフラインでも、すぐに起動できるようになりました。"
+  ] },
   { ver: "1.4.0", date: "2026-11-02", notes: [
     "作品の表紙とパークのイラストの種類を、大きく増やしました。",
     "お金の使い道が、さらに広がりました。",
@@ -7030,7 +7033,7 @@ if (typeof document !== "undefined" && document.getElementById("app")) {
 }
 
 
-try{if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!/claude/.test(location.hostname)){navigator.serviceWorker.register('sw.js').catch(function(){})}}catch(e){}
+try{if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!/claude/.test(location.hostname)){navigator.serviceWorker.register('sw.js').catch(function(){});navigator.serviceWorker.addEventListener('message',function(e){var t=e.data&&e.data.type,m=t==='offline'?'通信が遅い・つながらないため、保存済みの版で起動しました。オフラインでも遊べます':t==='updated'?'最新版を取得しました。次に開くときから反映されます':'';if(!m)return;var n=0,iv=setInterval(function(){if(typeof toast==='function'&&document.getElementById('toast')){clearInterval(iv);toast(m,true)}else if(++n>40)clearInterval(iv)},250)})}}catch(e){}
 </script>
 </body>
 </html>
