@@ -137,6 +137,30 @@ input[type=range]{width:100%}
 .world{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.wd{border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:12px;display:flex;flex-direction:column;opacity:.6}.wd.on{opacity:1;border-color:var(--gold)}.wd em{font-style:normal;font-size:11px}
 details.nv summary{list-style:none}
 @media (prefers-reduced-motion:reduce){.tw,.steam path,.plane,.balloon{animation:none!important}}
+
+/* v0.4.1 見た目と上部ナビ */
+body{background:radial-gradient(1200px 500px at 50% -120px,color-mix(in srgb,var(--accent) 14%,transparent),transparent),var(--paper)}
+.card{border-radius:14px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 6px 18px -10px rgba(20,30,80,.28)}
+.h2{display:flex;align-items:center;gap:8px}.h2::before{content:"";width:5px;height:1em;border-radius:3px;background:linear-gradient(var(--accent),#8a5cf0)}
+.btn.pri{background:linear-gradient(135deg,var(--accent),#6a3fd6);border-color:transparent;box-shadow:0 6px 14px -8px var(--accent)}
+.btn{border-radius:12px}
+.top2{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:linear-gradient(135deg,#2446C8,#5b3fd0);color:#fff;padding:8px var(--gr) 0 var(--gx);box-shadow:0 8px 18px -10px rgba(20,20,80,.6)}
+.t2a{display:flex;justify-content:space-between;align-items:center;gap:10px}.t2n{display:flex;flex-direction:column;min-width:0}.t2n .co{font:400 16px "Dela Gothic One";overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.t2n .small{opacity:.85}
+.next2{border:0;border-radius:999px;background:#FFE25A;color:#1b1b2b;font:700 15px "Zen Kaku Gothic New";padding:10px 18px;min-height:44px;box-shadow:0 4px 0 #c9a800;cursor:pointer;white-space:nowrap}.next2:active{transform:translateY(3px);box-shadow:0 1px 0 #c9a800}
+.t2b{display:flex;align-items:center;gap:10px;margin:6px 0 4px}.money2{font-size:19px;font-weight:500}.dl{font-size:12px;padding:1px 8px;border-radius:999px;background:rgba(255,255,255,.18)}.dl.dn{background:rgba(255,90,90,.35)}.dl.up{background:rgba(120,255,180,.25)}
+.t2p{display:flex;gap:4px;margin-left:auto}.top2 .pip{border-color:#fff}.top2 .pip.on{background:#FFE25A;border-color:#FFE25A}.t2s{width:64px;flex:none}.top2 .bar{background:rgba(255,255,255,.28)}.top2 .bar i{background:#fff}.top2 .bar.warn i{background:#ff8c8c}
+.tabs2{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:0 -4px}
+.tabs2 button{border:0;background:none;color:rgba(255,255,255,.75);padding:5px 0 6px;font:700 10.5px "Zen Kaku Gothic New";cursor:pointer;border-radius:10px 10px 0 0;display:flex;flex-direction:column;align-items:center;gap:1px;min-height:44px}
+.tabs2 button i{font-style:normal;font-size:17px;line-height:1.1}.tabs2 button.on{background:var(--paper);color:var(--ink)}
+.wrap.navtop{padding-bottom:56px;padding-top:12px}
+body[data-nav=top] #toast{bottom:28px}
+.hero{border-radius:16px;overflow:hidden;border:1px solid var(--line);margin:0 0 12px;background:var(--panel);box-shadow:0 10px 24px -14px rgba(20,30,80,.45)}
+.sky{display:block;width:100%;height:auto}.cloud{animation:drift 26s linear infinite}.cloud.c2{animation-duration:38s;animation-delay:-12s}@keyframes drift{0%{transform:translateX(-30px)}100%{transform:translateX(60px)}}
+.hero-b{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px}.hero-t{font:400 17px "Dela Gothic One"}.hero-s{display:flex;gap:12px}.hero-s span{display:flex;flex-direction:column;align-items:center;font-size:10.5px;color:var(--mute)}.hero-s b{font:500 16px "IBM Plex Mono";color:var(--ink)}
+.shelf-w{margin:6px 0 12px}.shelf{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x proximity}
+.sh{flex:none;width:92px;display:flex;flex-direction:column;gap:4px;text-align:left;background:none;border:0;cursor:pointer;scroll-snap-align:start;color:inherit}.sh .cover{width:92px;height:auto;border-radius:6px;box-shadow:0 8px 14px -8px rgba(0,0,0,.5)}.sh b{font-size:12px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.fin-row{display:flex;justify-content:space-between;padding:3px 0}.fin-row.tot{border-top:1px dashed var(--line);margin-top:4px;padding-top:6px}.fin-row .up{color:var(--ok)}.fin-row .dn{color:var(--ng)}.fin details{margin:2px 0 4px}
+@media (prefers-reduced-motion:reduce){.cloud{animation:none!important}}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -148,8 +172,14 @@ details.nv summary{list-style:none}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.4.0", SAVE_VER = 1;
+var GAME_VER = "0.4.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.4.1", date: "2026-11-01", notes: [
+    "お金の出入りを追加しました。家賃・生活費・給与・印刷費・パーク維持費・納税・賞与がかかります。ホームの「お金の出入り」で内訳が見られ、融資と返済もできます。",
+    "出費に関わるイベント(機材の故障、税務調査、訴訟、台風、取引先の倒産など)や、SNSで話題・電子書籍ブーム・国際ブックフェアなどのイベントを13個追加しました。",
+    "週を進めるボタンとタブを画面の上にまとめ、片手で操作しやすくしました(設定で「下」に戻せます)。",
+    "ホームに街の景色と本棚を追加し、色づかいを華やかにしました。今週の行動を一番上に移しました。"
+  ] },
   { ver: "0.4.0", date: "2026-11-01", notes: [
     "遊び方ガイドと、いまやると良いことを教えてくれる「次のおすすめ」を追加しました(設定でON/OFFできます)。",
     "タイトル・セーブスロット・設定・アップデート情報・引き継ぎ(コード/ファイル)の作りを見直しました。「もしものとき」の控えも付きます。",
@@ -1434,7 +1464,7 @@ function extTick(S, news) {
   var key = SEASON_EV.find(function (s) { return s.mo === d.mo && s.wk === d.wk; });
   if (key && S.flags.seasonDone !== key.id + y && S.queue.length < 4) { S.flags.seasonDone = key.id + y; queue(S, { k: "ev", id: "season_" + key.id, p: {} }); }
   /* 人生・弟子・新人のドラマ */
-  if (S.queue.length < 3 && ch(0.03)) rollDrama(S);
+  if (S.queue.length < 3 && ch(0.055)) rollDrama(S);
   achCheck(S);
 }
 
@@ -1680,6 +1710,110 @@ function nextAdvice(S) {
 /* ===== セーブ互換 ===== */
 var _migrate = migrate;
 migrate = function (S) { S = _migrate(S); S.works.forEach(ensureW); if (S.flags == null) S.flags = {}; return S; };
+
+/* ===== v0.4.1 家計: 継続的な出費・納税・融資・出費系イベント ===== */
+function r1(x) { return Math.round(x * 10) / 10; }
+function financeTick(S, m0, tr0, news) {
+  var d = dinfo(S.t), y = d.y, inc = S.totalRev - tr0;
+  var base = S.staff.reduce(function (a, s) { return a + salary(s); }, 0) + (S.unlock.edit ? 3 : 1);
+  var rk = Math.floor(S.fame / 50);
+  var f = { inc: r1(inc), base: base, rent: r1(3 + rk * 1.2 + (S.unlock.edit ? 2 : 0) + S.staff.length * 0.8), living: r1(3 + y * 0.12), print: 0, ops: r1(inc * 0.1), park: 0 };
+  liveWorks(S).forEach(function (w) { f.print += 0.3 + w.pop * 0.015; }); f.print = r1(f.print);
+  S.park.areas.forEach(function (a) { f.park += 4 + a.lv * 3 + ((a.food || 0) + (a.shop || 0)) * 1.5; }); f.park = r1(f.park);
+  f.extra = r1(f.rent + f.living + f.print + f.ops + f.park);
+  S.money -= f.extra;
+  if (d.mi === 11 && d.wk === 4) {
+    var tax = Math.round(0.18 * Math.max(0, S.yearRev - 400)), bonus = S.staff.reduce(function (a, s) { return a + salary(s); }, 0) * 8;
+    S.money -= tax + bonus; f.tax = tax; f.bonus = bonus;
+    news.unshift("決算の支払い。納税 " + fmtMoney(tax) + (bonus ? "、賞与 " + fmtMoney(bonus) : "") + "。");
+    addLog(S, "決算。納税" + fmtMoney(tax) + (bonus ? "・賞与" + fmtMoney(bonus) : "") + "を支払った。");
+  }
+  if (S.money < 0) { S.fame = Math.max(0, S.fame - 0.12); if (ch(0.3)) news.unshift("資金が底をつき、取引先の信用が揺らいでいる。"); }
+  f.net = r1(S.money - m0); f.t = S.t; f.debt = S.debt;
+  S.fin = f;
+}
+var _tick2 = tick;
+tick = function (S) { var m0 = S.money, tr0 = S.totalRev, news = _tick2(S); try { financeTick(S, m0, tr0, news); S.news = news.slice(0, 8); } catch (e) { if (typeof console !== "undefined") console.error("fin", e); } return news; };
+function actLoan(S) {
+  if (S.debt >= 3000) return no("これ以上は借りられません");
+  S.money += 500; S.debt += 500; addLog(S, "銀行から500万円を借り入れた。");
+  return yes("500万円を借り入れた(利息は毎週かかる)");
+}
+function actRepay(S) {
+  if (S.debt <= 0) return no("借入はありません");
+  var a = Math.min(500, S.debt); if (S.money < a + 30) return no("返済には余裕資金が必要です");
+  S.money -= a; S.debt -= a; return yes(fmtMoney(a) + "を返済した");
+}
+
+function spend(S, c) { if (S.money < c) return false; S.money -= c; return true; }
+function scaleC(S, k) { return Math.round(k * (1 + Math.min(4, S.fame / 80))); }
+function exW(S, p) { return p && p.wid ? W(S, p.wid) : null; }
+function mkEx(id, title, text, a, b) {
+  EVDEF[id] = { title: title, text: text, choices: function () { return [{ label: a.label, fn: a.fn }, { label: b.label, fn: b.fn }]; } };
+}
+mkEx("ex_equip", "機材の故障", function () { return "仕事の要のパソコンが、突然動かなくなった。修理するか、買い替えるか。"; },
+  { label: "新しいものに買い替える", fn: function (S) { var c = scaleC(S, 25); if (!spend(S, c)) return "資金が足りず、修理店で応急処置だけしてもらった。"; S.player.sta = Math.min(100, S.player.sta + 5); return "新しい機材が届いた(" + fmtMoney(c) + ")。作業がはかどりそうだ。"; } },
+  { label: "だましだまし使う", fn: function (S) { if (ch(0.5)) { S.player.sta = Math.max(0, S.player.sta - 12); return "何とか持ちこたえたが、作業中のストレスで体力を消耗した。"; } var c = scaleC(S, 50); S.money -= c; return "結局完全に壊れ、緊急で買い直した(" + fmtMoney(c) + ")。"; } });
+mkEx("ex_audit", "税務調査", function () { return "税務署から連絡があった。帳簿を確認したいという。"; },
+  { label: "自分で誠実に対応する", fn: function (S) { var c = Math.round(Math.max(0, S.yearRev) * 0.02); S.money -= c; S.fame += 0.3; return "丁寧に説明し、追加で" + fmtMoney(c) + "を納めた。信頼は保たれた。"; } },
+  { label: "税理士に任せる(60万円)", fn: function (S) { if (!spend(S, 60)) return "資金が足りず、自分で対応することになった。"; return "税理士のおかげで、問題なく終わった。"; } });
+mkEx("ex_lawsuit", "盗作の言いがかり", function (S, p) { var w = exW(S, p); return "『" + (w ? w.title : "ある作品") + "』が「他作品に似ている」と、見知らぬ人物から訴えられた。"; },
+  { label: "示談で収める", fn: function (S, p) { var c = scaleC(S, 40); S.money -= c; return "示談金" + fmtMoney(c) + "で話がついた。騒ぎは小さく済んだ。"; } },
+  { label: "法廷で争う", fn: function (S, p) { var w = exW(S, p); if (ch(0.6)) { S.fame += 1; if (w) { w.fans += 3000; w.boost += 3; } return "主張が認められ、完全勝訴した。「潔白」の話題が作品の追い風になった。"; } var c = scaleC(S, 90); S.money -= c; S.fame = Math.max(0, S.fame - 1); return "判決は敗訴。賠償と弁護費用で" + fmtMoney(c) + "を失った。"; } });
+mkEx("ex_typhoon", "台風でパークが休園", function () { return "大型の台風が直撃し、パークの一部が被害を受けた。再開には修繕が必要だ。"; },
+  { label: "しっかり修繕する", fn: function (S) { var c = scaleC(S, 25) * Math.min(4, Math.max(1, S.park.areas.length)); if (!spend(S, c)) return "修繕費が足りず、最小限の復旧にとどまった。"; S.park.sat = Math.min(100, S.park.sat + 4); return "万全に修繕して再開した(" + fmtMoney(c) + ")。来園者の安心感が増した。"; } },
+  { label: "最小限で再開する", fn: function (S) { S.park.sat = Math.max(0, S.park.sat - 8); return "急ごしらえで再開した。来園者から不満の声が出ている。"; } });
+mkEx("ex_baddebt", "取引先の倒産", function () { return "お付き合いのあった取引先が倒産した。未払いの代金が宙に浮いている。"; },
+  { label: "弁護士に回収を頼む(20万円)", fn: function (S) { if (!spend(S, 20)) return "資金が足りず、請求は見送った。"; if (ch(0.5)) { S.money += 80; return "一部を回収できた(+80万円)。"; } return "回収はできなかった。"; } },
+  { label: "あきらめる", fn: function (S) { var c = scaleC(S, 20); S.money -= c; return "未払い分" + fmtMoney(c) + "は損失として処理した。"; } });
+mkEx("ex_trip", "社員旅行の提案", function () { return "スタッフから「たまには、みんなで旅行に行きませんか」と声がかかった。"; },
+  { label: "豪華な旅行にする", fn: function (S) { var c = S.staff.length * 15; if (!spend(S, c)) return "資金が足りず、日帰りのバーベキューになった。"; S.staff.forEach(function (s) { s.skill = Math.min(s.pot, s.skill + 2); }); return "温泉旅行で絆が深まった(" + fmtMoney(c) + ")。スタッフの腕も上がった気がする。"; } },
+  { label: "日帰りで軽く済ます", fn: function (S) { var c = S.staff.length * 4; S.money -= c; S.staff.forEach(function (s) { s.skill = Math.min(s.pot, s.skill + 0.8); }); return "近場でのんびり過ごした(" + fmtMoney(c) + ")。"; } });
+mkEx("ex_raise", "給与アップの要望", function () { return "スタッフ一同から、給与を上げてほしいと要望書が届いた。"; },
+  { label: "要望に応える(臨時手当)", fn: function (S) { var c = S.staff.length * 20; if (!spend(S, c)) return "資金が足りず、満額は払えなかった。"; S.staff.forEach(function (s) { s.skill = Math.min(s.pot, s.skill + 1.2); }); return "臨時手当" + fmtMoney(c) + "を出した。みんなのやる気が上がった。"; } },
+  { label: "いまは難しいと伝える", fn: function (S) { if (S.staff.length && ch(0.35)) { var s = S.staff.splice(ri(0, S.staff.length - 1), 1)[0]; return s.name + "が「条件の良いところへ行きます」と辞めてしまった。"; } return "渋い顔をされたが、全員残ってくれた。"; } });
+mkEx("ex_viral", "SNSで話題に", function (S, p) { var w = exW(S, p); return "『" + (w ? w.title : "ある作品") + "』の一場面が、SNSで急に拡散されている。"; },
+  { label: "便乗して広告を打つ(60万円)", fn: function (S, p) { var w = exW(S, p); if (!spend(S, 60)) return "資金が足りず、様子見になった。"; if (w) { w.boost += 8; w.fans += Math.round(4000 + w.pop * 150); } return "波に乗り、一気に新しい読者を獲得した。"; } },
+  { label: "流れに任せる", fn: function (S, p) { var w = exW(S, p); if (w) { w.boost += 3; w.fans += 1500; } return "自然な盛り上がりが、静かに続いた。"; } });
+mkEx("ex_pilgrim", "聖地巡礼ブーム", function (S, p) { var w = exW(S, p); return "『" + (w ? w.title : "ある作品") + "』の舞台とされる街に、ファンが次々と訪れている。"; },
+  { label: "地域とタイアップする(30万円)", fn: function (S, p) { var w = exW(S, p); if (!spend(S, 30)) return "資金が足りず、見送った。"; S.fame += 1; if (w) { w.culture += 3; w.fans += 3000; } return "街ぐるみのコラボが実現。作品が土地の名物になった。"; } },
+  { label: "見守る", fn: function (S, p) { var w = exW(S, p); if (w) w.culture += 1; return "静かな盛り上がりが続いている。"; } });
+mkEx("ex_ebook", "電子書籍ブーム", function () { return "電子書籍の売れ行きが急に伸びている。いまのうちに電子版へ力を入れるか。"; },
+  { label: "電子版に投資する(120万円)", fn: function (S) { if (!spend(S, 120)) return "資金が足りず、小さな対応にとどまった。"; liveWorks(S).forEach(function (w) { w.boost += 4; w.reach = Math.min(100, w.reach + 2); }); return "電子版を整備した。どの連載も新しい読者に届き始めた。"; } },
+  { label: "紙の本にこだわる", fn: function (S) { S.fame += 0.2; return "「やはり紙で読みたい」というファンに喜ばれた。"; } });
+mkEx("ex_recession", "出版不況", function () { return "業界全体で売上が落ち込んでいる。どう乗り切るか。"; },
+  { label: "広告を増やして勝負(100万円)", fn: function (S) { if (!spend(S, 100)) return "資金が足りず、広告は打てなかった。"; liveWorks(S).forEach(function (w) { w.boost += 3; }); return "逆風の中でも、読者の目に留まる動きができた。"; } },
+  { label: "経費を引き締める", fn: function (S) { S.money += 40; S.player.sta = Math.max(0, S.player.sta - 6); return "支出を見直して40万円を浮かせた。ただ、現場は少し疲れ気味だ。"; } });
+mkEx("ex_anniv", "連載の周年", function (S, p) { var w = exW(S, p); return "『" + (w ? w.title : "ある作品") + "』の連載が節目を迎えた。記念の企画を立てたいという声が上がっている。"; },
+  { label: "記念展を開く(80万円)", fn: function (S, p) { var w = exW(S, p); if (!spend(S, 80)) return "資金が足りず、小さな記念号にとどまった。"; if (w) { w.fans += Math.round(5000 + w.pop * 200); w.boost += 5; w.culture += 2; addMs(S, w, "連載の記念展を開催", "anniv"); } S.fame += 1; return "記念展には、長年のファンが全国から訪れた。"; } },
+  { label: "記念号だけ出す", fn: function (S, p) { var w = exW(S, p); if (w) { w.boost += 3; addMs(S, w, "記念号を発行", "anniv"); } return "ささやかな記念号が、静かに喜ばれた。"; } });
+mkEx("ex_bookfair", "国際ブックフェア", function (S, p) { var w = exW(S, p); return "海外の大きなブックフェアから、『" + (w ? w.title : "ある作品") + "』に出展しないかと誘いが来た。"; },
+  { label: "出展する(100万円)", fn: function (S, p) { var w = exW(S, p); if (!spend(S, 100)) return "資金が足りず、辞退した。"; if (w) { w.fans += Math.round(4000 + w.pop * 150); w.culture += 3; addMs(S, w, "国際ブックフェアに出展"); } S.fame += 1.2; return "現地の出版社と名刺を交換した。海外展開の足がかりができた。"; } },
+  { label: "今回は見送る", fn: function () { return "次の機会を待つことにした。"; } });
+function rollExtra(S) {
+  var y = dinfo(S.t).y, live = liveWorks(S), ids = [];
+  if (S.unlock.write || S.unlock.edit) ids.push("ex_equip", "ex_equip");
+  if (y >= 2 && S.totalRev > 300) ids.push("ex_audit");
+  if (live.length && S.fame >= 8) ids.push("ex_lawsuit");
+  if (S.park.areas.length) ids.push("ex_typhoon", "ex_typhoon");
+  if (S.works.length || S.unlock.edit) ids.push("ex_baddebt");
+  if (S.staff.length) ids.push("ex_trip", "ex_raise");
+  if (live.length) ids.push("ex_viral", "ex_viral");
+  if (S.works.some(function (w) { return bestTier(w) >= 3; })) ids.push("ex_pilgrim");
+  if (y >= 2 && live.length) ids.push("ex_ebook");
+  if (y >= 3) ids.push("ex_recession");
+  if (S.works.some(function (w) { return w.eps >= 50 && !w.ms.some(function (m) { return m.k === "anniv"; }); })) ids.push("ex_anniv");
+  if (S.works.some(function (w) { return w.pop >= 40; })) ids.push("ex_bookfair");
+  if (!ids.length) return;
+  var id = pick(ids), p = {};
+  if (id === "ex_anniv") p.wid = pick(S.works.filter(function (w) { return w.eps >= 50 && !w.ms.some(function (m) { return m.k === "anniv"; }); })).id;
+  else if (id === "ex_bookfair") p.wid = pick(S.works.filter(function (w) { return w.pop >= 40; })).id;
+  else if (id === "ex_pilgrim") p.wid = pick(S.works.filter(function (w) { return bestTier(w) >= 3; })).id;
+  else if (live.length) p.wid = pick(live).id;
+  queue(S, { k: "ev", id: id, p: p });
+}
+var _rollDrama = rollDrama;
+rollDrama = function (S) { if (ch(0.55)) return rollExtra(S); return _rollDrama(S); };
 
 /* ===== 設定 ===== */
 var SET = { bgm: 0.5, se: 0.6, bright: 1 };
@@ -2400,7 +2534,7 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
 /* ===== 遊び方ガイド ===== */
 var GUIDE = [
   { h: "このゲームは？", b: ["小説や漫画の「原作」を世に出し、育てていくゲームです。人気が出れば、アニメ・映画・舞台・ゲームへ。やがてテーマパークまで広がります。", "終わりはありません。好きなだけ、自分のペースで遊べます。目標は、作品や人が「殿堂入り」すること。"] },
-  { h: "一週間のくり返し", b: ["画面上部の●が「行動点」です。1週間に3つ使えます。", "ホームや各タブでできることを選び、使い切ったら下の「週を進める ▶」。時間が進み、結果が出ます。", "体力(バー)が減ったら「休む」で回復しましょう。"] },
+  { h: "一週間のくり返し", b: ["画面上部の●が「行動点」です。1週間に3つ使えます。", "ホームや各タブでできることを選び、使い切ったら「週を進める ▶」(画面の上にあります)。時間が進み、結果が出ます。", "体力(バー)が減ったら「休む」で回復しましょう。"] },
   { h: "最初の一歩", b: ["最初は、ただの一般人です。肩書きはありません。", "「習作を書く」を4回重ねると、自分の連載を企画できる「書き手の道」が開きます。", "「投稿作を読む」を4回重ねると、自分の編集部を開ける「見つける道」が開きます。両方進んでもかまいません。"] },
   { h: "作品を育てる", b: ["「作品」タブで作品をタップ。細かい数字は見えませんが、「読みどころ」の文章にヒントがあります。", "執筆・打ち合わせ・宣伝・増刷など、行動点を使って育てます。ジャンルと題材の相性や、世の中の風向きも大切です。"] },
   { h: "展開とパーク", b: ["人気とファンが増えたら、「展開」タブでアニメ化などを企画できます。成功すると名声と収益が大きく伸びます。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] },
@@ -2408,7 +2542,7 @@ var GUIDE = [
   { h: "困ったときは", b: ["ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "遊び方のヒントや「次のおすすめ」は、「設定」でいつでもON/OFFできます。この説明も、タイトルやメニューの「遊び方」から読み返せます。"] }
 ];
 var TIPS = {
-  home: "ここが拠点です。行動点(●)は1週に3つ。使い切ったら下の「週を進める」を押しましょう。",
+  home: "ここが拠点です。行動点(●)は1週に3つ。使い切ったら右上の「週を進める」を押しましょう。",
   works: "作品をタップすると、読みどころのヒントと、執筆・宣伝などの操作が出ます。",
   scout: "編集部では、才能のある作者を探して契約したり、スタッフを雇ったりできます。",
   media: "人気とファンが育った作品を、アニメ・映画・舞台などにできます。成功すれば大きな収益に。",
@@ -2853,6 +2987,87 @@ se = function (kind) {
     return;
   }
   _se(kind);
+};
+
+/* ===== v0.4.1 操作位置(上部ナビ)・見た目の強化・収支 ===== */
+SET.nav = "top";
+var NAVI = { home: "🏠", works: "📚", scout: "✏️", media: "🎬", park: "🎡", hall: "🏆", menu: "☰" };
+var _render = render;
+render = function () { try { document.body.dataset.nav = (G.screen === "game" && SET.nav === "bottom") ? "bottom" : "top"; } catch (e) { } _render(); };
+var _vGame = vGame;
+vGame = function () {
+  if (SET.nav === "bottom") return _vGame();
+  var S = G.S, d = dinfo(S.t), fin = S.fin, net = fin ? fin.net : 0, ap = "";
+  for (var i = 0; i < S.apMax; i++) ap += '<i class="pip' + (i < S.ap ? " on" : "") + '"></i>';
+  var body = { home: vHome, works: vWorks, scout: vScout, media: vMedia, park: vPark, hall: vHall, menu: vMenu }[G.tab](S);
+  return '<header class="top2"><div class="t2a"><div class="t2n"><b class="co">' + esc(S.company) + '</b><span class="mono small">' + d.label + '</span></div><button class="next2" data-act="next">週を進める ▶</button></div>' +
+    '<div class="t2b"><span class="money2 mono">' + fmtMoney(S.money) + '</span>' + (fin ? '<span class="dl ' + (net >= 0 ? "up" : "dn") + '">' + (net >= 0 ? "▲" : "▼") + fmtMoney(Math.abs(net)) + '/週</span>' : "") + '<span class="t2p">' + ap + '</span><span class="t2s">' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</span></div>' +
+    '<nav class="tabs2">' + TABS.map(function (t) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (G.tab === t[0] ? "on" : "") + '"><i>' + NAVI[t[0]] + '</i>' + t[1] + '</button>'; }).join("") + '</nav></header>' +
+    '<main class="wrap navtop' + (G.fx ? " rise" : "") + '">' + body + '</main>';
+};
+
+function skyline(S) {
+  var d = dinfo(S.t), mo = d.mo, seas = mo >= 3 && mo <= 5 ? 0 : mo >= 6 && mo <= 8 ? 1 : mo >= 9 && mo <= 11 ? 2 : 3;
+  var sky = [["#bfe3ff", "#fff3d6"], ["#7cc7ff", "#e6f7ff"], ["#ffd2a1", "#fff0d8"], ["#c9d6ee", "#f1f4fa"]][seas];
+  var n = 5 + Math.min(10, Math.floor(S.fame / 35)), o = '<svg class="sky" viewBox="0 0 360 120" role="img" aria-label="会社のある街"><defs><linearGradient id="skg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + sky[0] + '"/><stop offset="1" stop-color="' + sky[1] + '"/></linearGradient></defs><rect width="360" height="120" fill="url(#skg)"/>';
+  o += '<circle cx="' + (40 + (d.mi * 26) % 280) + '" cy="26" r="11" fill="' + (seas === 3 ? "#fff" : "#ffd24a") + '" opacity=".95"/>';
+  o += '<g class="cloud"><ellipse cx="80" cy="24" rx="22" ry="7" fill="#fff" opacity=".85"/><ellipse cx="96" cy="19" rx="14" ry="6" fill="#fff" opacity=".85"/></g><g class="cloud c2"><ellipse cx="250" cy="34" rx="20" ry="6" fill="#fff" opacity=".8"/><ellipse cx="264" cy="29" rx="12" ry="5" fill="#fff" opacity=".8"/></g>';
+  var x = 4, i, bw;
+  for (i = 0; i < n && x < 350; i++) {
+    var hh = 26 + hstr(S.company + i) % 50, hue = (215 + hstr("b" + i) % 70) % 360; bw = 18 + hstr("w" + i) % 16;
+    o += '<rect x="' + x + '" y="' + (108 - hh) + '" width="' + bw + '" height="' + hh + '" fill="hsl(' + hue + ',32%,' + (seas === 3 ? 62 : 46) + '%)"/>';
+    for (var wy = 108 - hh + 5; wy < 102; wy += 9) for (var wx = x + 3; wx < x + bw - 4; wx += 7) o += '<rect x="' + wx + '" y="' + wy + '" width="3.5" height="4.5" fill="' + ((wx * 7 + wy * 3) % 5 === 0 ? "#ffe27a" : "rgba(255,255,255,.55)") + '"/>';
+    x += bw + 2 + hstr("g" + i) % 4;
+  }
+  if (S.park.areas.length) { var cx = 318, cy = 70; o += '<g><line x1="' + cx + '" y1="108" x2="' + (cx - 10) + '" y2="' + (cy + 20) + '" stroke="#a35d3e" stroke-width="2"/><line x1="' + cx + '" y1="108" x2="' + (cx + 10) + '" y2="' + (cy + 20) + '" stroke="#a35d3e" stroke-width="2"/><g class="spin"><circle cx="' + cx + '" cy="' + cy + '" r="22" fill="none" stroke="#e8505b" stroke-width="3"/>' + [0, 1, 2, 3].map(function (k) { var a = k * Math.PI / 4; return '<line x1="' + (cx - Math.cos(a) * 22) + '" y1="' + (cy - Math.sin(a) * 22) + '" x2="' + (cx + Math.cos(a) * 22) + '" y2="' + (cy + Math.sin(a) * 22) + '" stroke="#f2a900" stroke-width="2"/>'; }).join("") + '</g></g>'; }
+  o += '<rect y="108" width="360" height="12" fill="' + (seas === 3 ? "#e8eef0" : "#7bc47a") + '"/><rect y="112" width="360" height="3" fill="#d9c9a0" opacity=".7"/>';
+  for (i = 0; i < 4; i++) { var tx = 20 + i * 90 + hstr("t" + i) % 30; o += '<rect x="' + (tx - 1) + '" y="104" width="2" height="6" fill="#7a5a3a"/><circle cx="' + tx + '" cy="101" r="6" fill="' + ["#f3b6c6", "#4f9f4b", "#e08a3c", "#cfd8dc"][seas] + '"/>'; }
+  return o + '</svg>';
+}
+function heroCard(S) {
+  var fans = S.works.reduce(function (a, w) { return a + w.fans; }, 0), live = liveWorks(S).length;
+  return '<section class="hero">' + skyline(S) + '<div class="hero-b"><div><b class="hero-t">' + esc(companyRank(S)) + '</b><div class="small muted">' + esc(playerTitle(S)) + ' ・ 名声 ' + Math.round(S.fame) + '</div></div>' +
+    '<div class="hero-s"><span><b>' + live + '</b>連載中</span><span><b>' + S.hall.works.length + '</b>殿堂</span><span><b>' + fmtFans(fans) + '</b>ファン</span></div></div></section>';
+}
+function shelfCard(S) {
+  var ws = S.works.filter(function (w) { return w.state !== "canceled"; }).sort(function (a, b) { return b.pop - a.pop; }).slice(0, 12);
+  if (!ws.length) return "";
+  return '<section class="shelf-w"><h2 class="h2">本棚</h2><div class="shelf">' + ws.map(function (w) { return '<button class="sh" data-act="work" data-id="' + w.id + '">' + cover(w) + '<b>' + esc(w.title) + '</b><span class="small muted">' + popWord(w.pop) + '</span></button>'; }).join("") + '</div></section>';
+}
+function mny(n) { return Math.abs(n) >= 100 ? fmtMoney(n) : (Math.round(n * 10) / 10) + "万円"; }
+function finCard(S) {
+  var f = S.fin, h = '<section class="card fin"><h2 class="h2">お金の出入り</h2>';
+  if (!f) h += '<p class="small muted">週を進めると、収入と支出の内訳がここに出ます。家賃・生活費・給与・印刷費・納税などがかかります。</p>';
+  else {
+    var out = f.base + f.extra + (f.tax || 0) + (f.bonus || 0), items = [["給与・基本費", f.base], ["家賃・光熱", f.rent], ["生活費", f.living], ["印刷・流通", f.print], ["運営経費", f.ops], ["パーク維持", f.park], ["納税", f.tax], ["賞与", f.bonus]].filter(function (x) { return x[1]; });
+    h += '<div class="fin-row"><span>収入</span><b class="up">+' + mny(f.inc) + '</b></div><div class="fin-row"><span>支出</span><b class="dn">−' + mny(out) + '</b></div>' +
+      '<details><summary class="small muted">支出の内訳</summary>' + items.map(function (x) { return '<div class="fin-row small"><span>' + x[0] + '</span><span>' + mny(x[1]) + '</span></div>'; }).join("") + '</details>' +
+      '<div class="fin-row tot"><span>差し引き(前の週)</span><b class="' + (f.net >= 0 ? "up" : "dn") + '">' + (f.net >= 0 ? "+" : "−") + mny(Math.abs(f.net)) + '</b></div>';
+  }
+  h += '<div class="fin-row small"><span>借入残高</span><span>' + (S.debt ? fmtMoney(S.debt) + "(毎週の利息あり)" : "なし") + '</span></div><div class="grid2">' + btn("融資を受ける(+500万円)", "loan", null, "sm") + btn("返済する(500万円)", "repay", null, "sm" + (S.debt ? "" : " dis")) + '</div>';
+  if (S.money < 0) h += '<p class="small warn">資金がマイナスです。取引先の信用が少しずつ下がります。アルバイトや融資で立て直しましょう。</p>';
+  return h + '</section>';
+}
+var EMO = [["休む(体力回復)", "🛌 "], ["人脈づくり", "🤝 "], ["アルバイト", "💼 "], ["習作を書く", "✍️ "], ["投稿作を読む", "📖 "], ["新連載を企画", "📝 "], ["弟子に稽古", "🥋 "], ["編集部を開く", "🏢 "], ["筆を執る", "🖋️ "]];
+var _vHome2 = vHome;
+vHome = function (S) {
+  var out = _vHome(S).replace(tipHtml("home") + nextCard(S), "");
+  EMO.forEach(function (e) { out = out.replace(">" + e[0], ">" + e[1] + e[0]); });
+  var parts = out.split(/(?=<section class="card)/), idx = -1;
+  parts.forEach(function (p, i) { if (idx < 0 && p.indexOf("今週の行動") > -1) idx = i; });
+  if (idx > 0) { var a = parts.splice(idx, 1)[0]; parts.unshift(a); }
+  return heroCard(S) + tipHtml("home") + nextCard(S) + parts.join("") + finCard(S) + shelfCard(S);
+};
+XACT.loan = function () { doRes(actLoan(G.S)); };
+XACT.repay = function () { doRes(actRepay(G.S)); };
+XACT.setnav = function (d) { SET.nav = d.v; saveSettings(); render(); };
+var _vSettings = vSettings;
+vSettings = function () {
+  var o = _vSettings();
+  if ((G.setTab || "sound") === "play") {
+    o = o.replace('<div class="fld"><span>遊び方のヒント', '<div class="fld"><span>操作ボタンの位置</span><div class="chips">' + chip("上(おすすめ)", "setnav", { v: "top" }, SET.nav !== "bottom") + chip("下", "setnav", { v: "bottom" }, SET.nav === "bottom") + '</div><p class="muted small">「上」は、週を進めるボタンとタブが画面の上に並びます。</p></div><div class="fld"><span>遊び方のヒント');
+  }
+  return o;
 };
 
 function boot() {
