@@ -35,6 +35,7 @@ button,input,textarea{font:inherit;color:inherit}
 .gold-c{border-left:4px solid var(--gold)}
 .btn{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px;padding:8px 14px;border:1.5px solid var(--ink);border-radius:8px;background:var(--panel);cursor:pointer;font-weight:700;touch-action:manipulation}
 .btn small{font-weight:400;font-size:11px;color:var(--mute)}
+.btn.pri small{color:inherit;opacity:.85}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.big{width:100%;min-height:52px;font-size:17px}.btn.sm{min-height:38px;padding:6px 10px;font-size:13px}
 .btn.dis{opacity:.45}
@@ -112,8 +113,14 @@ input[type=range]{width:100%}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.1.0", SAVE_VER = 1;
+var GAME_VER = "0.2.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.2.0", date: "2026-11-01", notes: [
+    "はじまりを変えました。最初は、ふつうの人から始まります。",
+    "習作を書き溜めると書き手の道が、投稿作を読み込むと見つける道が開きます。",
+    "アルバイトで日々の資金を稼げるようになりました。",
+    "何をしてきたかで、肩書きが変わっていきます。"
+  ] },
   { ver: "0.1.0", date: "2026-11-01", notes: [
     "最初の公開版です。",
     "作者と編集の二つの道を、ひとつの流れで行き来できます。",
@@ -265,12 +272,12 @@ function gname(id, arr) { var x = arr.find(function (a) { return a.id === id; })
 /* ===== 新規ゲーム ===== */
 function newGame(o) {
   var diff = o.diff || "normal";
-  var role = o.role === "editor" ? "editor" : "writer";
-  var sk = role === "writer" ? { prose: 35, art: 15, idea: 32, eye: 15, biz: 12 } : { prose: 15, art: 10, idea: 20, eye: 35, biz: 30 };
+  var role = o.role === "editor" ? "editor" : o.role === "writer" ? "writer" : "none";
+  var sk = role === "writer" ? { prose: 35, art: 15, idea: 32, eye: 15, biz: 12 } : role === "editor" ? { prose: 15, art: 10, idea: 20, eye: 35, biz: 30 } : { prose: 22, art: 12, idea: 22, eye: 22, biz: 18 };
   var S = {
-    ver: SAVE_VER, gv: GAME_VER, diff: diff, t: 0, money: { easy: 600, normal: 350, hard: 220 }[diff], debt: 0, fame: 0,
-    company: (o.company || "ミライ編集部").slice(0, 14),
-    player: { id: "p0", name: (o.name || "あなた").slice(0, 10), role: role, sk: sk, sta: 100, exp: 0, weeks: 0, hits: 0, classics: 0, mentees: 0, apprentice: null, hall: false },
+    ver: SAVE_VER, gv: GAME_VER, diff: diff, t: 0, money: (role === "none" ? { easy: 300, normal: 200, hard: 130 } : { easy: 600, normal: 350, hard: 220 })[diff], debt: 0, fame: 0,
+    company: (o.company || "名もなき工房").slice(0, 14),
+    player: { id: "p0", name: (o.name || "あなた").slice(0, 10), role: role, sk: sk, sta: 100, exp: 0, weeks: 0, hits: 0, classics: 0, mentees: 0, apprentice: null, hall: false, wrote: 0, read: 0, jobs: 0 },
     ap: 3, apMax: 3, unlock: { edit: role === "editor", write: role === "writer" },
     works: [], authors: [], staff: [], pool: [], offers: [], projects: [], partners: {}, hire: [],
     trend: null, park: { areas: [], mode: "auto", policy: null, policyMonth: -1 },
@@ -525,8 +532,8 @@ function seasonal(S, d, news) {
     if (S.park.areas.length) news.push("今月のパーク: " + parkMood(d).txt);
   }
   if (d.mi === 11 && d.wk === 4) yearEnd(S, news);
-  if (!S.flags.askOffice && S.player.role === "writer" && !S.unlock.edit && S.fame >= UNLOCK_FAME && S.money >= 300) { S.flags.askOffice = true; queue(S, { k: "ev", id: "openoffice", p: {} }); }
-  if (!S.flags.askPen && S.player.role === "editor" && !S.unlock.write && S.fame >= UNLOCK_FAME) { S.flags.askPen = true; queue(S, { k: "ev", id: "takepen", p: {} }); }
+  if (!S.flags.askOffice && S.player.role !== "editor" && S.player.read < 4 && !S.unlock.edit && S.fame >= UNLOCK_FAME && S.money >= 300) { S.flags.askOffice = true; queue(S, { k: "ev", id: "openoffice", p: {} }); }
+  if (!S.flags.askPen && S.player.role !== "writer" && S.player.wrote < 4 && !S.unlock.write && S.fame >= UNLOCK_FAME) { S.flags.askPen = true; queue(S, { k: "ev", id: "takepen", p: {} }); }
 }
 function debutApprentice(S, a, news) {
   a.debuted = true;
@@ -884,13 +891,35 @@ function actAssign(S, wid, eid) {
   var n = S.works.filter(function (x) { return x.editor === eid && x.id !== wid && x.state !== "canceled"; }).length;
   if (n >= 3) return no("ひとりが担当できるのは3作品まで"); w.editor = eid; return yes("担当編集を割り当てた");
 }
+function officeCost(S) { return S.player.read >= 4 ? 100 : 300; }
 function actOpenOffice(S) {
-  if (S.unlock.edit) return no("すでに編集部があります"); if (S.fame < UNLOCK_FAME) return no("名声が足りません"); if (S.money < 300) return no("資金が足りません(300万円)");
-  S.money -= 300; S.unlock.edit = true; addLog(S, "自分の編集部を開いた。"); return yes("編集部を開いた。発掘と育成ができるようになる");
+  if (S.unlock.edit) return no("すでに編集部があります");
+  if (S.player.read < 4 && S.fame < UNLOCK_FAME) return no("もう少し、見る目と名前が要ります");
+  var c = officeCost(S); if (S.money < c) return no("資金が足りません(" + c + "万円)");
+  S.money -= c; S.unlock.edit = true; addLog(S, "自分の編集部を開いた。"); return yes("編集部を開いた。発掘と育成ができるようになる");
 }
 function actTakePen(S) {
-  if (S.unlock.write) return no("すでに筆を執れる"); if (S.fame < UNLOCK_FAME) return no("名声が足りません");
+  if (S.unlock.write) return no("すでに筆を執れる"); if (S.player.wrote < 4 && S.fame < UNLOCK_FAME) return no("もう少し書き溜めたい");
   S.unlock.write = true; addLog(S, "自ら筆を執ることにした。"); return yes("自作を書けるようになった");
+}
+function playerTitle(S) { return S.unlock.write && S.unlock.edit ? "作家兼編集者" : S.unlock.write ? "作家" : S.unlock.edit ? "編集者" : "一般人"; }
+function actJob(S) {
+  if (S.ap < 1) return no("行動点が足りません"); if (S.player.sta < 10) return no("体力が足りない。休もう");
+  S.ap--; S.player.sta -= 10; var pay = Math.round(14 + S.player.sk.biz / 8 + rnd() * 8); S.money += pay;
+  S.player.jobs++; gainSkill(S, "biz", 1.0); gainSkill(S, "eye", 0.5);
+  return yes("アルバイトをした(" + pay + "万円)");
+}
+function actPractice(S) {
+  if (S.unlock.write) return no("もう自作を書ける"); if (S.ap < 1) return no("行動点が足りません"); if (S.player.sta < 15) return no("体力が足りない。休もう");
+  S.ap--; S.player.sta -= 15; gainSkill(S, "prose", 3.0); gainSkill(S, "idea", 2.0); S.player.wrote++;
+  if (S.player.wrote >= 4) { S.unlock.write = true; addLog(S, "書き溜めた習作が形になった。"); queue(S, { k: "info", title: "書き手の道が開いた", text: "何度も書くうちに、自分の物語が形になってきた。これからは連載を企画して、作品を世に出せる。" }); return yes("習作が実を結んだ。連載を企画できる"); }
+  return yes("習作を書いた(" + S.player.wrote + "/4)");
+}
+function actSlush(S) {
+  if (S.unlock.edit) return no("もう編集部がある"); if (S.ap < 1) return no("行動点が足りません");
+  S.ap--; gainSkill(S, "eye", 3.0); gainSkill(S, "biz", 0.6); S.player.read++;
+  if (S.player.read >= 4) { addLog(S, "投稿作を読み込み、目が育った。"); queue(S, { k: "info", title: "見つける道が開いた", text: "たくさんの原稿を読むうちに、光るものが見分けられるようになってきた。資金100万円で、自分の編集部を開ける。" }); return yes("目が養われた。編集部を開ける(100万円)"); }
+  return yes("投稿作を読み込んだ(" + S.player.read + "/4)");
 }
 function actTrain(S) {
   var a = S.authors.find(function (x) { return x.id === S.player.apprentice; }); if (!a) return no("弟子がいません");
@@ -1325,10 +1354,8 @@ function vNew() {
   var f = G.form.ng, sl = G.slots;
   return '<div class="wrap"><button class="back" data-act="totitle">← タイトルへ</button><h2 class="h1">新しい物語</h2>' +
     '<label class="fld"><span>あなたの名前</span><input data-in="ng.name" value="' + esc(f.name) + '" maxlength="10" placeholder="あなた"></label>' +
-    '<label class="fld"><span>会社(編集部)の名前</span><input data-in="ng.company" value="' + esc(f.company) + '" maxlength="14" placeholder="ミライ編集部"></label>' +
-    '<div class="fld"><span>はじまり方</span><div class="chips">' +
-    chip("作家として", "ng", { k: "role", v: "writer" }, f.role === "writer") + chip("編集者として", "ng", { k: "role", v: "editor" }, f.role === "editor") + '</div>' +
-    '<p class="muted small">' + (f.role === "writer" ? "自分の原作を書き、育てるところから。名声が上がると、自分の編集部も開ける。" : "原作を探し、作家を育てるところから。名声が上がると、自分でも筆を執れる。") + '</p></div>' +
+    '<label class="fld"><span>屋号(活動の名前)</span><input data-in="ng.company" value="' + esc(f.company) + '" maxlength="14" placeholder="名もなき工房"></label>' +
+    '<div class="note small">ふつうの人として始まります。書くか、見つけるか、その両方か。何をしてきたかで、道が開けていきます。</div>' +
     '<div class="fld"><span>難しさ</span><div class="chips">' + [["easy", "やさしい"], ["normal", "ふつう"], ["hard", "きびしい"]].map(function (d) { return chip(d[1], "ng", { k: "diff", v: d[0] }, f.diff === d[0]); }).join("") + '</div>' +
     '<p class="muted small">違いは「最初の資金」と「運のブレ幅」。やさしいほど安定します。</p></div>' +
     '<div class="fld"><span>保存先</span><div class="chips">' + [1, 2, 3].map(function (i) { return chip("スロット" + i + (sl[i - 1] ? "(上書き)" : "(空き)"), "ng", { k: "slot", v: i }, +f.slot === i); }).join("") + '</div></div>' +
@@ -1342,7 +1369,7 @@ function vGame() {
   var body = { home: vHome, works: vWorks, scout: vScout, media: vMedia, park: vPark, hall: vHall, menu: vMenu }[G.tab](S);
   var ap = ""; for (var i = 0; i < S.apMax; i++) ap += '<i class="pip' + (i < S.ap ? " on" : "") + '"></i>';
   return '<header class="top"><div class="top-l"><b class="co">' + esc(S.company) + '</b><span class="mono small">' + d.label + '</span></div>' +
-    '<div class="top-r"><span class="mono money">' + fmtMoney(S.money) + '</span><span class="small">' + companyRank(S) + '</span></div>' +
+    '<div class="top-r"><span class="mono money">' + fmtMoney(S.money) + '</span><span class="small">' + playerTitle(S) + ' ・ ' + companyRank(S) + '</span></div>' +
     '<div class="top-b"><span class="small">行動</span>' + ap + '<span class="small sp">体力</span>' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</div></header>' +
     '<main class="wrap">' + body + '</main>' +
     '<footer class="foot"><button class="btn pri next" data-act="next">週を進める ▶</button><nav class="tabs">' +
@@ -1359,15 +1386,16 @@ function vHome(S) {
     tr.cold.map(function (g) { return '<span class="tag dn">向かい風 ' + esc(gname(g, GENRES)) + '</span>'; }).join("") +
     '<span class="tag">注目の題材 ' + esc(gname(tr.th, THEMES)) + '</span></div></section>' +
     '<section class="card"><h2 class="h2">今週の行動</h2><div class="grid2">' +
-    btn("休む(体力回復)", "rest") + btn("人脈づくり(5万円)", "network") +
-    (S.unlock.write ? btn("新連載を企画", "plan", null, "pri") : btn("まだ筆を執れない", "noop", null, "dis")) +
+    btn("休む(体力回復)", "rest") + btn("人脈づくり(5万円)", "network") + btn("アルバイト", "job") +
+    (S.unlock.write ? btn("新連載を企画", "plan", null, "pri") : btn("習作を書く <small>" + me.wrote + "/4</small>", "practice", null, "pri")) +
+    (S.unlock.edit ? "" : btn("投稿作を読む <small>" + me.read + "/4</small>", "slush", null, "pri")) +
     (me.apprentice ? btn("弟子に稽古", "train") : "") + '</div>' +
     '<div class="fld"><span class="small">腕を磨く</span><div class="chips">' + Object.keys(SKILLS).map(function (k) { return chip(SKILLS[k], "study", { k: k }); }).join("") + '</div></div></section>' +
     '<section class="card"><h2 class="h2">あなたの力</h2>' + Object.keys(SKILLS).map(function (k) { return '<div class="skl"><span>' + SKILLS[k] + '</span>' + bar(me.sk[k], 100) + '<em class="small muted">' + skWord(me.sk[k]) + '</em></div>'; }).join("") + '</section>';
-  if (!S.unlock.edit) h += '<section class="card note"><b>編集部について</b><p class="small">名声が一定に届き、資金が300万円あれば、自分の編集部を開いて才能を発掘できる。</p></section>';
+  if (!S.unlock.write || !S.unlock.edit) h += '<section class="card note"><b>これからの道</b>' + (S.unlock.write ? "" : '<p class="small"><b>書き手の道</b> 習作を4回書くと、自分の連載を企画できる。(' + me.wrote + '/4)</p>') + (S.unlock.edit ? "" : '<p class="small"><b>見つける道</b> 投稿作を4回読むと、100万円で自分の編集部を開ける。(' + me.read + '/4)</p>') + '<p class="muted small">どちらも選んでかまわない。何をしてきたかで肩書きが変わる。</p></section>';
   if (r) h += '<section class="card"><h2 class="h2">昨年のランキング</h2>' + rankList(r.rows.slice(0, 3)) + '</section>';
-  if (S.flags.askOffice && !S.unlock.edit && S.fame >= UNLOCK_FAME) h += btn("編集部を開く(300万円)", "openoffice", null, "pri");
-  if (S.flags.askPen && !S.unlock.write) h += btn("筆を執る", "takepen", null, "pri");
+  if (!S.unlock.edit && (me.read >= 4 || S.fame >= UNLOCK_FAME)) h += btn("編集部を開く(" + officeCost(S) + "万円)", "openoffice", null, "pri");
+  if (!S.unlock.write && (me.wrote >= 4 || S.fame >= UNLOCK_FAME)) h += btn("筆を執る", "takepen", null, "pri");
   return h;
 }
 function rankList(rows) { return '<ol class="rank">' + rows.map(function (x) { return '<li' + (x.mine ? ' class="mine"' : "") + '><b>' + esc(x.title) + '</b><span class="muted small">' + esc(x.author) + (x.mine ? " ★" : "") + '</span></li>'; }).join("") + '</ol>'; }
@@ -1389,7 +1417,7 @@ function vWorks(S) {
 }
 
 function vScout(S) {
-  if (!S.unlock.edit) return '<h2 class="h1">編集部</h2><section class="card note"><p>編集部はまだない。名声が ' + UNLOCK_FAME + ' に届くと打診が来る。</p>' + (S.fame >= UNLOCK_FAME ? btn("編集部を開く(300万円)", "openoffice", null, "pri") : "") + '</section>';
+  if (!S.unlock.edit) return '<h2 class="h1">編集部</h2><section class="card note"><p>編集部はまだない。ホームで投稿作を4回読むと、' + officeCost(S) + '万円で開ける。(いま ' + S.player.read + '/4)</p>' + ((S.player.read >= 4 || S.fame >= UNLOCK_FAME) ? btn("編集部を開く(" + officeCost(S) + "万円)", "openoffice", null, "pri") : "") + '</section>';
   var h = '<h2 class="h1">編集部</h2><section class="card"><h2 class="h2">発掘する</h2><div class="grid2">' +
     btn("スカウトに出る(20万円)", "scout", { kind: "scout" }) + btn("投稿サイトを巡る", "scout", { kind: "net" }) + '</div><p class="muted small">目利きが上がるほど、候補の情報が詳しく読み取れる。</p></section>';
   h += '<h3 class="h3">候補 (' + S.pool.length + ')</h3>';
@@ -1647,7 +1675,7 @@ function act(a, el) {
     case "newgame": G.form.ng.slot = (G.slots.findIndex(function (s) { return !s; }) + 1) || 1; G.screen = "new"; se("tap"); return render();
     case "totitle": G.screen = "title"; G.modal = []; refreshSlots(); return render();
     case "ng": G.form.ng[d.k] = d.k === "slot" ? +d.v : d.v; se("tap"); return render();
-    case "start": var f = G.form.ng; var S0 = newGame({ name: f.name, company: f.company, role: f.role, diff: f.diff }); se("ok"); enterGame(S0, +f.slot); return autosave();
+    case "start": var f = G.form.ng; var S0 = newGame({ name: f.name, company: f.company, diff: f.diff }); se("ok"); enterGame(S0, +f.slot); return autosave();
     case "tab": G.tab = d.t; se("page"); window.scrollTo(0, 0); return render();
     case "hallt": G.hallTab = d.t; return render();
     case "close": G.modal.pop(); return render();
@@ -1662,6 +1690,9 @@ function act(a, el) {
     case "cinenext": S.queue.shift(); G.cine = null; return pump();
     case "work": return pushModal({ t: "work", wid: d.id, clues: workClues(S, W(S, d.id)) });
     case "rest": r = actRest(S); break;
+    case "job": r = actJob(S); if (r.ok) se("coin"); break;
+    case "practice": r = actPractice(S); if (r.ok) se("write"); break;
+    case "slush": r = actSlush(S); break;
     case "network": r = actNetwork(S); break;
     case "study": r = actStudy(S, d.k); break;
     case "train": r = actTrain(S); break;
