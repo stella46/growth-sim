@@ -1,0 +1,1759 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2446C8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="成長シミュレーター">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>成長シミュレーター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F1F2EF;--panel:#FBFBF9;--ink:#191C25;--mute:#6A6F7C;--line:#D9DBD5;--accent:#2446C8;--accent-ink:#fff;--mark:#FFE25A;--ok:#1E8E5A;--ng:#C23B3B;--gold:#B8860B;--bright:1;--gx:max(16px,env(safe-area-inset-left));--gr:max(16px,env(safe-area-inset-right))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#14161C;--panel:#1D2029;--ink:#ECEDF1;--mute:#9AA0AE;--line:#2D313D;--accent:#7F9BFF;--accent-ink:#10131C;--mark:#E8C93A;--ok:#4FCB8E;--ng:#F07B7B;--gold:#E3B341;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#14161C;--panel:#1D2029;--ink:#ECEDF1;--mute:#9AA0AE;--line:#2D313D;--accent:#7F9BFF;--accent-ink:#10131C;--mark:#E8C93A;--ok:#4FCB8E;--ng:#F07B7B;--gold:#E3B341;color-scheme:dark}
+*{box-sizing:border-box}
+html{filter:brightness(var(--bright))}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.65 "Zen Kaku Gothic New",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+button,input,textarea{font:inherit;color:inherit}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.small{font-size:12.5px}.muted{color:var(--mute)}.sp{margin-left:10px}
+.wrap{max-width:640px;margin:0 auto;padding:14px var(--gr) 170px var(--gx)}
+.h1{font:400 26px/1.3 "Dela Gothic One",sans-serif;margin:8px 0 12px}
+.h2{font:700 16px/1.4 "Zen Kaku Gothic New";margin:0 0 8px}
+.h3{font:700 13px/1.4 "IBM Plex Mono","Zen Kaku Gothic New";letter-spacing:.06em;color:var(--mute);margin:18px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 10px}
+.card.note{border-left:4px solid var(--mark)}
+.note{background:color-mix(in srgb,var(--mark) 22%,transparent);padding:8px 10px;border-radius:6px}
+.gold-c{border-left:4px solid var(--gold)}
+.btn{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px;padding:8px 14px;border:1.5px solid var(--ink);border-radius:8px;background:var(--panel);cursor:pointer;font-weight:700;touch-action:manipulation}
+.btn small{font-weight:400;font-size:11px;color:var(--mute)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.big{width:100%;min-height:52px;font-size:17px}.btn.sm{min-height:38px;padding:6px 10px;font-size:13px}
+.btn.dis{opacity:.45}
+.btn:active,.chip:active{transform:translateY(1px)}
+.btn:focus-visible,.chip:focus-visible,.rowbtn:focus-visible,.tabs button:focus-visible,.mcard:focus-visible,.wcard:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.stack{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.row2,.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{min-height:36px;padding:4px 12px;border:1.5px solid var(--line);border-radius:999px;background:var(--panel);cursor:pointer;font-size:13px}
+.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tag{display:inline-block;padding:1px 8px;border-radius:4px;border:1px solid var(--line);font-size:11.5px}
+.tag.up{border-color:var(--ok);color:var(--ok)}.tag.dn{border-color:var(--ng);color:var(--ng)}
+.tag.gold{background:var(--gold);color:#fff;border-color:var(--gold)}.tag.gold-o{border-color:var(--gold);color:var(--gold)}
+.chips.static{margin:4px 0}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;flex:1;min-width:40px}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}.bar.warn i{background:var(--ng)}.bar.ok i{background:var(--ok)}
+.skl{display:flex;align-items:center;gap:8px;margin:4px 0}.skl span{width:5.5em;font-size:13px}.skl em{width:5em;font-style:normal}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:2px solid var(--ink);padding:8px var(--gr) 8px var(--gx);display:grid;grid-template-columns:1fr auto;gap:2px 10px}
+.top-l{display:flex;flex-direction:column}.co{font:400 15px "Dela Gothic One"}
+.top-r{display:flex;flex-direction:column;align-items:flex-end}.money{font-weight:500}
+.top-b{grid-column:1/3;display:flex;align-items:center;gap:6px}
+.pip{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink);display:inline-block}.pip.on{background:var(--mark)}
+.foot{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:2px solid var(--ink);padding:8px var(--gr) max(8px,env(safe-area-inset-bottom)) var(--gx);z-index:6}
+.next{width:100%;margin-bottom:6px}
+.tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.tabs button{border:0;background:none;padding:8px 0;font-size:11.5px;font-weight:700;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.wcard{display:flex;gap:12px;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;margin:0 0 10px;cursor:pointer}
+.cover{width:64px;flex:none;height:auto;border-radius:3px;box-shadow:2px 3px 0 rgba(0,0,0,.18)}
+.wc-b{display:flex;flex-direction:column;gap:2px;min-width:0}.wt{font-size:16px}
+.wm-h{display:flex;gap:12px;margin:0 0 6px}.wm-h .cover{width:80px}
+.clues{margin:4px 0 8px;padding-left:1.2em}.clues li{margin:2px 0}
+.news{margin:0;padding-left:1.2em}.rank{margin:0;padding-left:1.4em}.rank li.mine b{background:linear-gradient(transparent 55%,var(--mark) 55%)}.rank li span{margin-left:8px}
+.fld{display:block;margin:10px 0}.fld>span{display:block;font-weight:700;font-size:13px;margin-bottom:4px}
+input[type=text],input:not([type]),textarea{width:100%;padding:10px 12px;border:1.5px solid var(--ink);border-radius:8px;background:var(--panel)}
+input[type=range]{width:100%}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mcard{display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:10px;cursor:pointer}
+.rowbtn{display:flex;flex-direction:column;width:100%;text-align:left;background:var(--panel);border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;margin:0 0 6px;cursor:pointer}
+.rowbtn.on{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}.rowbtn.dis{opacity:.55}
+.cand-h{display:flex;gap:8px;align-items:center;justify-content:space-between}.cand-f{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.cand-f .mono{flex:1 0 100%}
+.map{width:100%;height:auto;color:var(--ink)}.map .plot{cursor:pointer}
+.spark{width:100%;height:50px}
+.back{border:0;background:none;color:var(--accent);padding:8px 0;cursor:pointer;font-weight:700}
+.title{padding-top:28px}.mast{display:flex;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:6px;font-size:11px}
+.logo{font:400 44px/1.15 "Dela Gothic One";margin:18px 0 8px;background:linear-gradient(transparent 62%,var(--mark) 62%);display:inline-block}
+.lead{color:var(--mute)}.upd ul{margin:4px 0 8px;padding-left:1.2em}
+.logl{list-style:none;padding:0;margin:0}.logl li{padding:4px 0;border-bottom:1px solid var(--line)}
+#modal{display:none}#modal.on{display:block}
+.veil{position:fixed;inset:0;background:rgba(10,12,18,.55);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;z-index:21;background:var(--paper);border-top:3px solid var(--ink);border-radius:14px 14px 0 0;padding:18px var(--gr) max(24px,env(safe-area-inset-bottom)) var(--gx);max-width:640px;margin:0 auto}
+.x{position:absolute;top:8px;right:12px;border:0;background:none;font-size:28px;cursor:pointer;line-height:1;color:var(--mute)}
+#cine{display:none}#cine.on{display:flex;position:fixed;inset:0;z-index:30;background:#0C0E14;color:#fff;align-items:center;justify-content:center;padding:24px var(--gr) 24px var(--gx);text-align:center}
+#cine.gold{background:radial-gradient(circle at 50% 30%,#4a3a0a,#0C0E14 70%)}
+#cine.t5{background:radial-gradient(circle at 50% 30%,#4a3a0a,#0C0E14 70%)}#cine.t1,#cine.t2{background:#13151b}
+.cine-in{max-width:520px;width:100%}.cine-k{color:var(--mark);letter-spacing:.2em;margin:0}.cine-t{font:400 28px/1.3 "Dela Gothic One";margin:8px 0 18px}.cine-t.big{font-size:44px}
+.cine-l{opacity:0;animation:fade .7s forwards;margin:6px 0}.cine-l.gold{color:var(--mark)}
+.stamp{display:inline-block;margin:22px 0 10px;padding:6px 22px;border:4px solid var(--mark);color:var(--mark);font:400 34px "Dela Gothic One";transform:rotate(-6deg) scale(1.6);opacity:0;animation:stamp .5s forwards}
+.stamp.t1,.stamp.t2{border-color:#8a90a0;color:#8a90a0}
+.cine-b{opacity:0;animation:fade .6s forwards;margin-top:20px;min-width:180px}
+@keyframes fade{to{opacity:1}}@keyframes stamp{to{opacity:1;transform:rotate(-6deg) scale(1)}}
+@media (prefers-reduced-motion:reduce){.cine-l,.stamp,.cine-b{animation-duration:.01s!important;animation-delay:0s!important}.bar i{transition:none}}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;max-width:min(560px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s;font-weight:700;text-align:center}
+#toast.show{opacity:1}#toast.ng{background:var(--ng);color:#fff}
+@media (max-width:420px){.logo{font-size:36px}.tabs button{font-size:10.5px}}
+</style>
+
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="cine"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+/* ===== データ定義 ===== */
+var GAME_VER = "0.1.0", SAVE_VER = 1;
+var UPDATES = [
+  { ver: "0.1.0", date: "2026-11-01", notes: [
+    "最初の公開版です。",
+    "作者と編集の二つの道を、ひとつの流れで行き来できます。",
+    "展開(アニメ・映画・舞台ほか)とテーマパーク経営を入れました。",
+    "殿堂入りは作品と人物の両方にあります。",
+    "セーブスロットは3つ。更新してもデータは残ります。"
+  ] }
+];
+
+var GENRES = [
+  { id: "school", name: "学園", mood: "教室と放課後の空気" },
+  { id: "fantasy", name: "冒険ファンタジー", mood: "剣と魔法と旅" },
+  { id: "mystery", name: "ミステリー", mood: "謎と推理" },
+  { id: "romance", name: "恋愛", mood: "揺れる気持ち" },
+  { id: "scifi", name: "SF", mood: "未来と科学" },
+  { id: "sports", name: "スポーツ", mood: "汗と勝負" },
+  { id: "daily", name: "日常", mood: "ゆるやかな毎日" },
+  { id: "horror", name: "ホラー", mood: "背筋の寒さ" },
+  { id: "history", name: "歴史", mood: "時代のうねり" },
+  { id: "work", name: "お仕事", mood: "働く人の物語" }
+];
+var THEMES = [
+  { id: "friend", name: "友情" }, { id: "grow", name: "成長" }, { id: "revenge", name: "復讐" },
+  { id: "riddle", name: "謎" }, { id: "family", name: "家族" }, { id: "love", name: "恋" },
+  { id: "dream", name: "夢" }, { id: "battle", name: "戦い" }, { id: "youth", name: "青春" },
+  { id: "wonder", name: "不思議" }
+];
+var HEROES = [
+  { id: "genius", name: "天才肌" }, { id: "plodder", name: "努力の凡人" }, { id: "loner", name: "孤独な少年少女" },
+  { id: "rebel", name: "型破りな主人公" }, { id: "mentor", name: "老練な師匠" }, { id: "strategist", name: "冷徹な策士" },
+  { id: "kind", name: "お人よし" }, { id: "villain", name: "悪役が主役" }
+];
+var SYN = {
+  "school|youth": 10, "school|friend": 6, "school|love": 5, "fantasy|battle": 8, "fantasy|friend": 6, "fantasy|wonder": 8,
+  "mystery|riddle": 12, "mystery|revenge": 6, "romance|love": 12, "romance|youth": 6, "scifi|wonder": 8, "scifi|battle": 4,
+  "sports|dream": 10, "sports|grow": 8, "sports|friend": 6, "daily|family": 8, "daily|wonder": 4, "horror|riddle": 6,
+  "horror|revenge": 6, "history|battle": 6, "history|family": 4, "work|dream": 8, "work|grow": 8,
+  "daily|battle": -6, "horror|youth": -4, "romance|battle": -5, "sports|riddle": -4, "school|revenge": -3, "daily|revenge": -5
+};
+var HSYN = {
+  "genius|mystery": 6, "plodder|sports": 8, "loner|horror": 4, "rebel|school": 6, "mentor|history": 6,
+  "strategist|mystery": 6, "strategist|history": 6, "kind|daily": 8, "villain|fantasy": 4, "plodder|work": 6, "genius|scifi": 5
+};
+var STYLES = [
+  { id: "royal", name: "王道", desc: "安定して仕上げる", st: 10, pol: 5, hook: 0, v: 3 },
+  { id: "edgy", name: "攻め", desc: "当たれば大きいが、外れもある", st: 14, pol: 0, hook: 6, v: 10 },
+  { id: "careful", name: "丁寧", desc: "手間をかけて整える", st: 20, pol: 9, hook: 1, v: 2 },
+  { id: "burst", name: "勢い", desc: "短時間で一気に書く", st: 5, pol: 0, hook: 3, v: 8 }
+];
+var SKILLS = { prose: "文章力", art: "画力", idea: "発想力", eye: "目利き", biz: "交渉力" };
+var TRAITS = ["几帳面", "気分屋", "負けず嫌い", "マイペース", "人懐っこい", "寡黙"];
+var TRAIT_NOTE = {
+  "几帳面": "締切を守る、丁寧な仕事ぶり", "気分屋": "波がある。ノッた時は驚くほど良い", "負けず嫌い": "ライバルがいると伸びる",
+  "マイペース": "焦らず、自分の速度で進める", "人懐っこい": "誰とでも打ち解ける", "寡黙": "多くを語らないが、芯が強い"
+};
+var SURN = ["佐藤", "鈴木", "高橋", "田中", "伊藤", "渡辺", "山本", "中村", "小林", "加藤", "吉田", "山田", "佐々木", "山口", "松本", "井上", "木村", "林", "清水", "斎藤", "森", "阿部", "池田", "橋本", "石川", "前田", "藤田", "岡本", "後藤", "村上"];
+var GIVEN = ["蓮", "葵", "陽菜", "颯太", "結衣", "大輝", "美咲", "拓海", "凛", "悠真", "紗季", "健太", "楓", "翔", "明日香", "遥", "隼人", "琴音", "亮", "千尋", "咲良", "航", "七海", "和真", "茜", "慎吾", "詩織", "龍之介", "澪", "光"];
+var ADJ = ["最果ての", "眠れる", "透明な", "星降る", "忘れられた", "白い", "夜明けの", "不器用な", "秘密の", "遠い", "壊れた", "黄昏の"];
+var NOUN = ["少女", "魔導書", "探偵", "約束", "放課後", "王国", "旅人", "図書館", "楽団", "花束", "魔女", "航海士", "時計", "雨", "騎士", "街"];
+var NOUN2 = ["物語", "記録", "約束", "日々", "旅", "歌"];
+
+var TIER = ["大失敗", "不発", "まずまず", "ヒット", "大ヒット"];
+var MEDIA = {
+  anime: { name: "アニメ化", verb: "放送", cost: 3000, dur: 16, req: { pop: 35, fans: 8 }, bm: 1.0, cm: 1.0, fm: 1.0, ih: "animator", ext: true, desc: "原作が動き出す。人気の広がりが大きい。" },
+  drama: { name: "実写ドラマ化", verb: "放送", cost: 1500, dur: 12, req: { pop: 40, fans: 15 }, bm: 0.9, cm: 0.8, fm: 0.8, ih: null, ext: true, desc: "幅広い層に届く。キャスト次第で評価が割れる。" },
+  movie: { name: "映画化", verb: "公開", cost: 6000, dur: 20, req: { pop: 45, fans: 25 }, bm: 1.3, cm: 1.3, fm: 1.4, ih: "producer", ext: true, desc: "大きな勝負。成功すれば文化に残る。" },
+  stage: { name: "舞台化", verb: "上演", cost: 800, dur: 8, req: { pop: 30, fans: 6 }, bm: 0.4, cm: 0.5, fm: 0.4, ih: null, ext: true, desc: "熱心なファンが深く味わう。小さく確実。" },
+  game: { name: "ゲーム化", verb: "発売", cost: 2000, dur: 16, req: { pop: 40, fans: 10 }, bm: 0.7, cm: 0.6, fm: 0.6, ih: null, ext: true, desc: "遊んで広がる。出来の差が大きい。" },
+  goods: { name: "グッズ化", verb: "発売", cost: 300, dur: 4, req: { pop: 25, fans: 3 }, bm: 0.2, cm: 0.2, fm: 0.2, ih: "pr", ext: true, desc: "手軽に収益を積める。" },
+  cafe: { name: "コラボカフェ", verb: "開店", cost: 400, dur: 4, req: { pop: 30, fans: 5 }, bm: 0.2, cm: 0.3, fm: 0.3, ih: "pr", ext: true, desc: "ファンの聖地ができる。" },
+  overseas: { name: "海外展開", verb: "展開", cost: 1000, dur: 12, req: { pop: 40, fans: 20 }, bm: 0.8, cm: 1.1, fm: 0.9, ih: "pr", ext: true, desc: "世界へ。国内で大きな実績が必要。" }
+};
+var MEDIA_ORDER = ["anime", "drama", "movie", "stage", "game", "goods", "cafe", "overseas"];
+var PBASE = ["星月", "青嵐", "白鷺", "東雲", "朝霧", "金糸", "夜風", "紅葉", "碧海", "常盤", "月影", "春雷", "琥珀", "千草"];
+var PSUF = {
+  anime: ["アニメーション", "スタジオ"], drama: ["テレビ制作", "放送"], movie: ["ピクチャーズ", "フィルム"], stage: ["劇団", "座"],
+  game: ["ゲームス", "ソフト"], goods: ["工房", "トイズ"], cafe: ["フーズ", "カフェ企画"], overseas: ["トレーディング", "インターナショナル"]
+};
+var PSTYLE = ["作画に定評がある", "脚本に強い", "若手が多く勢いがある", "老舗で安定している", "予算管理が堅実", "冒険的な演出を好む"];
+var STAFF_ROLES = {
+  editor: { name: "編集者", note: "担当した作品を伸ばす" }, pr: { name: "宣伝担当", note: "宣伝・グッズ・カフェ・海外を任せられる" },
+  animator: { name: "アニメ制作スタッフ", note: "アニメ化を自社で制作できる" }, producer: { name: "映画プロデューサー", note: "映画化を自社で制作できる" },
+  parkmgr: { name: "パーク運営スタッフ", note: "パークの運営を安定させる" }
+};
+var REACT = {
+  1: ["批評家には酷評され、客足は伸びなかった。", "「原作の良さが消えた」という声がネットに並んだ。"],
+  2: ["静かな滑り出しに終わった。", "話題にはなったが、熱は長続きしなかった。"],
+  3: ["堅実な評価を得て、原作のファンが増えた。", "初めて原作に触れた人からの反応も上々だった。"],
+  4: ["各所で好評を博し、原作が書店で平積みになった。", "SNSには連日、感想の投稿があふれた。"],
+  5: ["社会現象と呼ばれるほどの熱狂が街を包んだ。", "原作は増刷が追いつかず、書店から本が消えた。"]
+};
+var FID = ["原作に忠実に", "ほどよくアレンジ", "大胆にアレンジ"];
+var BUD = ["控えめ", "標準", "大作"];
+var PARK_MOODS = [
+  { txt: "行楽シーズンで、親子連れが増えそうだ。", best: "family" },
+  { txt: "夏の夜は涼みに来る客が見込める。", best: "night" },
+  { txt: "客足が鈍い月。思い切った値下げが効くかもしれない。", best: "sale" }
+];
+var PARK_POL = [
+  { id: "family", name: "家族向けデー" }, { id: "night", name: "夜間イベント" }, { id: "sale", name: "値下げ週間" }
+];
+var LEGENDS = [
+  ["終わらない夏の約束", "桐谷 蒼", 92], ["星降る王国記", "神崎 澪", 90], ["白い魔導書", "朝倉 翔", 88], ["放課後クロニクル", "久我 凛", 86],
+  ["月影の探偵", "柊 隼人", 85], ["海を渡る楽団", "水無月 琴音", 83], ["夜明けの航海士", "東雲 悠", 81], ["不器用な魔女", "白石 茜", 79]
+];
+var UNLOCK_FAME = 18;
+var COMPANY_RANKS = [[0, "駆け出し"], [10, "新進"], [25, "中堅"], [50, "大手"], [90, "業界の顔"], [150, "伝説"]];
+
+/* ===== 共通ヘルパー ===== */
+function rnd() { return Math.random(); }
+function ri(a, b) { return a + Math.floor(rnd() * (b - a + 1)); }
+function pick(arr) { return arr[Math.floor(rnd() * arr.length)]; }
+function ch(p) { return rnd() < p; }
+function cl(x, a, b) { return Math.max(a, Math.min(b, x)); }
+function nrm() { var u = 0, v = 0; while (!u) u = rnd(); while (!v) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+function uid(p) { return p + Math.random().toString(36).slice(2, 9); }
+function hstr(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
+function fmtMoney(m) {
+  m = Math.round(m); var a = Math.abs(m);
+  if (a >= 10000) return (m / 10000).toFixed(a >= 100000 ? 0 : 1).replace(/\.0$/, "") + "億円";
+  return m.toLocaleString("ja-JP") + "万円";
+}
+function fmtFans(n) {
+  n = Math.round(n);
+  if (n >= 10000) return (n / 10000).toFixed(n >= 1000000 ? 0 : 1).replace(/\.0$/, "") + "万人";
+  return n + "人";
+}
+var MONTHS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3];
+function dinfo(t) {
+  var y = Math.floor(t / 48), m = Math.floor((t % 48) / 4), w = t % 4;
+  return { y: y + 1, mi: m, mo: MONTHS[m], wk: w + 1, label: (y + 1) + "年目 " + MONTHS[m] + "月 第" + (w + 1) + "週" };
+}
+function no(msg) { return { ok: false, msg: msg }; }
+function yes(msg, extra) { var r = { ok: true, msg: msg }; if (extra) for (var k in extra) r[k] = extra[k]; return r; }
+
+/* ===== 名前など ===== */
+function pname() { return pick(SURN) + " " + pick(GIVEN); }
+function mkTitle() {
+  var r = rnd();
+  if (r < 0.4) return pick(ADJ) + pick(NOUN);
+  if (r < 0.75) return pick(NOUN) + "と" + pick(NOUN);
+  return pick(ADJ) + pick(NOUN) + "の" + pick(NOUN2);
+}
+function genChars() {
+  return [{ name: pick(GIVEN), role: "主人公" }, { name: pick(GIVEN), role: "ライバル" }, { name: pick(GIVEN), role: pick(["仲間", "師匠", "謎の人物"]) }];
+}
+function gname(id, arr) { var x = arr.find(function (a) { return a.id === id; }); return x ? x.name : id; }
+
+/* ===== 新規ゲーム ===== */
+function newGame(o) {
+  var diff = o.diff || "normal";
+  var role = o.role === "editor" ? "editor" : "writer";
+  var sk = role === "writer" ? { prose: 35, art: 15, idea: 32, eye: 15, biz: 12 } : { prose: 15, art: 10, idea: 20, eye: 35, biz: 30 };
+  var S = {
+    ver: SAVE_VER, gv: GAME_VER, diff: diff, t: 0, money: { easy: 600, normal: 350, hard: 220 }[diff], debt: 0, fame: 0,
+    company: (o.company || "ミライ編集部").slice(0, 14),
+    player: { id: "p0", name: (o.name || "あなた").slice(0, 10), role: role, sk: sk, sta: 100, exp: 0, weeks: 0, hits: 0, classics: 0, mentees: 0, apprentice: null, hall: false },
+    ap: 3, apMax: 3, unlock: { edit: role === "editor", write: role === "writer" },
+    works: [], authors: [], staff: [], pool: [], offers: [], projects: [], partners: {}, hire: [],
+    trend: null, park: { areas: [], mode: "auto", policy: null, policyMonth: -1 },
+    hall: { works: [], people: [], cats: {} }, rank: { year: [], all: [] },
+    log: [], news: [], queue: [], hist: [], written: {}, yearRev: 0, totalRev: 0,
+    settings: { bgm: 0.5, se: 0.6, bright: 1 }, flags: {}, dex: []
+  };
+  S.trend = makeTrend();
+  S.rank.all = LEGENDS.map(function (l) { return { title: l[0], author: l[1], comp: l[2], y: 0, mine: false }; });
+  genHire(S);
+  addLog(S, "物語が始まった。");
+  return S;
+}
+function addLog(S, text) { S.log.push({ t: S.t, text: text }); if (S.log.length > 300) S.log.shift(); }
+function queue(S, item) { S.queue.push(item); }
+
+/* ===== 参照 ===== */
+function W(S, id) { return S.works.find(function (w) { return w.id === id; }) || null; }
+function authorOf(S, w) { return w.author.type === "npc" ? (S.authors.find(function (a) { return a.id === w.author.id; }) || null) : null; }
+function editorOf(S, w) {
+  if (w.editor) { var e = S.staff.find(function (s) { return s.id === w.editor; }); if (e) return e; }
+  if (w.author.type === "player" && !S.unlock.edit) return { skill: 30, virtual: true, name: "外部の担当編集" };
+  return null;
+}
+function liveWorks(S) { return S.works.filter(function (w) { return w.state === "serial"; }); }
+function bestTier(w) { var b = 0; for (var k in w.media) b = Math.max(b, w.media[k].best); return b; }
+function mediaPts(w) { var p = 0, tbl = [0, 1, 3, 6, 10, 14]; for (var k in w.media) p += tbl[w.media[k].best]; return p; }
+function companyRank(S) { var r = COMPANY_RANKS[0][1]; COMPANY_RANKS.forEach(function (x) { if (S.fame >= x[0]) r = x[1]; }); return r; }
+
+/* ===== 流行・相性・品質 ===== */
+function makeTrend() {
+  var g = GENRES.map(function (x) { return x.id; }).sort(function () { return rnd() - 0.5; });
+  return { hot: g.slice(0, 2), cold: g.slice(2, 4), th: pick(THEMES).id };
+}
+function tfit(S, w) { var f = 0; if (S.trend.hot.indexOf(w.genre) > -1) f += 1; if (S.trend.cold.indexOf(w.genre) > -1) f -= 1; if (S.trend.th === w.theme) f += 0.5; return f; }
+function synergy(g, t, h) { return (SYN[g + "|" + t] || 0) + (HSYN[h + "|" + g] || 0) + (hstr(g + t + h) % 9 - 4); }
+function synWord(s) { return s >= 10 ? "これ以上ないほど噛み合っていそうだ" : s >= 4 ? "しっくりくる組み合わせだ" : s >= -3 ? "悪くないが、見せ方次第だ" : "噛み合わせが難しそうだ"; }
+function baseQ(q) { return 0.30 * q.story + 0.22 * q.art + 0.28 * q.hook + 0.20 * q.pol; }
+function hallBonus(S) { return Math.min(8, S.hall.works.length * 0.8); }
+function makePlayerQ(S, medium, syn, illus) {
+  var s = S.player.sk;
+  var story = cl(s.prose * 0.45 + s.idea * 0.4 + 8 + nrm() * 6, 5, 95);
+  var art = medium === "manga" ? (illus ? illus.art : s.art) : cl(s.prose * 0.7 + s.idea * 0.15 + nrm() * 5, 5, 95);
+  var hook = cl(s.idea * 0.7 + syn * 1.2 + 10 + nrm() * 8 + hallBonus(S), 5, 98);
+  return { story: story, art: cl(art, 5, 95), hook: hook, pol: 25 };
+}
+function lvl(v) { return v < 35 ? 0 : v < 52 ? 1 : v < 68 ? 2 : 3; }
+function skillWord(sk) { return sk < 45 ? "まだ実績は浅い" : sk < 62 ? "堅実な仕事をする" : sk < 75 ? "実力派" : "業界屈指"; }
+var CLUE_TXT = {
+  story: ["物語の骨格が弱い", "物語は凡庸", "物語がよく練られている", "物語に圧倒的な強さがある"],
+  art_m: ["絵が粗い", "絵は普通", "絵に華がある", "絵が目を奪う"],
+  art_n: ["文章が拙い", "文章は平凡", "文章に味がある", "文章が圧倒的に美しい"],
+  hook: ["個性が薄い", "どこかで見た印象", "他にない個性がある", "唯一無二の発想"],
+  pol: ["未整理で荒削り", "まだ粗さが残る", "丁寧にまとまっている", "非の打ちどころがない仕上がり"]
+};
+function clueLines(S, q, medium, genre, theme, syn, pot, skill) {
+  var out = [];
+  out.push({ k: "story", t: CLUE_TXT.story[lvl(q.story)] });
+  out.push({ k: "art", t: CLUE_TXT[medium === "manga" ? "art_m" : "art_n"][lvl(q.art)] });
+  out.push({ k: "hook", t: CLUE_TXT.hook[lvl(q.hook)] });
+  out.push({ k: "pol", t: CLUE_TXT.pol[lvl(q.pol)] });
+  var tr = S.trend.hot.indexOf(genre) > -1 ? "いまの流行にぴったり合う" : S.trend.cold.indexOf(genre) > -1 ? "流行からは外れている" : "流行とは無関係に読める";
+  out.push({ k: "trend", t: tr });
+  if (pot != null) out.push({ k: "grow", t: pot - skill > 25 ? "作者はまだまだ伸びそうだ" : pot - skill > 12 ? "作者には伸びしろがある" : "作者の力は完成されている" });
+  out.push({ k: "vibe", t: "題材の組み合わせは、" + synWord(syn) });
+  return out;
+}
+
+/* ===== 候補・スタッフ・取引先 ===== */
+function genCand(S, kind) {
+  var skill = kind === "scout" ? ri(35, 65) : kind === "sub" ? ri(18, 60) : ri(15, 55);
+  var pot = cl(skill + ri(5, 35) + (kind === "scout" ? 8 : 0), skill, 95);
+  var au = { id: uid("a"), name: pname(), skill: skill, pot: pot, mentor: null, hits: 0, weeks: 0, classics: 0, mentees: 0, trait: pick(TRAITS), hall: false };
+  var g = pick(GENRES).id, t = pick(THEMES).id, h = pick(HEROES).id, med = ch(0.5) ? "manga" : "novel";
+  var syn = synergy(g, t, h);
+  var gem = ch(0.08) ? 18 : ch(0.1) ? -14 : 0;
+  var q = {
+    story: cl(skill * 0.85 + nrm() * 9 + gem + ri(0, 10), 5, 97), art: cl(skill * 0.8 + nrm() * 10 + gem * 0.7 + ri(0, 10), 5, 97),
+    hook: cl(skill * 0.6 + syn * 1.4 + nrm() * 10 + gem + ri(5, 18), 5, 98), pol: cl(skill * 0.5 + ri(5, 20), 5, 90)
+  };
+  var cost = Math.round((skill * 0.6 + pot * 0.3) / 5) * 5 + ri(0, 10);
+  if (kind === "sub") cost = Math.round(cost * 0.7);
+  var sd = Math.max(4, 28 - S.player.sk.eye * 0.28);
+  var obs = { story: q.story + nrm() * sd, art: q.art + nrm() * sd, hook: q.hook + nrm() * sd, pol: q.pol + nrm() * sd };
+  var n = cl(2 + Math.floor(S.player.sk.eye / 22), 2, 7);
+  var keys = ["story", "art", "hook", "pol", "trend", "grow", "vibe"].sort(function () { return rnd() - 0.5; }).slice(0, n);
+  var lines = clueLines(S, obs, med, g, t, syn + nrm() * sd * 0.2, pot + nrm() * sd * 0.4, skill).filter(function (c) { return keys.indexOf(c.k) > -1; });
+  return {
+    id: uid("c"), kind: kind, author: au, cost: cost, exp: S.t + ri(8, 16), lines: lines,
+    seed: { title: mkTitle(), medium: med, genre: g, theme: t, hero: h, q: q, syn: syn }
+  };
+}
+function genHire(S) {
+  S.hire = [];
+  Object.keys(STAFF_ROLES).forEach(function (r) {
+    for (var i = 0; i < (r === "editor" ? 3 : 2); i++) {
+      var sk = ri(18, 55);
+      S.hire.push({ id: uid("s"), name: pname(), role: r, skill: sk, pot: cl(sk + ri(8, 35), sk, 92), weeks: 0, hits: 0, classics: 0, mentees: 0, trait: pick(TRAITS), hall: false });
+    }
+  });
+}
+function partners(S, type) {
+  if (!S.partners[type]) {
+    var arr = [];
+    for (var i = 0; i < 3; i++) {
+      var sk = ri(30, 80);
+      arr.push({ id: uid("pt"), name: pick(PBASE) + pick(PSUF[type]), skill: sk, price: 0.8 + sk / 100 * 0.6 + rnd() * 0.2, style: pick(PSTYLE) });
+    }
+    S.partners[type] = arr;
+  }
+  return S.partners[type];
+}
+function inhouseSkill(S, type) {
+  var role = MEDIA[type].ih; if (!role) return 0;
+  var a = S.staff.filter(function (s) { return s.role === role; }).sort(function (x, y) { return y.skill - x.skill; }).slice(0, 2);
+  if (!a.length) return 0;
+  return a.reduce(function (s, x) { return s + x.skill; }, 0) / a.length;
+}
+function salary(s) { return Math.max(1, Math.round(s.skill / 14)); }
+
+/* ===== 作品の生成 ===== */
+function mkWork(S, o) {
+  var w = {
+    id: uid("w"), title: o.title, medium: o.medium, genre: o.genre, theme: o.theme, hero: o.hero, author: o.author, illus: o.illus || null,
+    q: o.q, syn: o.syn || 0, state: "serial", born: S.t, weeks: 0, eps: 0, vols: 0, pop: o.pop || 8, fans: o.fans || 0,
+    critic: baseQ(o.q) * 0.6, long: 0, era: 0, culture: 0, reach: 0, rev: 0, yrev: 0, peak: 0, promo: 0, boost: 0, low: 0,
+    editor: null, media: {}, chars: genChars(), hit: false, hall: false, cand: null, lastEp: baseQ(o.q), lastContest: -99, sequel: false,
+    askCancel: false, canceledAt: null
+  };
+  S.works.push(w);
+  S.dex.push({ id: w.id, title: w.title, chars: w.chars });
+  return w;
+}
+
+/* ===== 週の進行 ===== */
+function creditHit(S, w, au, ed, news) {
+  news.push("『" + w.title + "』が大ヒット!");
+  S.fame += 2; addLog(S, "『" + w.title + "』が大ヒットとなった。");
+  if (w.author.type === "player") S.player.hits++;
+  else if (au) { au.hits++; if (au.mentor === "p0" && !au.mc) { au.mc = true; S.player.mentees++; } }
+  if (ed && !ed.virtual) { ed.hits++; if (au && !au.ec) { au.ec = true; ed.mentees++; } }
+}
+function volCheck(S, w, news) {
+  if (w.eps > 0 && w.eps % 8 === 0) {
+    w.vols++;
+    var b = (w.fans / 10000) * 6 + w.pop * 0.4;
+    S.money += b * (w.author.type === "player" ? 0.5 : 0.4);
+    news.push("『" + w.title + "』第" + w.vols + "巻が発売された。"); w.boost += 1.5;
+  }
+}
+function npcEpisode(S, w, au, news) {
+  var ed = editorOf(S, w);
+  var eq = cl(au.skill * 0.9 + (ed ? ed.skill * 0.15 : 0) + nrm() * (au.trait === "気分屋" ? 14 : 8) + ri(-3, 8), 5, 98);
+  w.lastEp = eq; w.eps++;
+  w.q.pol = cl(w.q.pol + (eq - w.q.pol) * 0.03 + (au.trait === "几帳面" ? 0.15 : 0), 5, 95);
+  w.q.story = cl(w.q.story + (eq - w.q.story) * 0.01, 5, 97);
+  volCheck(S, w, news);
+}
+function simWork(S, w, news) {
+  w.weeks++;
+  if (w.state === "canceled") { w.pop = Math.max(0, w.pop - 0.2); return 0; }
+  var au = authorOf(S, w), written = false, isP = w.author.type === "player";
+  if (w.state === "serial") {
+    if (isP) written = !!S.written[w.id];
+    else if (au && ch(au.trait === "気分屋" ? 0.66 : 0.8)) { written = true; npcEpisode(S, w, au, news); }
+  }
+  var base = baseQ(w.q), ed = editorOf(S, w), edB = ed ? Math.min(8, ed.skill * 0.08) : 0, tf = tfit(S, w), target;
+  if (w.state === "serial") target = base * 0.88 - 6 + 9 * tf + w.promo * 0.12 + w.boost + edB + (written ? (w.lastEp - base) * 0.25 : -5);
+  else target = base * 0.7 - 4 + 5 * tf + w.promo * 0.12 + w.boost;
+  var luck = { easy: 2.5, normal: 3.5, hard: 4.5 }[S.diff];
+  w.pop = cl(w.pop + (target - w.pop) * 0.045 + nrm() * luck * 0.5, 0, 100);
+  var gain = Math.pow(w.pop, 2) * 0.8 * (0.6 + rnd() * 0.8) * ((written || w.state === "finished") ? 1 : 0.5);
+  w.fans = w.fans * 0.99 + gain;
+  w.promo *= 0.93; w.boost *= 0.985;
+  w.critic = cl(w.critic + (base - w.critic) * 0.02 + (w.pop > 60 ? 0.05 : 0), 0, 100);
+  if (w.pop >= 30) w.long += 1; else w.long = Math.max(0, w.long - 0.3);
+  if (w.pop >= 45 && tf > 0) w.era += 2; else if (w.pop >= 45 && tf >= 0) w.era += 0.7;
+  if (w.pop >= 75) w.culture += 0.15;
+  w.reach = cl(mediaPts(w) + w.fans / 20000, 0, 100);
+  w.peak = Math.max(w.peak, w.pop);
+  var rev = (w.fans / 10000) * 1.1 * (w.pop / 50);
+  var share = isP ? (S.unlock.edit ? 0.8 : 0.5) * (w.illus ? 0.8 : 1) : 0.6;
+  w.rev += rev; w.yrev += rev;
+  if (!w.hit && w.pop >= 65) { w.hit = true; creditHit(S, w, au, ed, news); }
+  if (w.state === "serial") {
+    if (w.pop < 14) w.low++; else w.low = Math.max(0, w.low - 1);
+    if (w.low >= 10 && !w.askCancel) { w.askCancel = true; queue(S, { k: "ev", id: "cancel", p: { wid: w.id } }); }
+    if (w.low < 4) w.askCancel = false;
+  }
+  return rev * share;
+}
+function simPark(S) {
+  var tot = 0, pm = S.staff.filter(function (s) { return s.role === "parkmgr"; }).sort(function (a, b) { return b.skill - a.skill; })[0];
+  var d = dinfo(S.t), pol = policyMult(S, d);
+  S.park.areas.forEach(function (a) {
+    var w = W(S, a.wid); if (!w) return;
+    var r = (w.fans / 10000) * 1.0 * a.lv * (w.pop / 60) * pol * (1 + (pm ? pm.skill / 200 : 0));
+    a.rev = r; a.tot = (a.tot || 0) + r; tot += r;
+    w.culture += 0.06 * a.lv; w.reach = Math.min(100, w.reach + 0.01 * a.lv);
+  });
+  return tot;
+}
+function monthKey(d) { return d.y * 12 + d.mi; }
+function parkMood(d) { return PARK_MOODS[monthKey(d) % 3]; }
+function policyMult(S, d) {
+  if (S.park.mode === "auto") return 1.1;
+  if (S.park.policyMonth === monthKey(d)) return S.park.policy === parkMood(d).best ? 1.35 : 1.0;
+  return 0.9;
+}
+function tick(S) {
+  var news = [], inc = 0;
+  S.player.sta = cl(S.player.sta + (Object.keys(S.written).length ? 8 : 16), 0, 100);
+  S.player.weeks++;
+  S.works.forEach(function (w) { inc += simWork(S, w, news); });
+  S.written = {};
+  S.authors.forEach(function (a) {
+    var has = S.works.some(function (w) { return w.author.id === a.id && w.state === "serial"; });
+    if (has || !a.debuted) { a.skill = Math.min(a.pot, a.skill + 0.03 + (a.pot - a.skill) * 0.004 + (a.mentor ? 0.06 : 0) + (a.trait === "負けず嫌い" ? 0.03 : 0)); }
+    if (has) a.weeks++;
+    if (!a.debuted && a.skill >= 40 && a.apprentice) debutApprentice(S, a, news);
+  });
+  S.staff.forEach(function (st) { st.weeks++; st.skill = Math.min(st.pot, st.skill + 0.03 + (st.pot - st.skill) * 0.003); });
+  inc += simPark(S);
+  var exp = S.staff.reduce(function (a, s) { return a + salary(s); }, 0) + (S.unlock.edit ? 3 : 1);
+  if (S.money < 0) S.money += S.money * 0.004;
+  if (S.debt > 0) S.money -= S.debt * 0.003;
+  S.money += inc - exp; S.yearRev += inc; S.totalRev += inc;
+  S.projects.slice().forEach(function (p) { if (S.t >= p.end) finishProject(S, p); });
+  if (S.t % 4 === 0) { S.hist.push({ t: S.t, m: Math.round(S.money), i: Math.round(inc * 4) }); if (S.hist.length > 150) S.hist.shift(); }
+  if (S.t % 4 === 3) hallCheck(S);
+  if (S.t % 12 === 5) personHallCheck(S);
+  S.t++; S.ap = S.apMax;
+  seasonal(S, dinfo(S.t), news);
+  rollOffers(S, news);
+  rollEvent(S, news);
+  S.pool = S.pool.filter(function (c) { return c.exp > S.t; });
+  S.offers = S.offers.filter(function (o) { return o.exp > S.t; });
+  if (S.money < -500 && !S.queue.some(function (q) { return q.id === "crisis"; })) queue(S, { k: "ev", id: "crisis", p: {} });
+  S.news = news.slice(0, 8);
+  return news;
+}
+function seasonal(S, d, news) {
+  if (d.wk === 1) {
+    if (d.mi === 0) {
+      S.trend = makeTrend(); S.partners = {}; genHire(S); S.yearRev = 0;
+      news.push("新年度。今年は「" + S.trend.hot.map(function (g) { return gname(g, GENRES); }).join("」「") + "」に追い風が吹いている。");
+    }
+    if (d.mi === 2 && S.unlock.edit) {
+      for (var i = 0; i < 6; i++) S.pool.push(genCand(S, "sub"));
+      news.push("新人賞の応募作が届いた。");
+    }
+    if (S.park.areas.length) news.push("今月のパーク: " + parkMood(d).txt);
+  }
+  if (d.mi === 11 && d.wk === 4) yearEnd(S, news);
+  if (!S.flags.askOffice && S.player.role === "writer" && !S.unlock.edit && S.fame >= UNLOCK_FAME && S.money >= 300) { S.flags.askOffice = true; queue(S, { k: "ev", id: "openoffice", p: {} }); }
+  if (!S.flags.askPen && S.player.role === "editor" && !S.unlock.write && S.fame >= UNLOCK_FAME) { S.flags.askPen = true; queue(S, { k: "ev", id: "takepen", p: {} }); }
+}
+function debutApprentice(S, a, news) {
+  a.debuted = true;
+  var g = pick(GENRES).id, t = pick(THEMES).id, h = pick(HEROES).id, med = ch(0.5) ? "manga" : "novel", syn = synergy(g, t, h);
+  var sk = a.skill;
+  var q = { story: cl(sk * 0.9 + nrm() * 6, 5, 95), art: cl(sk * 0.85 + nrm() * 7, 5, 95), hook: cl(sk * 0.65 + syn * 1.3 + ri(5, 15), 5, 98), pol: cl(sk * 0.6 + 8, 5, 90) };
+  var w = mkWork(S, { title: mkTitle(), medium: med, genre: g, theme: t, hero: h, author: { id: a.id, name: a.name, type: "npc" }, q: q, syn: syn });
+  addLog(S, "弟子の" + a.name + "が『" + w.title + "』でデビューした。");
+  news.push("弟子の" + a.name + "が『" + w.title + "』でデビューした。");
+  queue(S, { k: "info", title: "弟子のデビュー", text: a.name + "が『" + w.title + "』で連載デビューを果たした。ここから先は、作品と作者を見守っていこう。" });
+}
+function yearEnd(S, news) {
+  var d = dinfo(S.t), rows = [];
+  S.works.forEach(function (w) { if (w.state === "canceled" && w.weeks < 10) return; rows.push({ title: w.title, author: w.author.name, comp: compOf(w), mine: true, wid: w.id }); });
+  var scale = Math.min(24, (d.y - 1) * 3);
+  for (var i = 0; i < 12; i++) rows.push({ title: mkTitle(), author: pname(), comp: cl(45 + scale * 0.8 + nrm() * 13, 10, 98), mine: false });
+  rows.sort(function (a, b) { return b.comp - a.comp; });
+  var top = rows.slice(0, 10);
+  S.rank.year.unshift({ y: d.y, rows: top.map(function (r) { return { title: r.title, author: r.author, mine: r.mine, wid: r.wid || null, comp: Math.round(r.comp) }; }) });
+  if (S.rank.year.length > 10) S.rank.year.pop();
+  top.slice(0, 3).forEach(function (r) { S.rank.all.push({ title: r.title, author: r.author, comp: Math.round(r.comp), y: d.y, mine: r.mine }); });
+  S.rank.all.sort(function (a, b) { return b.comp - a.comp; }); S.rank.all = S.rank.all.slice(0, 15);
+  var champ = top[0];
+  if (champ && champ.mine) {
+    var w = W(S, champ.wid); S.fame += 6; w.culture += 8; S.money += 300; w.boost += 6;
+    addLog(S, "『" + w.title + "』が年間大賞に輝いた。"); queue(S, { k: "award", wid: w.id, y: d.y });
+  } else news.push("年間ランキングが発表された。");
+  news.push("決算。今年度の収入は" + fmtMoney(S.yearRev) + "だった。");
+  addLog(S, d.y + "年目の決算。収入は" + fmtMoney(S.yearRev) + "。");
+  S.works.forEach(function (w) { w.yrev = 0; });
+}
+function compOf(w) { return 0.45 * w.pop + 0.25 * w.critic + 0.15 * Math.min(100, w.yrev / 30) + 0.15 * w.reach; }
+
+/* ===== 打診・展開 ===== */
+function offerOK(S, w, t) {
+  var m = MEDIA[t];
+  if (w.state === "canceled") return false;
+  if (w.pop < m.req.pop * 0.8 || w.fans < m.req.fans * 10000 * 0.6) return false;
+  if (t === "overseas" && bestTier(w) < 2) return false;
+  var md = w.media[t]; if (md && S.t - md.week < 24) return false;
+  if (S.projects.some(function (p) { return p.wid === w.id && p.type === t; })) return false;
+  if (S.offers.some(function (o) { return o.wid === w.id && o.type === t; })) return false;
+  return true;
+}
+function rollOffers(S, news) {
+  if (S.offers.length >= 4) return;
+  S.works.forEach(function (w) {
+    if (w.pop < 25 || S.offers.length >= 4) return;
+    var p = 0.01 + w.pop / 5000 + Math.min(0.02, w.fans / 5e6) + S.fame / 8000;
+    if (!ch(p)) return;
+    var ts = MEDIA_ORDER.filter(function (t) { return offerOK(S, w, t); }); if (!ts.length) return;
+    var t = pick(ts);
+    S.offers.push({ id: uid("o"), wid: w.id, type: t, partner: { name: pick(PBASE) + pick(PSUF[t]), skill: cl(Math.round(w.pop * 0.6 + ri(15, 40)), 30, 88) }, share: ri(40, 75) / 100, exp: S.t + 10, neg: 0 });
+    news.push("『" + w.title + "』に" + MEDIA[t].name + "の打診が届いた。");
+  });
+}
+function canMedia(S, w, type) {
+  var m = MEDIA[type];
+  if (w.state === "canceled") return { ok: false, reason: "打ち切りになった作品は展開できない" };
+  if (w.pop < m.req.pop) return { ok: false, reason: "人気がまだ足りない" };
+  if (w.fans < m.req.fans * 10000) return { ok: false, reason: "ファンが足りない(目安 " + m.req.fans + "万人)" };
+  if (type === "overseas" && bestTier(w) < 2) return { ok: false, reason: "国内で大きな展開の実績が必要" };
+  var md = w.media[type]; if (md && S.t - md.week < 24) return { ok: false, reason: "しばらく間をあけたい" };
+  if (S.projects.some(function (p) { return p.wid === w.id && p.type === type; })) return { ok: false, reason: "すでに進行中" };
+  return { ok: true };
+}
+function mediaCost(type, budget, partner, inhouse) { return Math.round(MEDIA[type].cost * [0.6, 1, 1.8][budget] * (inhouse ? 0.65 : (partner ? partner.price : 1))); }
+function startMedia(S, o) {
+  var w = W(S, o.wid), m = MEDIA[o.type]; if (!w) return no("作品が見つかりません");
+  if (!o.offer) { var c = canMedia(S, w, o.type); if (!c.ok) return no(c.reason); }
+  if (o.inhouse && !inhouseSkill(S, o.type)) return no("自社で作れるスタッフがいません");
+  var cost = o.cost != null ? o.cost : mediaCost(o.type, o.budget, o.partner, o.inhouse);
+  if (S.money < cost) return no("資金が足りません(必要 " + fmtMoney(cost) + ")");
+  S.money -= cost;
+  S.projects.push({
+    id: uid("m"), wid: o.wid, type: o.type, pname: o.inhouse ? "自社制作" : o.partner.name, skill: o.inhouse ? inhouseSkill(S, o.type) : o.partner.skill,
+    inhouse: !!o.inhouse, budget: o.budget, fid: o.fid, start: S.t, end: S.t + m.dur, cost: cost
+  });
+  addLog(S, "『" + w.title + "』の" + m.name + "を始動した。");
+  return yes("『" + w.title + "』の" + m.name + "が動き出した");
+}
+function finishProject(S, p) {
+  S.projects = S.projects.filter(function (x) { return x.id !== p.id; });
+  var w = W(S, p.wid), m = MEDIA[p.type]; if (!w) return;
+  var base = baseQ(w.q);
+  var R = 10 + 0.38 * base + 0.32 * p.skill + 0.1 * w.pop + [-6, 0, 8][p.budget] + nrm() * 12 + 8 * tfit(S, w) + [3, 0, -2][p.fid] + (p.fid === 2 ? nrm() * 8 : 0) + ri(-3, 3);
+  var tier = R >= 80 ? 5 : R >= 66 ? 4 : R >= 52 ? 3 : R >= 38 ? 2 : 1;
+  var rev = Math.round(p.cost * [0.2, 0.7, 1.2, 1.8, 2.8][tier - 1] * (0.85 + rnd() * 0.3) * 0.6);
+  S.money += rev; S.totalRev += rev; S.yearRev += rev;
+  w.boost += [-4, 1.5, 6, 11, 17][tier - 1] * m.bm;
+  w.fans += Math.round([0, 1500, 6000, 22000, 70000][tier - 1] * m.bm * (1 + w.pop / 100));
+  if (tier === 1) w.fans *= 0.97;
+  w.culture += [0, 1, 4, 9, 16][tier - 1] * m.cm;
+  S.fame = Math.max(0, S.fame + [-1, 0, 1, 3, 6][tier - 1] * m.fm);
+  if (tier >= 4) w.critic = Math.min(100, w.critic + 2);
+  var prev = w.media[p.type] || { count: 0, best: 0 };
+  w.media[p.type] = { tier: tier, week: S.t, count: prev.count + 1, best: Math.max(prev.best, tier) };
+  var extra = [];
+  if (p.fid === 2 && w.fans > 100000 && tier <= 3 && ch(0.5)) { w.pop = Math.max(0, w.pop - 6); w.fans *= 0.93; extra.push("大胆なアレンジに、原作ファンの賛否が割れた。"); }
+  if (p.fid === 2 && tier >= 4) { w.culture += 3; extra.push("大胆なアレンジが「新しい解釈」と絶賛された。"); }
+  if (p.inhouse) {
+    var st = S.staff.filter(function (s) { return s.role === m.ih; }).sort(function (a, b) { return b.skill - a.skill; })[0];
+    if (st) st.skill = Math.min(st.pot, st.skill + ri(1, 3));
+  }
+  var cat = false;
+  if (tier === 5) {
+    var arr = S.hall.cats[p.type] = S.hall.cats[p.type] || [];
+    if (!arr.some(function (x) { return x.wid === w.id; })) { arr.push({ wid: w.id, title: w.title, y: dinfo(S.t).y }); cat = true; S.fame += 3; }
+  }
+  var cast = pick(["人気声優", "若手の俳優", "ベテラン俳優", "話題の歌手", "新進気鋭の演出家"]) + "の" + pname();
+  var lines = ["『" + w.title + "』の" + m.name + "、" + m.verb + "開始。", "制作は" + p.pname + "。起用は" + cast + "。"]
+    .concat([pick(REACT[tier])]).concat(extra).concat(["収益 " + fmtMoney(rev) + "(製作費 " + fmtMoney(p.cost) + ")"]);
+  addLog(S, "『" + w.title + "』の" + m.name + "は「" + TIER[tier - 1] + "」だった。");
+  queue(S, { k: "mres", wid: w.id, type: p.type, tier: tier, lines: lines, cat: cat });
+}
+
+/* ===== 殿堂 ===== */
+function hallF(S) { return 1 + 0.06 * S.hall.works.length + 0.015 * (dinfo(S.t).y - 1); }
+function hallAxes(S, w) {
+  var F = hallF(S);
+  return [
+    { k: "critic", lab: "評価", v: w.critic, th: 62 * F, hint: "批評家や読者からの評価がまだ足りない" },
+    { k: "long", lab: "息の長さ", v: Math.min(100, w.long * 100 / 96), th: 60 * F, hint: "長く愛される力が足りない" },
+    { k: "reach", lab: "影響力", v: w.reach, th: 55 * F, hint: "世の中への広がりが足りない" },
+    { k: "era", lab: "時代性", v: Math.min(100, w.era * 100 / 120), th: 50 * F, hint: "時代の空気を捉えきれていない" },
+    { k: "culture", lab: "文化への浸透", v: Math.min(100, w.culture * 2), th: 45 * F, hint: "社会に根づくところまで届いていない" }
+  ];
+}
+function hallCheck(S) {
+  S.works.forEach(function (w) {
+    if (w.hall || w.state === "canceled" || w.weeks < 144) { return; }
+    var ax = hallAxes(S, w), n = ax.filter(function (a) { return a.v >= a.th; }).length;
+    w.cand = n >= 3 ? ax.filter(function (a) { return a.v < a.th; }).map(function (a) { return a.hint; }) : null;
+    if (n >= 4) enterHall(S, w);
+  });
+}
+function enterHall(S, w) {
+  w.hall = true; w.cand = null;
+  S.hall.works.push({ id: w.id, title: w.title, author: w.author.name, y: dinfo(S.t).y });
+  S.fame += 8;
+  if (w.author.type === "player") S.player.classics++;
+  else { var au = authorOf(S, w); if (au) au.classics++; }
+  var ed = editorOf(S, w); if (ed && !ed.virtual) ed.classics++;
+  addLog(S, "『" + w.title + "』が殿堂入りした。");
+  queue(S, { k: "hall", kind: "work", name: w.title, sub: w.author.name, wid: w.id });
+}
+function personAxes(S, p) {
+  var ph = S.hall.people.length;
+  return [
+    { k: "hits", lab: "実績", v: p.hits, th: 2 + ph, hint: "代表作と呼べるヒットがもう少し欲しい" },
+    { k: "classics", lab: "名作", v: p.classics, th: 1, hint: "殿堂入りした作品を残したい" },
+    { k: "mentees", lab: "育成", v: p.mentees, th: 1, hint: "後進を育てた実績が欲しい" },
+    { k: "weeks", lab: "継続", v: p.weeks, th: 96 + 48 * ph, hint: "長く第一線で続けてきた年月が足りない" }
+  ];
+}
+function personList(S) {
+  var l = [{ p: S.player, role: "あなた", ok: S.fame >= 30, isP: true }];
+  S.authors.forEach(function (a) { l.push({ p: a, role: "作家", ok: a.skill >= 60 }); });
+  S.staff.forEach(function (s) { if (s.role === "editor") l.push({ p: s, role: "編集者", ok: s.skill >= 60 }); });
+  return l;
+}
+function personHallCheck(S) {
+  personList(S).forEach(function (x) {
+    var p = x.p; if (p.hall) return;
+    var ax = personAxes(S, p), n = ax.filter(function (a) { return a.v >= a.th; }).length;
+    if (n >= 3 && x.ok) {
+      p.hall = true; S.hall.people.push({ id: p.id, name: p.name, role: x.role, y: dinfo(S.t).y });
+      S.fame += 4; addLog(S, p.name + "が殿堂入りした。");
+      queue(S, { k: "hall", kind: "person", name: p.name, sub: x.role });
+    }
+  });
+}
+
+/* ===== パーク ===== */
+function parkAvail(S, w) {
+  var r = { ok: true, why: [] };
+  if (w.state === "canceled") { r.ok = false; r.why.push("打ち切り済み"); }
+  if (w.fans < 500000) { r.ok = false; r.why.push("ファンが50万人に届いていない"); }
+  if (w.culture < 15) { r.ok = false; r.why.push("世の中への浸透が足りない"); }
+  if (bestTier(w) < 3) { r.ok = false; r.why.push("展開で成功した実績が必要"); }
+  if (S.park.areas.some(function (a) { return a.wid === w.id; })) { r.ok = false; r.why.push("すでに区画がある"); }
+  return r;
+}
+var PARK_COST = 6000;
+function actParkBuild(S, wid) {
+  var w = W(S, wid); if (!w) return no("作品が見つかりません");
+  var a = parkAvail(S, w); if (!a.ok) return no(a.why[0]);
+  if (S.park.areas.length >= 9) return no("区画は9つまでです");
+  if (S.money < PARK_COST) return no("資金が足りません(必要 " + fmtMoney(PARK_COST) + ")");
+  S.money -= PARK_COST; S.park.areas.push({ id: uid("pa"), wid: wid, lv: 1, rev: 0, tot: 0 });
+  S.fame += 3; w.culture += 5; addLog(S, "『" + w.title + "』のパークエリアが開園した。");
+  queue(S, { k: "info", title: "パーク開園", text: "『" + w.title + "』のエリアが開園した。街のはずれに、作品の世界がそのまま立ち上がっている。" });
+  return yes("エリアを開園しました");
+}
+function actParkUp(S, id) {
+  var a = S.park.areas.find(function (x) { return x.id === id; }); if (!a) return no("区画が見つかりません");
+  if (a.lv >= 5) return no("これ以上は拡張できません");
+  var c = 3000 * a.lv; if (S.money < c) return no("資金が足りません(必要 " + fmtMoney(c) + ")");
+  S.money -= c; a.lv++; return yes("アトラクションを増設しました");
+}
+function actParkMode(S, mode) { S.park.mode = mode; return yes(mode === "auto" ? "運営をおまかせにしました" : "運営を自分で行います"); }
+function actParkPolicy(S, pol) {
+  var d = dinfo(S.t); S.park.policy = pol; S.park.policyMonth = monthKey(d);
+  return yes("今月の方針を決めました");
+}
+
+/* ===== プレイヤーの行動 ===== */
+function gainSkill(S, k, base) {
+  var v = S.player.sk[k], g = base * (1 - v / 130) * (0.7 + rnd() * 0.6);
+  S.player.sk[k] = Math.min(100, v + g); S.player.exp += 1;
+}
+function actRest(S) { if (S.ap < 1) return no("行動点が足りません"); S.ap--; S.player.sta = Math.min(100, S.player.sta + 45); return yes("ゆっくり休んだ。体力が戻った"); }
+function actStudy(S, k) {
+  if (S.ap < 1) return no("行動点が足りません"); S.ap--;
+  var before = S.player.sk[k]; gainSkill(S, k, 3.2);
+  return yes(SKILLS[k] + "を磨いた(" + (S.player.sk[k] - before >= 2.4 ? "大きな手応え" : "着実に") + ")");
+}
+function actNetwork(S) {
+  if (S.ap < 1) return no("行動点が足りません"); if (S.money < 5) return no("交際費(5万円)が足りません");
+  S.ap--; S.money -= 5; S.fame += 0.8 + S.player.sk.biz / 100; gainSkill(S, "biz", 1.6);
+  var msg = "人脈を広げた";
+  if (S.unlock.edit && S.pool.length < 8 && ch(0.3)) { S.pool.push(genCand(S, "bring")); msg += "。持ち込みの話が舞い込んだ"; }
+  return yes(msg);
+}
+function actPlan(S, o) {
+  if (!S.unlock.write) return no("まだ筆を執れない");
+  var lim = 2 + (S.fame >= 40 ? 1 : 0);
+  var mine = S.works.filter(function (w) { return w.author.type === "player" && w.state === "serial"; });
+  if (mine.length >= lim) return no("同時に連載できるのは" + lim + "作品までです");
+  if (S.ap < 1) return no("行動点が足りません"); if (S.money < 10) return no("取材費(10万円)が足りません");
+  var title = (o.title || "").trim().slice(0, 20); if (!title) return no("題名を入力してください");
+  var syn = synergy(o.genre, o.theme, o.hero), illus = null;
+  if (o.medium === "manga" && S.player.sk.art < 30) {
+    illus = (S.flags.illList || []).find(function (x) { return x.id === o.illusId; });
+    if (!illus) return no("絵師を選んでください");
+  }
+  S.ap--; S.money -= 10;
+  var w = mkWork(S, { title: title, medium: o.medium, genre: o.genre, theme: o.theme, hero: o.hero, author: { id: "p0", name: S.player.name, type: "player" }, illus: illus ? { name: illus.name, art: illus.art } : null, q: makePlayerQ(S, o.medium, syn, illus), syn: syn });
+  S.flags.illList = null; addLog(S, "新連載『" + title + "』を企画した。");
+  return yes("『" + title + "』の連載が始まる", { wid: w.id });
+}
+function actWrite(S, wid, sid) {
+  var w = W(S, wid), st = STYLES.find(function (x) { return x.id === sid; });
+  if (!w || !st) return no("作品が見つかりません"); if (w.author.type !== "player") return no("自分の作品ではありません");
+  if (w.state !== "serial") return no("連載中ではありません");
+  if (S.written[wid]) return no("今週はもう書いた"); if (S.ap < 1) return no("行動点が足りません");
+  if (S.player.sta < st.st) return no("体力が足りない。休養しよう");
+  S.ap--; S.player.sta -= st.st; S.written[wid] = true;
+  var sk = S.player.sk, artv = w.medium === "manga" ? (w.illus ? w.illus.art : sk.art) : sk.prose;
+  var avg = sk.prose * 0.5 + sk.idea * 0.3 + artv * 0.2;
+  var stamP = S.player.sta < 30 ? -12 : S.player.sta < 60 ? -4 : 0;
+  var eq = cl(avg * 0.85 + 8 + stamP + nrm() * st.v + st.hook * 0.8 + w.syn * 0.3, 5, 98);
+  w.lastEp = eq; w.eps++;
+  w.q.pol = cl(w.q.pol + st.pol * (0.7 + rnd() * 0.6), 5, 95);
+  w.q.hook = cl(w.q.hook + st.hook * 0.5 + (eq - w.q.hook) * 0.04, 5, 98);
+  w.q.story = cl(w.q.story + (eq - w.q.story) * 0.02, 5, 97);
+  var fee = 5 + w.pop * 0.12; S.money += fee;
+  gainSkill(S, "prose", 0.9); gainSkill(S, "idea", 0.7); if (w.medium === "manga" && !w.illus) gainSkill(S, "art", 0.9);
+  volCheck(S, w, S.news);
+  return yes("第" + w.eps + "話を書き上げた(原稿料 " + Math.round(fee) + "万円)");
+}
+function actMeet(S, wid, dir) {
+  var w = W(S, wid); if (!w) return no("作品が見つかりません"); if (S.ap < 1) return no("行動点が足りません");
+  S.ap--; var ed = editorOf(S, w), pow = 3 + S.player.sk.eye / 30 + (ed ? ed.skill / 30 : 0);
+  var g = pow * (0.6 + rnd() * 0.8);
+  if (dir === "story") w.q.story = cl(w.q.story + g, 5, 98);
+  else if (dir === "hook") w.q.hook = cl(w.q.hook + g, 5, 98);
+  else w.q.art = cl(w.q.art + g * 0.8, 5, 98);
+  w.q.pol = cl(w.q.pol + pow * 0.8, 5, 95);
+  var au = authorOf(S, w); if (au) au.skill = Math.min(au.pot, au.skill + ri(1, 2) + (S.player.sk.eye > 50 ? 1 : 0));
+  gainSkill(S, "eye", 1.4); gainSkill(S, "biz", 0.8);
+  return yes("打ち合わせで方向性を詰めた");
+}
+function actPromo(S, wid, lv) {
+  var w = W(S, wid), c = [30, 100, 300][lv]; if (!w) return no("作品が見つかりません");
+  if (S.ap < 1) return no("行動点が足りません"); if (S.money < c) return no("資金が足りません");
+  S.ap--; S.money -= c;
+  var pr = S.staff.filter(function (s) { return s.role === "pr"; }).sort(function (a, b) { return b.skill - a.skill; })[0];
+  w.promo += [40, 90, 160][lv] * (1 + (pr ? pr.skill / 200 : 0));
+  return yes("宣伝を打った(" + ["小規模", "中規模", "大規模"][lv] + ")");
+}
+function actReprint(S, wid, lv) {
+  var w = W(S, wid), c = [20, 60, 150][lv], mult = [0.9, 1.1, 1.35][lv]; if (!w) return no("作品が見つかりません");
+  if (S.ap < 1) return no("行動点が足りません"); if (S.money < c) return no("資金が足りません");
+  S.ap--; S.money -= c;
+  var pay = Math.round(c * (0.4 + (w.pop / 60) * (0.6 + rnd() * 1.2) * mult));
+  S.money += pay; w.boost += pay > c ? 1.5 : 0;
+  return yes(pay >= c ? "増刷分は売れ、" + (pay - c) + "万円の利益になった" : "売れ残りが出て、" + (c - pay) + "万円の損になった");
+}
+function actContest(S, wid) {
+  var w = W(S, wid); if (!w) return no("作品が見つかりません"); if (S.ap < 1) return no("行動点が足りません");
+  if (S.t - w.lastContest < 24) return no("この作品は最近応募したばかり");
+  S.ap--; w.lastContest = S.t;
+  var p = 0.05 + w.critic / 250 + w.q.hook / 600 + w.pop / 600;
+  if (ch(p)) { w.critic = Math.min(100, w.critic + 3); w.culture += 2; w.boost += 5; S.fame += 2; addLog(S, "『" + w.title + "』が賞を受けた。"); return yes("受賞した。『" + w.title + "』の名が広まる"); }
+  return yes("惜しくも選外だった");
+}
+function actSequel(S, wid) {
+  var w = W(S, wid); if (!w) return no("作品が見つかりません");
+  if (w.sequel) return no("続編はすでに作られている"); if (!(w.state === "finished" || w.pop >= 40)) return no("続編にはもう少し人気が必要");
+  if (S.ap < 1) return no("行動点が足りません"); if (S.money < 30) return no("資金が足りません");
+  if (w.author.type === "player") {
+    var lim = 2 + (S.fame >= 40 ? 1 : 0);
+    if (S.works.filter(function (x) { return x.author.type === "player" && x.state === "serial"; }).length >= lim) return no("同時に連載できる数の上限です");
+  }
+  S.ap--; S.money -= 30; w.sequel = true;
+  var q = { story: cl(w.q.story + ri(-4, 6), 5, 98), art: cl(w.q.art + ri(-3, 5), 5, 98), hook: cl(w.q.hook + ri(-8, 5), 5, 98), pol: cl(w.q.pol * 0.8, 5, 95) };
+  var n = mkWork(S, { title: w.title + " 第二部", medium: w.medium, genre: w.genre, theme: w.theme, hero: w.hero, author: w.author, illus: w.illus, q: q, syn: w.syn, pop: w.pop * 0.6, fans: w.fans * 0.35 });
+  n.editor = w.editor; addLog(S, "『" + w.title + "』の続編が始まった。");
+  return yes("続編『" + n.title + "』が始まる");
+}
+function actEnd(S, wid) {
+  var w = W(S, wid); if (!w || w.state !== "serial") return no("連載中ではありません");
+  w.state = "finished";
+  if (w.eps >= 24) { w.critic = Math.min(100, w.critic + 3); S.fame += 1; }
+  addLog(S, "『" + w.title + "』が完結した。");
+  return yes("『" + w.title + "』は完結した" + (w.eps >= 24 ? "。長い連載をやり遂げた" : ""));
+}
+function actReroute(S, wid) {
+  var w = W(S, wid); if (!w) return no("作品が見つかりません"); if (S.ap < 1) return no("行動点が足りません"); if (S.money < 50) return no("資金が足りません");
+  S.ap--; S.money -= 50; w.q.hook = cl(w.q.hook + ri(-6, 16), 5, 98); w.low = Math.min(w.low, 3); w.boost += 3;
+  return yes("路線を見直した。結果はこれから分かる");
+}
+function actScout(S, kind) {
+  if (!S.unlock.edit) return no("編集部がまだありません"); if (S.ap < 1) return no("行動点が足りません");
+  if (S.pool.length >= 10) return no("候補が多すぎる。先に整理しよう");
+  if (kind === "scout") { if (S.money < 20) return no("資金が足りません"); S.money -= 20; S.ap--; S.pool.push(genCand(S, "scout")); gainSkill(S, "eye", 1.2); return yes("有望な書き手を見つけ出した"); }
+  S.ap--; var n = ri(1, 2); for (var i = 0; i < n; i++) S.pool.push(genCand(S, "net")); gainSkill(S, "eye", 1.2);
+  return yes("投稿サイトを巡回し、" + n + "件の作品を見つけた");
+}
+function actSign(S, cid) {
+  var c = S.pool.find(function (x) { return x.id === cid; }); if (!c) return no("候補が見つかりません");
+  if (S.money < c.cost) return no("契約金が足りません");
+  S.money -= c.cost; S.pool = S.pool.filter(function (x) { return x.id !== cid; });
+  S.authors.push(c.author);
+  var sd = c.seed, w = mkWork(S, { title: sd.title, medium: sd.medium, genre: sd.genre, theme: sd.theme, hero: sd.hero, author: { id: c.author.id, name: c.author.name, type: "npc" }, q: sd.q, syn: sd.syn });
+  addLog(S, c.author.name + "と契約し、『" + w.title + "』の連載を始めた。");
+  return yes(c.author.name + "と契約した。『" + w.title + "』の連載が始まる", { wid: w.id });
+}
+function actPass(S, cid) { S.pool = S.pool.filter(function (x) { return x.id !== cid; }); return yes("見送った"); }
+function actHire(S, id) {
+  if (S.staff.length >= 10) return no("スタッフは10人までです");
+  var s = S.hire.find(function (x) { return x.id === id; }); if (!s) return no("見つかりません");
+  S.hire = S.hire.filter(function (x) { return x.id !== id; }); S.staff.push(s); return yes(s.name + "を迎えた");
+}
+function actFire(S, id) {
+  var s = S.staff.find(function (x) { return x.id === id; }); if (!s) return no("見つかりません");
+  S.staff = S.staff.filter(function (x) { return x.id !== id; });
+  S.works.forEach(function (w) { if (w.editor === id) w.editor = null; });
+  return yes(s.name + "は編集部を去った");
+}
+function actAssign(S, wid, eid) {
+  var w = W(S, wid); if (!w) return no("作品が見つかりません");
+  if (!eid) { w.editor = null; return yes("担当を外した"); }
+  var n = S.works.filter(function (x) { return x.editor === eid && x.id !== wid && x.state !== "canceled"; }).length;
+  if (n >= 3) return no("ひとりが担当できるのは3作品まで"); w.editor = eid; return yes("担当編集を割り当てた");
+}
+function actOpenOffice(S) {
+  if (S.unlock.edit) return no("すでに編集部があります"); if (S.fame < UNLOCK_FAME) return no("名声が足りません"); if (S.money < 300) return no("資金が足りません(300万円)");
+  S.money -= 300; S.unlock.edit = true; addLog(S, "自分の編集部を開いた。"); return yes("編集部を開いた。発掘と育成ができるようになる");
+}
+function actTakePen(S) {
+  if (S.unlock.write) return no("すでに筆を執れる"); if (S.fame < UNLOCK_FAME) return no("名声が足りません");
+  S.unlock.write = true; addLog(S, "自ら筆を執ることにした。"); return yes("自作を書けるようになった");
+}
+function actTrain(S) {
+  var a = S.authors.find(function (x) { return x.id === S.player.apprentice; }); if (!a) return no("弟子がいません");
+  if (S.ap < 1) return no("行動点が足りません"); S.ap--;
+  a.skill = Math.min(a.pot, a.skill + ri(2, 4)); gainSkill(S, "idea", 0.8);
+  return yes(a.name + "に稽古をつけた");
+}
+function actOfferYes(S, oid) {
+  var o = S.offers.find(function (x) { return x.id === oid; }); if (!o) return no("打診が見つかりません");
+  var m = MEDIA[o.type], cost = Math.round(m.cost * o.share);
+  var r = startMedia(S, { wid: o.wid, type: o.type, partner: o.partner, budget: 1, fid: 1, cost: cost, offer: true });
+  if (r.ok) S.offers = S.offers.filter(function (x) { return x.id !== oid; });
+  return r;
+}
+function actOfferNo(S, oid) { S.offers = S.offers.filter(function (x) { return x.id !== oid; }); return yes("打診を断った"); }
+function actOfferNeg(S, oid) {
+  var o = S.offers.find(function (x) { return x.id === oid; }); if (!o) return no("打診が見つかりません");
+  if (S.ap < 1) return no("行動点が足りません"); if (o.neg >= 2) return no("これ以上は交渉できない");
+  S.ap--; o.neg++; gainSkill(S, "biz", 1.8);
+  if (ch(0.3 + S.player.sk.biz / 150)) { o.share = Math.max(0.2, o.share * 0.85); return yes("交渉がまとまり、負担が軽くなった"); }
+  if (ch(0.12)) { S.offers = S.offers.filter(function (x) { return x.id !== oid; }); return yes("交渉がこじれ、先方は話を引っ込めた"); }
+  return yes("交渉は進まなかった");
+}
+function genIllus(S) {
+  var l = []; for (var i = 0; i < 3; i++) { var a = ri(35, 75); l.push({ id: uid("il"), name: pname(), art: a }); }
+  S.flags.illList = l; return l;
+}
+function workClues(S, w) {
+  var o = { story: w.q.story + nrm() * 3, art: w.q.art + nrm() * 3, hook: w.q.hook + nrm() * 3, pol: w.q.pol + nrm() * 3 };
+  var au = authorOf(S, w);
+  return clueLines(S, o, w.medium, w.genre, w.theme, w.syn, au ? au.pot : null, au ? au.skill : 0);
+}
+
+/* ===== イベント定義 =====
+   queue項目: {k:"ev", id, p}  → EVDEF[id] を表示。選択肢は fn(S,p) が結果文字列を返す */
+function evWork(S, p) { return p && p.wid ? W(S, p.wid) : null; }
+var EVDEF = {
+  cancel: {
+    title: "打ち切りの危機",
+    text: function (S, p) { var w = evWork(S, p); return w ? "『" + w.title + "』の人気が長く低迷している。編集会議で、連載打ち切りが議題に上がった。" : "連載の打ち切りが議題に上がった。"; },
+    choices: function (S, p) {
+      return [
+        { label: "路線を変えて続ける(50万円)", fn: function (S, p) { var w = evWork(S, p); if (!w) return "作品はもうない"; if (S.money < 50) return "資金が足りず、却下された。"; S.money -= 50; w.q.hook = cl(w.q.hook + ri(-4, 14), 5, 98); w.low = 0; w.boost += 4; return "路線変更が認められた。最後のチャンスだ。"; } },
+        { label: "宣伝を打って粘る(100万円)", fn: function (S, p) { var w = evWork(S, p); if (!w) return "作品はもうない"; if (S.money < 100) return "資金が足りず、却下された。"; S.money -= 100; w.promo += 70; w.low = 2; return "宣伝に賭けた。数字の動きを見守ろう。"; } },
+        { label: "潔く幕を引く", fn: function (S, p) { var w = evWork(S, p); if (!w) return "作品はもうない"; w.state = "canceled"; w.canceledAt = S.t; addLog(S, "『" + w.title + "』は打ち切りとなった。"); S.fame = Math.max(0, S.fame - 1); return "『" + w.title + "』は連載終了となった。"; } }
+      ];
+    }
+  },
+  crisis: {
+    title: "資金繰りの危機",
+    text: function () { return "帳簿は赤字が膨らみ、取引先からも催促が届き始めた。このままでは立ち行かない。"; },
+    choices: function () {
+      return [
+        { label: "銀行から借りる(+500万円)", fn: function (S) { S.money += 500; S.debt += 500; addLog(S, "銀行から500万円を借り入れた。"); return "500万円を借り入れた。利息がかさむので早めに返したい。"; } },
+        { label: "版権の一部を売る(+300万円)", fn: function (S) { S.money += 300; S.fame = Math.max(0, S.fame - 2); S.works.forEach(function (w) { w.boost -= 1; }); return "版権の一部を手放し、300万円を得た。"; } },
+        { label: "スタッフに頭を下げる", fn: function (S) { var s = S.staff[0]; if (s) { S.staff = S.staff.filter(function (x) { return x !== s; }); S.works.forEach(function (w) { if (w.editor === s.id) w.editor = null; }); S.money += 150; return s.name + "が身を引いてくれた。150万円が浮いた。"; } S.money += 120; return "知人から120万円を融通してもらった。"; } }
+      ];
+    }
+  },
+  openoffice: {
+    title: "編集部を開く話",
+    text: function () { return "あなたの名前は業界に知られるようになった。自分の編集部を持ち、新しい才能を発掘しないかという話が舞い込んでいる。(資金 300万円)"; },
+    choices: function () {
+      return [
+        { label: "編集部を開く", fn: function (S) { var r = actOpenOffice(S); return r.msg; } },
+        { label: "今はまだ書くことに専念する", fn: function (S) { S.flags.askOffice = false; S.flags.askOfficeLater = S.t + 24; return "話は保留にした。"; } }
+      ];
+    }
+  },
+  takepen: {
+    title: "もう一度、筆を",
+    text: function () { return "数々の作品を世に送り出すうちに、自分でも物語を書きたい気持ちが膨らんできた。"; },
+    choices: function () {
+      return [
+        { label: "筆を執る", fn: function (S) { return actTakePen(S).msg; } },
+        { label: "裏方に徹する", fn: function (S) { S.flags.askPen = false; S.flags.askPenLater = S.t + 24; return "また気が向いたら、その時に。"; } }
+      ];
+    }
+  },
+  apprentice: {
+    title: "弟子入り志願",
+    text: function (S, p) { var a = p.a; return a.name + "という若者が、あなたの元を訪ねてきた。「弟子にしてください」と深く頭を下げている。" ; },
+    choices: function (S, p) {
+      return [
+        { label: "弟子にする", fn: function (S, p) {
+            var a = p.a; a.mentor = "p0"; a.apprentice = true; S.authors.push(a); S.player.apprentice = a.id;
+            addLog(S, a.name + "を弟子に迎えた。"); return a.name + "を弟子に迎えた。稽古をつけて育てよう。"; } },
+        { label: "断る", fn: function () { return "丁重にお断りした。"; } }
+      ];
+    }
+  },
+  fan: {
+    title: "ファンからの手紙",
+    text: function (S, p) { var w = evWork(S, p); return w ? "『" + w.title + "』の読者から、熱のこもった手紙が届いた。" : "読者から手紙が届いた。"; },
+    choices: function () {
+      return [
+        { label: "返事を書く", fn: function (S, p) { var w = evWork(S, p); if (w) { w.boost += 2; w.fans += 300; } return "丁寧に返事を書いた。ファンがまた一人増えた。"; } },
+        { label: "編集部の壁に貼る", fn: function (S) { S.player.sta = Math.min(100, S.player.sta + 10); return "手紙を眺めると、気力がわいてきた。"; } }
+      ];
+    }
+  },
+  slump: {
+    title: "スランプ",
+    text: function () { return "筆が止まった。何を書いても納得がいかない日が続いている。"; },
+    choices: function () {
+      return [
+        { label: "気分転換に旅へ(30万円)", fn: function (S) { if (S.money < 30) return "旅に出る余裕がなかった。"; S.money -= 30; S.player.sta = 100; gainSkill(S, "idea", 2.5); return "旅先で得たものは大きかった。発想がほどけた。"; } },
+        { label: "気合いで書き続ける", fn: function (S) { S.player.sta = Math.max(0, S.player.sta - 25); gainSkill(S, "prose", 1.5); return "苦しい時期だが、筆力はついた。"; } }
+      ];
+    }
+  },
+  scandal: {
+    title: "炎上",
+    text: function (S, p) { var w = evWork(S, p); return w ? "『" + w.title + "』の一場面がSNSで批判を集めている。どう対応する?" : "ネットで批判が起きている。"; },
+    choices: function () {
+      return [
+        { label: "声明を出して謝罪する", fn: function (S, p) { var w = evWork(S, p); if (w) { w.pop = Math.max(0, w.pop - 3); } S.fame = Math.max(0, S.fame - 0.5); return "誠実な対応が評価され、騒ぎは数日で収まった。"; } },
+        { label: "沈黙を貫く", fn: function (S, p) { var w = evWork(S, p); if (w) { if (ch(0.5)) { w.pop = Math.max(0, w.pop - 9); return "火は広がり、人気が大きく落ちた。"; } w.boost += 2; return "騒ぎは自然に収まり、むしろ話題になった。"; } return "何も起きなかった。"; } }
+      ];
+    }
+  },
+  rival: {
+    title: "ライバル現る",
+    text: function () { return "同時期に連載を始めた新鋭が、書店の平台で話題をさらっている。"; },
+    choices: function () {
+      return [
+        { label: "刺激を受けて奮起する", fn: function (S) { gainSkill(S, "idea", 2); gainSkill(S, "prose", 1.5); S.player.sta = Math.max(0, S.player.sta - 10); return "負けていられない。机に向かう時間が増えた。"; } },
+        { label: "気にせず自分の道を行く", fn: function (S) { S.player.sta = Math.min(100, S.player.sta + 10); return "他人は他人。落ち着いた気持ちで前を向く。"; } }
+      ];
+    }
+  },
+  windfall: {
+    title: "思わぬ臨時収入",
+    text: function () { return "昔の作品の二次使用料が、思いがけずまとまって入ってきた。"; },
+    choices: function () {
+      return [
+        { label: "そのまま運営費に回す", fn: function (S) { S.money += 120; return "120万円が口座に入った。"; } },
+        { label: "宣伝費に回す", fn: function (S) { var l = liveWorks(S); if (l.length) { pick(l).promo += 60; return "宣伝費として使い、話題が広がりそうだ。"; } S.money += 120; return "120万円が口座に入った。"; } }
+      ];
+    }
+  },
+  staffleave: {
+    title: "スタッフの相談",
+    text: function (S, p) { return (p.name || "スタッフ") + "が、少し深刻な顔で相談があると言ってきた。「もう少し給料を上げてもらえませんか」"; },
+    choices: function (S, p) {
+      return [
+        { label: "応じる(80万円)", fn: function (S, p) { if (S.money < 80) return "資金が足りず、応じられなかった。"; S.money -= 80; var s = S.staff.find(function (x) { return x.id === p.sid; }); if (s) s.skill = Math.min(s.pot, s.skill + 2); return "やる気が戻り、仕事ぶりに磨きがかかった。"; } },
+        { label: "断る", fn: function (S, p) { if (ch(0.4)) { S.staff = S.staff.filter(function (x) { return x.id !== p.sid; }); S.works.forEach(function (w) { if (w.editor === p.sid) w.editor = null; }); return "しばらくして、辞表が出された。"; } return "渋い顔だったが、働き続けてくれるようだ。"; } }
+      ];
+    }
+  }
+};
+
+/* ===== 発生判定 ===== */
+function rollEvent(S, news) {
+  if (S.queue.length > 3) return;
+  var hasWorks = S.works.length > 0, live = liveWorks(S);
+  var apprOK = S.fame >= 12 && !S.player.apprentice && S.t >= (S.flags.apprNext || 0);
+  if (apprOK && ch(0.02)) {
+    var sk = ri(15, 30), a = { id: uid("a"), name: pname(), skill: sk, pot: cl(sk + ri(25, 45), sk, 95), mentor: null, hits: 0, weeks: 0, classics: 0, mentees: 0, trait: pick(TRAITS), hall: false, debuted: false };
+    S.flags.apprNext = S.t + 48;
+    queue(S, { k: "ev", id: "apprentice", p: { a: a } });
+    return;
+  }
+  if (S.flags.askOfficeLater && S.t >= S.flags.askOfficeLater) { S.flags.askOffice = false; S.flags.askOfficeLater = 0; }
+  if (S.flags.askPenLater && S.t >= S.flags.askPenLater) { S.flags.askPen = false; S.flags.askPenLater = 0; }
+  if (!ch(0.045)) return;
+  var opts = [];
+  if (live.length) { opts.push("fan", "fan", "scandal"); }
+  if (S.player.sta < 40 || S.unlock.write) opts.push("slump");
+  opts.push("rival", "windfall");
+  if (S.staff.length) opts.push("staffleave");
+  var id = pick(opts), p = {};
+  if (id === "fan" || id === "scandal") p.wid = pick(live).id;
+  if (id === "staffleave") { var s = pick(S.staff); p.sid = s.id; p.name = s.name; }
+  if (id === "scandal" && live.length && pick(live).pop < 20) return;
+  queue(S, { k: "ev", id: id, p: p });
+}
+
+/* ===== イベント取り出し・解決 ===== */
+function peekEvent(S) { return S.queue.length ? S.queue[0] : null; }
+function popEvent(S) { return S.queue.shift(); }
+function resolveEv(S, item, idx) {
+  var def = EVDEF[item.id]; if (!def) return "";
+  var ch_ = def.choices(S, item.p)[idx]; if (!ch_) return "";
+  return ch_.fn(S, item.p);
+}
+
+/* ===== 設定 ===== */
+var SET = { bgm: 0.5, se: 0.6, bright: 1 };
+function loadSettings() {
+  try { var s = JSON.parse(localStorage.getItem("gs_settings") || "null"); if (s) { SET.bgm = s.bgm != null ? s.bgm : 0.5; SET.se = s.se != null ? s.se : 0.6; SET.bright = s.bright != null ? s.bright : 1; } } catch (e) {}
+  applyBright();
+}
+function saveSettings() { try { localStorage.setItem("gs_settings", JSON.stringify(SET)); } catch (e) {} }
+function applyBright() { try { document.documentElement.style.setProperty("--bright", String(SET.bright)); } catch (e) {} }
+
+/* ===== 圧縮・コード ===== */
+function u8ToB64(u8) { var s = ""; for (var i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); }
+function b64ToU8(b) { var s = atob(b), u = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+function streamBytes(stream) { return new Response(stream).arrayBuffer().then(function (b) { return new Uint8Array(b); }); }
+function packState(S) {
+  var json = JSON.stringify(S), enc = new TextEncoder().encode(json);
+  if (typeof CompressionStream === "undefined") return Promise.resolve("P" + u8ToB64(enc));
+  var cs = new CompressionStream("gzip"), w = cs.writable.getWriter(); w.write(enc); w.close();
+  return streamBytes(cs.readable).then(function (u) { return "Z" + u8ToB64(u); }).catch(function () { return "P" + u8ToB64(enc); });
+}
+function unpackState(str) {
+  try {
+    var kind = str.charAt(0), u = b64ToU8(str.slice(1));
+    if (kind === "P") return Promise.resolve(JSON.parse(new TextDecoder().decode(u)));
+    if (typeof DecompressionStream === "undefined") return Promise.reject(new Error("この環境では読み込めません"));
+    var ds = new DecompressionStream("gzip"), w = ds.writable.getWriter(); w.write(u); w.close();
+    return streamBytes(ds.readable).then(function (b) { return JSON.parse(new TextDecoder().decode(b)); });
+  } catch (e) { return Promise.reject(e); }
+}
+
+/* ===== 移行(古いデータに新しい項目を補う) ===== */
+function deepFill(t, d) {
+  for (var k in d) {
+    if (!(k in t)) t[k] = JSON.parse(JSON.stringify(d[k]));
+    else if (d[k] && typeof d[k] === "object" && !Array.isArray(d[k]) && t[k] && typeof t[k] === "object" && !Array.isArray(t[k])) deepFill(t[k], d[k]);
+  }
+  return t;
+}
+function migrate(S) {
+  var def = newGame({ diff: S.diff || "normal", role: S.player && S.player.role || "writer" });
+  deepFill(S, def);
+  S.works.forEach(function (w) { w.media = w.media || {}; w.chars = w.chars || genChars(); });
+  S.gv = GAME_VER; S.ver = SAVE_VER;
+  return S;
+}
+
+/* ===== スロット(端末内) ===== */
+var SLOTS = 3;
+function slotKey(i) { return "gs_slot" + i; }
+function slotMeta(S) {
+  var d = dinfo(S.t);
+  return { t: S.t, label: d.label, company: S.company, name: S.player.name, money: Math.round(S.money), fame: Math.round(S.fame), works: S.works.length, hall: S.hall.works.length + S.hall.people.length, gv: S.gv, at: Date.now() };
+}
+function readSlots() {
+  var out = [];
+  for (var i = 1; i <= SLOTS; i++) {
+    var m = null;
+    try { var raw = localStorage.getItem(slotKey(i) + "_meta"); if (raw) m = JSON.parse(raw); } catch (e) {}
+    out.push(m);
+  }
+  return out;
+}
+function saveSlot(i, S) {
+  return packState(S).then(function (z) {
+    var meta = slotMeta(S);
+    try { localStorage.setItem(slotKey(i), z); localStorage.setItem(slotKey(i) + "_meta", JSON.stringify(meta)); }
+    catch (e) { return { ok: false, msg: "この端末に保存できませんでした(容量不足の可能性)" }; }
+    cloudPush(i, z, meta);
+    return { ok: true, msg: "スロット" + i + "に保存しました" };
+  });
+}
+function loadSlot(i) {
+  var z = null; try { z = localStorage.getItem(slotKey(i)); } catch (e) {}
+  if (!z) return Promise.reject(new Error("データがありません"));
+  return unpackState(z).then(function (S) { return migrate(S); });
+}
+function deleteSlot(i) { try { localStorage.removeItem(slotKey(i)); localStorage.removeItem(slotKey(i) + "_meta"); } catch (e) {} }
+
+/* ===== クラウド(db / user capability があるとき) ===== */
+var CLOUD = { db: null, uid: null, ready: false, state: "off" };
+function cloudInit() {
+  var c = window.claude;
+  if (!c || !c.use) return Promise.resolve(false);
+  return Promise.all([c.use("db"), c.use("user")]).then(function (r) {
+    CLOUD.db = r[0]; var user = r[1];
+    if (!CLOUD.db || !user) return false;
+    return Promise.resolve(user.id()).then(function (id) {
+      if (!id) return false;
+      CLOUD.uid = id; CLOUD.ready = true; CLOUD.state = "on"; return true;
+    });
+  }).catch(function () { return false; });
+}
+function cloudDoc(i) { return CLOUD.db.doc("data/users/" + CLOUD.uid + "/slot" + i); }
+function cloudPush(i, z, meta) {
+  if (!CLOUD.ready) return Promise.resolve();
+  return cloudDoc(i).set({ z: z, meta: meta, at: Date.now() }).then(function () { CLOUD.state = "on"; }).catch(function () { CLOUD.state = "err"; });
+}
+function cloudList() {
+  if (!CLOUD.ready) return Promise.resolve([null, null, null]);
+  return Promise.all([1, 2, 3].map(function (i) {
+    return cloudDoc(i).get().then(function (s) { return s.exists ? s.data() : null; }).catch(function () { return null; });
+  }));
+}
+function cloudPull(i) {
+  return cloudDoc(i).get().then(function (s) {
+    if (!s.exists) throw new Error("クラウドにデータがありません");
+    var d = s.data();
+    try { localStorage.setItem(slotKey(i), d.z); localStorage.setItem(slotKey(i) + "_meta", JSON.stringify(d.meta)); } catch (e) {}
+    return unpackState(d.z).then(migrate);
+  });
+}
+
+/* ===== 引き継ぎコード ===== */
+function exportCode(S) { return packState(S).then(function (z) { return "GS1:" + z; }); }
+function importCode(code) {
+  code = (code || "").replace(/\s+/g, "");
+  if (code.indexOf("GS1:") !== 0) return Promise.reject(new Error("引き継ぎコードの形式が違います"));
+  return unpackState(code.slice(4)).then(function (S) {
+    if (!S || !S.works || S.t == null) throw new Error("データが壊れています");
+    return migrate(S);
+  });
+}
+
+/* ===== 音(Web Audio で合成) ===== */
+var AU = { ctx: null, master: null, bgmGain: null, seGain: null, timer: null, step: 0, on: false, mood: "calm" };
+function auInit() {
+  if (AU.ctx) return;
+  try {
+    var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    AU.ctx = new C(); AU.master = AU.ctx.createGain(); AU.master.gain.value = 0.9; AU.master.connect(AU.ctx.destination);
+    AU.bgmGain = AU.ctx.createGain(); AU.bgmGain.connect(AU.master);
+    AU.seGain = AU.ctx.createGain(); AU.seGain.connect(AU.master);
+    auVol();
+  } catch (e) { AU.ctx = null; }
+}
+function auVol() { if (!AU.ctx) return; AU.bgmGain.gain.value = SET.bgm * 0.22; AU.seGain.gain.value = SET.se * 0.5; }
+function auResume() { auInit(); if (AU.ctx && AU.ctx.state === "suspended") AU.ctx.resume(); }
+function tone(freq, t0, dur, type, vol, dest) {
+  var o = AU.ctx.createOscillator(), g = AU.ctx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(dest); o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function mf(n) { return 440 * Math.pow(2, (n - 69) / 12); }
+var BGM_CH = [[0, 4, 7, 12], [-3, 0, 4, 9], [-5, -1, 2, 7], [-7, -3, 0, 5]];
+var BGM_MEL = [0, 2, 4, 7, 4, 2, 7, 9, 7, 4, 2, 0, 4, 7, 9, 12];
+function bgmStep() {
+  if (!AU.ctx || !AU.on || SET.bgm <= 0) return;
+  var t = AU.ctx.currentTime + 0.05, s = AU.step++, bar = Math.floor(s / 8) % 4, ch_ = BGM_CH[bar], root = 60;
+  if (s % 8 === 0) ch_.forEach(function (n, i) { tone(mf(root + n - 12 + (i > 1 ? 0 : 0)), t, 3.2, "triangle", 0.12, AU.bgmGain); });
+  if (s % 2 === 0) { var m = BGM_MEL[(s / 2) % BGM_MEL.length] + BGM_CH[bar][0]; if (ch(0.8)) tone(mf(root + 12 + m), t, 0.9, "sine", 0.1, AU.bgmGain); }
+}
+function bgmStart() {
+  auResume(); if (!AU.ctx || AU.on) return; AU.on = true;
+  AU.timer = setInterval(bgmStep, 520);
+}
+function bgmStop() { AU.on = false; if (AU.timer) { clearInterval(AU.timer); AU.timer = null; } }
+function se(kind) {
+  if (SET.se <= 0) return; auResume(); if (!AU.ctx) return;
+  var t = AU.ctx.currentTime + 0.01, d = AU.seGain;
+  switch (kind) {
+    case "tap": tone(660, t, 0.08, "square", 0.15, d); break;
+    case "ok": tone(660, t, 0.1, "triangle", 0.3, d); tone(880, t + 0.08, 0.14, "triangle", 0.3, d); break;
+    case "ng": tone(200, t, 0.18, "sawtooth", 0.2, d); break;
+    case "write": [0, 0.05, 0.1].forEach(function (x) { tone(1800 + ri(0, 400), t + x, 0.04, "square", 0.08, d); }); break;
+    case "coin": tone(988, t, 0.08, "square", 0.2, d); tone(1319, t + 0.07, 0.2, "square", 0.2, d); break;
+    case "fan": [523, 659, 784, 1047].forEach(function (f, i) { tone(f, t + i * 0.09, 0.5, "triangle", 0.3, d); }); break;
+    case "hall": [392, 523, 659, 784, 1047].forEach(function (f, i) { tone(f, t + i * 0.16, 1.2, "triangle", 0.3, d); }); tone(196, t, 2.2, "sine", 0.3, d); break;
+    case "flop": [440, 349, 262].forEach(function (f, i) { tone(f, t + i * 0.2, 0.5, "sawtooth", 0.15, d); }); break;
+    case "page": tone(330, t, 0.06, "sine", 0.2, d); break;
+  }
+}
+
+/* ===== 状態 ===== */
+var G = { S: null, slot: 0, screen: "title", tab: "home", hallTab: "works", modal: [], form: { ng: { name: "", company: "", role: "writer", diff: "normal", slot: 1 }, plan: { title: "", medium: "novel", genre: "school", theme: "youth", hero: "plodder", illusId: "" }, m: {}, code: "" }, cur: null, curRes: null, cine: null, busy: false, slots: [null, null, null], cloudSlots: [null, null, null], toastT: null };
+function $(s) { return document.querySelector(s); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function btn(label, act, data, cls) {
+  var d = ""; if (data) for (var k in data) d += ' data-' + k + '="' + esc(data[k]) + '"';
+  return '<button class="btn ' + (cls || "") + '" data-act="' + act + '"' + d + '>' + label + '</button>';
+}
+function chip(label, act, data, on) { var d = ""; if (data) for (var k in data) d += ' data-' + k + '="' + esc(data[k]) + '"'; return '<button class="chip' + (on ? " on" : "") + '" data-act="' + act + '"' + d + '>' + esc(label) + '</button>'; }
+function bar(v, max, cls) { return '<div class="bar ' + (cls || "") + '"><i style="width:' + cl(v / (max || 100) * 100, 0, 100) + '%"></i></div>'; }
+function popWord(v) { return v < 15 ? "苦戦中" : v < 30 ? "ささやかな人気" : v < 45 ? "人気が出てきた" : v < 60 ? "人気作" : v < 75 ? "大人気" : "社会現象級"; }
+function skWord(v) { return v < 25 ? "駆け出し" : v < 40 ? "見習い" : v < 55 ? "一人前" : v < 70 ? "腕利き" : v < 85 ? "達人" : "神の領域"; }
+function stateWord(w) { return w.state === "serial" ? "連載中" : w.state === "finished" ? "完結" : "打ち切り"; }
+
+/* ===== 表紙(手続き生成SVG) ===== */
+var GHUE = { school: 205, fantasy: 265, mystery: 230, romance: 340, scifi: 185, sports: 15, daily: 95, horror: 290, history: 30, work: 160 };
+function cover(w, w_) {
+  var h = hstr(w.id + w.title), hue = GHUE[w.genre] || 200, id = "cv" + (h % 99999), W_ = 80, H_ = 112;
+  var s1 = 'hsl(' + hue + ',55%,38%)', s2 = 'hsl(' + ((hue + 40) % 360) + ',60%,62%)';
+  var shapes = "", n = 2 + (h % 3);
+  for (var i = 0; i < n; i++) {
+    var x = (hstr(w.title + i) % 80), y = (hstr(w.id + i) % 70), r = 14 + (hstr(i + w.title) % 22);
+    shapes += (i % 2 ? '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="hsla(' + ((hue + 160) % 360) + ',70%,75%,.35)"/>' : '<rect x="' + (x - 20) + '" y="' + y + '" width="' + (r * 2) + '" height="' + (r / 2) + '" transform="rotate(' + (h % 50 - 25) + ' ' + x + ' ' + y + ')" fill="hsla(48,95%,70%,.45)"/>');
+  }
+  var t = w.title, lines = [], L = 5; for (var j = 0; j < t.length && lines.length < 3; j += L) lines.push(t.slice(j, j + L));
+  var tx = lines.map(function (l, k) { return '<text x="8" y="' + (72 + k * 12) + '" font-size="10" fill="#fff" font-family="Dela Gothic One,sans-serif" stroke="rgba(0,0,0,.45)" stroke-width=".6" paint-order="stroke">' + esc(l) + '</text>'; }).join("");
+  var ic = w.medium === "manga" ? "漫" : "小";
+  return '<svg class="cover" viewBox="0 0 ' + W_ + ' ' + H_ + '" role="img" aria-label="' + esc(w.title) + 'の表紙"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + s1 + '"/><stop offset="1" stop-color="' + s2 + '"/></linearGradient></defs><rect width="80" height="112" rx="3" fill="url(#' + id + ')"/>' + shapes + '<rect x="0" y="0" width="80" height="14" fill="rgba(0,0,0,.28)"/><text x="6" y="10" font-size="7" fill="#fff" font-family="IBM Plex Mono,monospace">' + ic + ' ' + esc(gname(w.genre, GENRES)) + '</text>' + tx + '</svg>';
+}
+
+/* ===== トースト ===== */
+function toast(msg, ok) {
+  var t = $("#toast"); if (!t) return; t.textContent = msg; t.className = "show " + (ok === false ? "ng" : "ok");
+  clearTimeout(G.toastT); G.toastT = setTimeout(function () { t.className = ""; }, 2600);
+}
+
+/* ===== 描画 ===== */
+function render() {
+  var y = window.scrollY, app = $("#app");
+  if (G.screen === "title") app.innerHTML = vTitle();
+  else if (G.screen === "new") app.innerHTML = vNew();
+  else app.innerHTML = vGame();
+  window.scrollTo(0, y);
+  renderOverlay();
+}
+function renderOverlay() {
+  var m = $("#modal"), c = $("#cine");
+  var oldScroll = m.querySelector(".sheet") ? m.querySelector(".sheet").scrollTop : 0;
+  if (G.cine) { c.innerHTML = vCine(G.cine); c.className = "on " + (G.cine.cls || ""); } else { c.innerHTML = ""; c.className = ""; }
+  var html = "";
+  if (!G.cine && G.cur && G.cur.k !== "mres" && G.cur.k !== "hall" && G.cur.k !== "award") html = vCur();
+  else if (!G.cine && G.modal.length) html = vModal(G.modal[G.modal.length - 1]);
+  if (html) { m.innerHTML = '<div class="veil" data-act="' + (G.cur ? "noop" : "close") + '"></div><div class="sheet" role="dialog" aria-modal="true">' + html + '</div>'; m.className = "on"; var sh = m.querySelector(".sheet"); if (sh) sh.scrollTop = oldScroll; }
+  else { m.innerHTML = ""; m.className = ""; }
+}
+
+/* ----- タイトル ----- */
+function vTitle() {
+  var up = UPDATES[0], has = G.slots.some(function (s) { return s; });
+  return '<div class="wrap title">' +
+    '<div class="mast"><span class="mono">VOL.' + GAME_VER + '</span><span class="mono">ORIGINAL × PUBLISHING SIM</span></div>' +
+    '<h1 class="logo">成長<br>シミュレーター</h1>' +
+    '<p class="lead">一編の原作が、アニメになり、映画になり、やがて街をつくる。<br>書く人にも、見つける人にもなれる物語。</p>' +
+    '<div class="stack">' + btn("はじめから", "newgame", null, "pri big") + (has ? btn("つづきから", "slots", { mode: "load" }, "big") : "") +
+    '<div class="row2">' + btn("引き継ぎ", "code", null, "") + btn("設定", "settings", null, "") + '</div></div>' +
+    '<section class="card upd"><h2 class="h2">アップデート情報</h2>' + UPDATES.map(function (u) { return '<div class="upd-i"><b class="mono">v' + u.ver + '</b> <span class="muted mono">' + u.date + '</span><ul>' + u.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + '</ul></div>'; }).join("") + '</section>' +
+    '<p class="muted small">' + (CLOUD.ready ? "クラウド保存: 使えます(別の端末からも続きを遊べます)" : "クラウド保存: この環境では使えません(端末内に保存します)") + '</p></div>';
+}
+
+/* ----- 新規 ----- */
+function vNew() {
+  var f = G.form.ng, sl = G.slots;
+  return '<div class="wrap"><button class="back" data-act="totitle">← タイトルへ</button><h2 class="h1">新しい物語</h2>' +
+    '<label class="fld"><span>あなたの名前</span><input data-in="ng.name" value="' + esc(f.name) + '" maxlength="10" placeholder="あなた"></label>' +
+    '<label class="fld"><span>会社(編集部)の名前</span><input data-in="ng.company" value="' + esc(f.company) + '" maxlength="14" placeholder="ミライ編集部"></label>' +
+    '<div class="fld"><span>はじまり方</span><div class="chips">' +
+    chip("作家として", "ng", { k: "role", v: "writer" }, f.role === "writer") + chip("編集者として", "ng", { k: "role", v: "editor" }, f.role === "editor") + '</div>' +
+    '<p class="muted small">' + (f.role === "writer" ? "自分の原作を書き、育てるところから。名声が上がると、自分の編集部も開ける。" : "原作を探し、作家を育てるところから。名声が上がると、自分でも筆を執れる。") + '</p></div>' +
+    '<div class="fld"><span>難しさ</span><div class="chips">' + [["easy", "やさしい"], ["normal", "ふつう"], ["hard", "きびしい"]].map(function (d) { return chip(d[1], "ng", { k: "diff", v: d[0] }, f.diff === d[0]); }).join("") + '</div>' +
+    '<p class="muted small">違いは「最初の資金」と「運のブレ幅」。やさしいほど安定します。</p></div>' +
+    '<div class="fld"><span>保存先</span><div class="chips">' + [1, 2, 3].map(function (i) { return chip("スロット" + i + (sl[i - 1] ? "(上書き)" : "(空き)"), "ng", { k: "slot", v: i }, +f.slot === i); }).join("") + '</div></div>' +
+    btn("物語をはじめる", "start", null, "pri big") + '</div>';
+}
+
+/* ----- ゲーム本体 ----- */
+var TABS = [["home", "ホーム"], ["works", "作品"], ["scout", "編集部"], ["media", "展開"], ["park", "パーク"], ["hall", "殿堂"], ["menu", "メニュー"]];
+function vGame() {
+  var S = G.S, d = dinfo(S.t), tabs = TABS.filter(function (t) { return t[0] !== "scout" || S.unlock.edit || true; });
+  var body = { home: vHome, works: vWorks, scout: vScout, media: vMedia, park: vPark, hall: vHall, menu: vMenu }[G.tab](S);
+  var ap = ""; for (var i = 0; i < S.apMax; i++) ap += '<i class="pip' + (i < S.ap ? " on" : "") + '"></i>';
+  return '<header class="top"><div class="top-l"><b class="co">' + esc(S.company) + '</b><span class="mono small">' + d.label + '</span></div>' +
+    '<div class="top-r"><span class="mono money">' + fmtMoney(S.money) + '</span><span class="small">' + companyRank(S) + '</span></div>' +
+    '<div class="top-b"><span class="small">行動</span>' + ap + '<span class="small sp">体力</span>' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</div></header>' +
+    '<main class="wrap">' + body + '</main>' +
+    '<footer class="foot"><button class="btn pri next" data-act="next">週を進める ▶</button><nav class="tabs">' +
+    tabs.map(function (t) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (G.tab === t[0] ? "on" : "") + '">' + t[1] + '</button>'; }).join("") + '</nav></footer>';
+}
+
+function vHome(S) {
+  var tr = S.trend, w = liveWorks(S), me = S.player;
+  var news = S.news.length ? '<ul class="news">' + S.news.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + '</ul>' : '<p class="muted">静かな週だった。</p>';
+  var r = S.rank.year[0];
+  var h = '<section class="card"><h2 class="h2">今週のできごと</h2>' + news + '</section>' +
+    '<section class="card"><h2 class="h2">世の中の風向き</h2><div class="chips static">' +
+    tr.hot.map(function (g) { return '<span class="tag up">追い風 ' + esc(gname(g, GENRES)) + '</span>'; }).join("") +
+    tr.cold.map(function (g) { return '<span class="tag dn">向かい風 ' + esc(gname(g, GENRES)) + '</span>'; }).join("") +
+    '<span class="tag">注目の題材 ' + esc(gname(tr.th, THEMES)) + '</span></div></section>' +
+    '<section class="card"><h2 class="h2">今週の行動</h2><div class="grid2">' +
+    btn("休む(体力回復)", "rest") + btn("人脈づくり(5万円)", "network") +
+    (S.unlock.write ? btn("新連載を企画", "plan", null, "pri") : btn("まだ筆を執れない", "noop", null, "dis")) +
+    (me.apprentice ? btn("弟子に稽古", "train") : "") + '</div>' +
+    '<div class="fld"><span class="small">腕を磨く</span><div class="chips">' + Object.keys(SKILLS).map(function (k) { return chip(SKILLS[k], "study", { k: k }); }).join("") + '</div></div></section>' +
+    '<section class="card"><h2 class="h2">あなたの力</h2>' + Object.keys(SKILLS).map(function (k) { return '<div class="skl"><span>' + SKILLS[k] + '</span>' + bar(me.sk[k], 100) + '<em class="small muted">' + skWord(me.sk[k]) + '</em></div>'; }).join("") + '</section>';
+  if (!S.unlock.edit) h += '<section class="card note"><b>編集部について</b><p class="small">名声が一定に届き、資金が300万円あれば、自分の編集部を開いて才能を発掘できる。</p></section>';
+  if (r) h += '<section class="card"><h2 class="h2">昨年のランキング</h2>' + rankList(r.rows.slice(0, 3)) + '</section>';
+  if (S.flags.askOffice && !S.unlock.edit && S.fame >= UNLOCK_FAME) h += btn("編集部を開く(300万円)", "openoffice", null, "pri");
+  if (S.flags.askPen && !S.unlock.write) h += btn("筆を執る", "takepen", null, "pri");
+  return h;
+}
+function rankList(rows) { return '<ol class="rank">' + rows.map(function (x) { return '<li' + (x.mine ? ' class="mine"' : "") + '><b>' + esc(x.title) + '</b><span class="muted small">' + esc(x.author) + (x.mine ? " ★" : "") + '</span></li>'; }).join("") + '</ol>'; }
+
+function workCard(S, w) {
+  var hot = S.trend.hot.indexOf(w.genre) > -1;
+  return '<button class="wcard" data-act="work" data-id="' + w.id + '">' + cover(w) +
+    '<div class="wc-b"><b class="wt">' + esc(w.title) + '</b><span class="muted small">' + esc(w.author.name) + (w.illus ? " / 絵 " + esc(w.illus.name) : "") + '</span>' +
+    '<div class="chips static"><span class="tag">' + stateWord(w) + '</span>' + (hot && w.state === "serial" ? '<span class="tag up">追い風</span>' : "") + (w.hall ? '<span class="tag gold">殿堂入り</span>' : w.cand ? '<span class="tag gold-o">殿堂候補</span>' : "") + '</div>' +
+    '<span class="small">' + popWord(w.pop) + ' ・ ファン ' + fmtFans(w.fans) + '</span></div></button>';
+}
+function vWorks(S) {
+  var live = S.works.filter(function (w) { return w.state === "serial"; }), rest = S.works.filter(function (w) { return w.state !== "serial"; });
+  var h = '<h2 class="h1">作品</h2>';
+  if (S.unlock.write) h += btn("新連載を企画", "plan", null, "pri");
+  h += '<h3 class="h3">連載中 (' + live.length + ')</h3>' + (live.length ? live.map(function (w) { return workCard(S, w); }).join("") : '<p class="muted">連載中の作品はまだない。' + (S.unlock.edit ? "「編集部」で作家を探そう。" : "") + '</p>');
+  if (rest.length) h += '<h3 class="h3">完結・終了</h3>' + rest.map(function (w) { return workCard(S, w); }).join("");
+  return h;
+}
+
+function vScout(S) {
+  if (!S.unlock.edit) return '<h2 class="h1">編集部</h2><section class="card note"><p>編集部はまだない。名声が ' + UNLOCK_FAME + ' に届くと打診が来る。</p>' + (S.fame >= UNLOCK_FAME ? btn("編集部を開く(300万円)", "openoffice", null, "pri") : "") + '</section>';
+  var h = '<h2 class="h1">編集部</h2><section class="card"><h2 class="h2">発掘する</h2><div class="grid2">' +
+    btn("スカウトに出る(20万円)", "scout", { kind: "scout" }) + btn("投稿サイトを巡る", "scout", { kind: "net" }) + '</div><p class="muted small">目利きが上がるほど、候補の情報が詳しく読み取れる。</p></section>';
+  h += '<h3 class="h3">候補 (' + S.pool.length + ')</h3>';
+  if (!S.pool.length) h += '<p class="muted">いまは候補がいない。</p>';
+  S.pool.forEach(function (c) {
+    h += '<section class="card cand"><div class="cand-h"><b>' + esc(c.author.name) + '</b><span class="tag">' + ({ scout: "スカウト", net: "投稿サイト", bring: "持ち込み", sub: "新人賞応募" }[c.kind] || "") + '</span></div>' +
+      '<p class="small">『' + esc(c.seed.title) + '』 ' + (c.seed.medium === "manga" ? "漫画" : "小説") + ' ・ ' + esc(gname(c.seed.genre, GENRES)) + ' × ' + esc(gname(c.seed.theme, THEMES)) + '</p>' +
+      '<ul class="clues">' + c.lines.map(function (l) { return '<li>' + esc(l.t) + '</li>'; }).join("") + '</ul>' +
+      '<div class="cand-f"><span class="mono small">契約金 ' + fmtMoney(c.cost) + ' ・ あと' + Math.max(0, c.exp - S.t) + '週</span>' + btn("契約する", "sign", { id: c.id }, "pri sm") + btn("見送る", "pass", { id: c.id }, "sm") + '</div></section>';
+  });
+  h += '<h3 class="h3">スタッフ (' + S.staff.length + '/10)</h3>';
+  if (!S.staff.length) h += '<p class="muted">スタッフはまだいない。担当編集がつくと作品が伸びやすい。</p>';
+  S.staff.forEach(function (s) { h += '<section class="card"><div class="cand-h"><b>' + esc(s.name) + '</b><span class="tag">' + STAFF_ROLES[s.role].name + '</span></div><p class="small">' + skillWord(s.skill) + ' ・ ' + TRAIT_NOTE[s.trait] + ' ・ 月給目安 ' + salary(s) * 4 + '万円</p>' + (s.hall ? '<span class="tag gold">殿堂入り</span>' : "") + btn("退職してもらう", "fire", { id: s.id }, "sm") + '</section>'; });
+  h += '<h3 class="h3">採用できる人材</h3>';
+  S.hire.forEach(function (s) { h += '<section class="card"><div class="cand-h"><b>' + esc(s.name) + '</b><span class="tag">' + STAFF_ROLES[s.role].name + '</span></div><p class="small">' + skillWord(s.skill) + (s.pot - s.skill > 20 ? ' ・ 伸びしろがありそう' : "") + ' ・ ' + STAFF_ROLES[s.role].note + '</p>' + btn("迎える", "hire", { id: s.id }, "sm pri") + '</section>'; });
+  return h;
+}
+
+function vMedia(S) {
+  var h = '<h2 class="h1">展開</h2>';
+  if (S.offers.length) {
+    h += '<h3 class="h3">届いている打診</h3>';
+    S.offers.forEach(function (o) {
+      var w = W(S, o.wid); if (!w) return;
+      h += '<section class="card offer"><b>『' + esc(w.title) + '』 ' + MEDIA[o.type].name + '</b><p class="small">' + esc(o.partner.name) + '(' + skillWord(o.partner.skill) + ')から。自社の負担は製作費の' + Math.round(o.share * 100) + '%、' + fmtMoney(Math.round(MEDIA[o.type].cost * o.share)) + '。あと' + (o.exp - S.t) + '週。</p>' +
+        '<div class="row2">' + btn("受ける", "offer-yes", { id: o.id }, "pri sm") + btn("交渉する", "offer-neg", { id: o.id }, "sm") + btn("断る", "offer-no", { id: o.id }, "sm") + '</div></section>';
+    });
+  }
+  if (S.projects.length) {
+    h += '<h3 class="h3">進行中</h3>';
+    S.projects.forEach(function (p) { var w = W(S, p.wid); h += '<section class="card"><b>『' + esc(w ? w.title : "?") + '』 ' + MEDIA[p.type].name + '</b><p class="small muted">' + esc(p.pname) + ' ・ あと' + (p.end - S.t) + '週</p>' + bar(S.t - p.start, p.end - p.start) + '</section>'; });
+  }
+  h += '<h3 class="h3">展開を企画する</h3><div class="mgrid">';
+  MEDIA_ORDER.forEach(function (t) { var m = MEDIA[t]; h += '<button class="mcard" data-act="mstart" data-t="' + t + '"><b>' + m.name + '</b><span class="small muted">' + m.desc + '</span><span class="mono small">製作費 目安' + fmtMoney(m.cost) + ' ・ ' + m.dur + '週</span></button>'; });
+  h += '</div>';
+  return h;
+}
+
+/* ----- パーク ----- */
+function vPark(S) {
+  var P = S.park, d = dinfo(S.t), mood = parkMood(d);
+  var plots = "", pos = [[20, 20], [140, 12], [260, 22], [14, 120], [140, 124], [262, 118], [24, 224], [138, 230], [262, 226]];
+  for (var i = 0; i < 9; i++) {
+    var a = P.areas[i], x = pos[i][0], y = pos[i][1];
+    if (a) {
+      var w = W(S, a.wid), hue = w ? (GHUE[w.genre] || 200) : 200, hh = 24 + a.lv * 8;
+      plots += '<g><rect x="' + x + '" y="' + y + '" width="100" height="84" rx="8" fill="hsl(' + hue + ',45%,86%)" stroke="hsl(' + hue + ',50%,40%)"/>' +
+        '<rect x="' + (x + 14) + '" y="' + (y + 78 - hh) + '" width="30" height="' + hh + '" fill="hsl(' + hue + ',55%,45%)"/><polygon points="' + (x + 12) + ',' + (y + 78 - hh) + ' ' + (x + 29) + ',' + (y + 62 - hh) + ' ' + (x + 46) + ',' + (y + 78 - hh) + '" fill="hsl(' + ((hue + 30) % 360) + ',65%,60%)"/>' +
+        '<circle cx="' + (x + 72) + '" cy="' + (y + 52) + '" r="' + (10 + a.lv * 2) + '" fill="none" stroke="hsl(' + hue + ',55%,45%)" stroke-width="3"/>' +
+        '<text x="' + (x + 6) + '" y="' + (y + 12) + '" font-size="9" fill="currentColor" font-family="Zen Kaku Gothic New,sans-serif">' + esc(w ? w.title.slice(0, 8) : "") + '</text><text x="' + (x + 94) + '" y="' + (y + 80) + '" text-anchor="end" font-size="9" fill="currentColor" font-family="IBM Plex Mono,monospace">Lv' + a.lv + '</text></g>';
+    } else {
+      plots += '<g class="plot" data-act="parkbuild"><rect x="' + x + '" y="' + y + '" width="100" height="84" rx="8" fill="none" stroke="currentColor" stroke-dasharray="5 4" opacity=".4"/><text x="' + (x + 50) + '" y="' + (y + 48) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".5" font-family="Zen Kaku Gothic New,sans-serif">' + (i === P.areas.length ? "＋ 区画" : "空き地") + '</text></g>';
+    }
+  }
+  var h = '<h2 class="h1">パーク</h2><section class="card"><svg class="map" viewBox="0 0 380 320" role="img" aria-label="パークの区画図">' + plots + '</svg></section>';
+  h += '<section class="card"><h2 class="h2">今月の運営</h2><p class="small">' + esc(mood.txt) + '</p><div class="chips">' + chip("おまかせ", "parkmode", { m: "auto" }, P.mode === "auto") + chip("自分で決める", "parkmode", { m: "manual" }, P.mode === "manual") + '</div>';
+  if (P.mode === "manual") h += '<div class="chips">' + PARK_POL.map(function (p) { return chip(p.name, "parkpol", { p: p.id }, P.policyMonth === monthKey(d) && P.policy === p.id); }).join("") + '</div><p class="muted small">月ごとの空気に合った方針を選ぶと、収益が大きく伸びる。選ばないと少し落ちる。</p>';
+  h += '</section>';
+  if (!P.areas.length) h += '<section class="card note"><p class="small">パークは、ファンが50万人・世の中への浸透・展開の成功実績がそろった作品から開園できる。</p></section>';
+  P.areas.forEach(function (a) { var w = W(S, a.wid); h += '<section class="card"><b>『' + esc(w ? w.title : "?") + '』エリア</b><p class="small muted mono">週 ' + fmtMoney(a.rev || 0) + ' ・ 累計 ' + fmtMoney(a.tot || 0) + '</p>' + (a.lv < 5 ? btn("アトラクション増設(" + fmtMoney(3000 * a.lv) + ")", "parkup", { id: a.id }, "sm") : '<span class="tag gold">最大規模</span>') + '</section>'; });
+  h += btn("エリアを新設(" + fmtMoney(PARK_COST) + ")", "parkbuild", null, "pri");
+  return h;
+}
+
+/* ----- 殿堂 ----- */
+function vHall(S) {
+  var t = G.hallTab, h = '<h2 class="h1">殿堂</h2><div class="chips">' + [["works", "作品"], ["people", "人物"], ["cats", "展開の名作"], ["rank", "ランキング"]].map(function (x) { return chip(x[1], "hallt", { t: x[0] }, t === x[0]); }).join("") + '</div>';
+  if (t === "works") {
+    h += '<h3 class="h3">殿堂入り作品 (' + S.hall.works.length + ')</h3>' + (S.hall.works.length ? S.hall.works.map(function (x) { var w = W(S, x.id); return '<section class="card gold-c"><b>『' + esc(x.title) + '』</b><span class="small muted"> ' + esc(x.author) + ' ・ ' + x.y + '年目</span></section>'; }).join("") : '<p class="muted">まだ殿堂入りした作品はない。</p>');
+    var cands = S.works.filter(function (w) { return !w.hall && w.state !== "canceled"; });
+    if (cands.length) { h += '<h3 class="h3">候補と道のり</h3>'; cands.forEach(function (w) { h += '<section class="card"><b>『' + esc(w.title) + '』</b>' + (w.weeks < 144 ? '<p class="small muted">まだ歴史が浅い(あと' + (144 - w.weeks) + '週で審査対象)</p>' : hallAxes(S, w).map(function (a) { return '<div class="skl"><span>' + a.lab + '</span>' + bar(a.v / a.th * 100, 100, a.v >= a.th ? "ok" : "") + '<em class="small">' + (a.v >= a.th ? "達成" : "") + '</em></div>'; }).join("") + (w.cand ? '<p class="small">あと一歩: ' + w.cand.map(esc).join(" / ") + '</p>' : "")) + '</section>'; }); }
+  } else if (t === "people") {
+    h += '<h3 class="h3">殿堂入りの人物 (' + S.hall.people.length + ')</h3>' + (S.hall.people.length ? S.hall.people.map(function (x) { return '<section class="card gold-c"><b>' + esc(x.name) + '</b><span class="small muted"> ' + x.role + ' ・ ' + x.y + '年目</span></section>'; }).join("") : '<p class="muted">まだ殿堂入りした人物はいない。</p>');
+    h += '<h3 class="h3">歩み</h3>';
+    personList(S).filter(function (x) { return !x.p.hall; }).forEach(function (x) { h += '<section class="card"><b>' + esc(x.p.name) + '</b> <span class="small muted">' + x.role + '</span>' + personAxes(S, x.p).map(function (a) { return '<div class="skl"><span>' + a.lab + '</span>' + bar(a.v / a.th * 100, 100, a.v >= a.th ? "ok" : "") + '<em class="small">' + (a.v >= a.th ? "達成" : "") + '</em></div>'; }).join("") + '</section>'; });
+  } else if (t === "cats") {
+    var any = false;
+    MEDIA_ORDER.forEach(function (k) { var arr = S.hall.cats[k]; if (arr && arr.length) { any = true; h += '<section class="card"><b>' + MEDIA[k].name + 'の名作</b>' + arr.map(function (x) { return '<p class="small">『' + esc(x.title) + '』 ' + x.y + '年目</p>'; }).join("") + '</section>'; } });
+    if (!any) h += '<p class="muted">展開で「大ヒット」を出すと、ここに名が刻まれる。</p>';
+  } else {
+    h += '<h3 class="h3">歴代の名作</h3>' + rankList(S.rank.all.slice(0, 10).map(function (x) { return { title: x.title, author: x.author, mine: x.mine }; }));
+    S.rank.year.forEach(function (r) { h += '<h3 class="h3">' + r.y + '年目の年間ランキング</h3>' + rankList(r.rows); });
+  }
+  return h;
+}
+
+/* ----- メニュー ----- */
+function vMenu(S) {
+  var up = UPDATES.map(function (u) { return '<b class="mono">v' + u.ver + '</b><ul>' + u.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + '</ul>'; }).join("");
+  var pts = S.hist.slice(-40), spark = "";
+  if (pts.length > 2) { var mx = Math.max.apply(null, pts.map(function (p) { return p.m; })), mn = Math.min.apply(null, pts.map(function (p) { return p.m; })); spark = '<svg viewBox="0 0 200 50" class="spark"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="' + pts.map(function (p, i) { return (i * 200 / (pts.length - 1)).toFixed(1) + ',' + (46 - (p.m - mn) / Math.max(1, mx - mn) * 42).toFixed(1); }).join(" ") + '"/></svg>'; }
+  return '<h2 class="h1">メニュー</h2><div class="grid2">' + btn("セーブする", "slots", { mode: "save" }, "pri") + btn("ロード", "slots", { mode: "load" }) + btn("引き継ぎ", "code") + btn("設定", "settings") + btn("人物と作品の記録", "log") + btn("タイトルへ", "totitle") + '</div>' +
+    '<section class="card"><h2 class="h2">会社のあゆみ</h2>' + spark + '<p class="small">名声 ' + Math.round(S.fame) + ' ・ ' + companyRank(S) + ' ・ 累計収益 ' + fmtMoney(S.totalRev) + '</p></section>' +
+    '<section class="card"><h2 class="h2">アップデート情報</h2>' + up + '</section>';
+}
+
+/* ===== イベント/演出 ===== */
+function vCur() {
+  var it = G.cur, S = G.S;
+  if (it.k === "info") return '<h3 class="h2">' + esc(it.title) + '</h3><p>' + esc(it.text) + '</p>' + btn("OK", "curnext", null, "pri");
+  if (it.k === "ev") {
+    var def = EVDEF[it.id];
+    if (G.curRes != null) return '<h3 class="h2">' + esc(def.title) + '</h3><p>' + esc(G.curRes) + '</p>' + btn("次へ", "curnext", null, "pri");
+    var cs = def.choices(S, it.p);
+    return '<h3 class="h2">' + esc(def.title) + '</h3><p>' + esc(def.text(S, it.p)) + '</p><div class="stack">' + cs.map(function (c, i) { return btn(esc(c.label), "choose", { i: i }, i === 0 ? "pri" : ""); }).join("") + '</div>';
+  }
+  return "";
+}
+function vCine(c) {
+  var h = '<div class="cine-in">';
+  if (c.kind === "mres") {
+    var w = W(G.S, c.item.wid), m = MEDIA[c.item.type];
+    h += '<p class="mono cine-k">' + m.name + '</p><h2 class="cine-t">『' + esc(w ? w.title : "") + '』</h2>';
+    c.item.lines.forEach(function (l, i) { h += '<p class="cine-l" style="animation-delay:' + (0.5 + i * 0.7) + 's">' + esc(l) + '</p>'; });
+    h += '<div class="stamp t' + c.item.tier + '" style="animation-delay:' + (0.8 + c.item.lines.length * 0.7) + 's">' + TIER[c.item.tier - 1] + '</div>';
+    if (c.item.cat) h += '<p class="cine-l gold" style="animation-delay:' + (1.6 + c.item.lines.length * 0.7) + 's">★ ' + m.name + 'の名作として殿堂に刻まれた</p>';
+  } else if (c.kind === "hall") {
+    h += '<p class="mono cine-k">HALL OF FAME</p><h2 class="cine-t big">殿堂入り</h2><p class="cine-l" style="animation-delay:.8s">' + (c.item.kind === "work" ? '『' + esc(c.item.name) + '』' : esc(c.item.name)) + '</p><p class="cine-l small" style="animation-delay:1.4s">' + esc(c.item.sub) + '</p>';
+  } else if (c.kind === "award") {
+    var w2 = W(G.S, c.item.wid);
+    h += '<p class="mono cine-k">' + c.item.y + '年目 年間大賞</p><h2 class="cine-t">『' + esc(w2 ? w2.title : "") + '』</h2><p class="cine-l" style="animation-delay:.8s">年間ランキング第1位。賞金300万円。</p>';
+  }
+  h += '<button class="btn pri cine-b" data-act="cinenext" style="animation-delay:' + (c.wait || 2.2) + 's">つづける</button></div>';
+  return h;
+}
+function pump() {
+  if (G.cine || G.cur) return;
+  var S = G.S; if (!S || !S.queue.length) { render(); return; }
+  var it = S.queue[0];
+  if (it.k === "mres" || it.k === "hall" || it.k === "award") {
+    G.cine = { kind: it.k, item: it, cls: it.k === "hall" ? "gold" : it.k === "mres" ? "t" + it.tier : "gold", wait: it.k === "mres" ? 1.2 + it.lines.length * 0.7 + 1.2 : 2 };
+    se(it.k === "mres" ? (it.tier >= 4 ? "fan" : it.tier <= 2 ? "flop" : "ok") : "hall");
+  } else G.cur = it;
+  G.curRes = null; render();
+}
+
+/* ===== モーダル ===== */
+function pushModal(m) { G.modal.push(m); render(); }
+function vModal(m) {
+  var S = G.S, close = '<button class="x" data-act="close" aria-label="閉じる">×</button>';
+  switch (m.t) {
+    case "work": return close + vWorkModal(S, m);
+    case "plan": return close + vPlan(S);
+    case "media": return close + vMediaStart(S);
+    case "slots": return close + vSlots(m);
+    case "settings": return close + vSettings();
+    case "code": return close + vCode();
+    case "log": return close + '<h3 class="h2">記録</h3><ul class="logl">' + S.log.slice(-60).reverse().map(function (l) { return '<li><span class="mono small muted">' + dinfo(l.t).label + '</span> ' + esc(l.text) + '</li>'; }).join("") + '</ul>';
+    case "parkpick": return close + vParkPick(S);
+    case "text": return close + '<h3 class="h2">' + esc(m.title) + '</h3><p>' + esc(m.body) + '</p>';
+  }
+  return "";
+}
+function vWorkModal(S, m) {
+  var w = W(S, m.wid); if (!w) return "<p>作品が見つかりません</p>";
+  var mine = w.author.type === "player", live = w.state === "serial", ed = editorOf(S, w);
+  var h = '<div class="wm-h">' + cover(w) + '<div><h3 class="h2">' + esc(w.title) + '</h3><p class="small muted">' + esc(w.author.name) + (w.illus ? ' / 絵 ' + esc(w.illus.name) : '') + ' ・ ' + (w.medium === "manga" ? "漫画" : "小説") + ' ・ ' + esc(gname(w.genre, GENRES)) + '×' + esc(gname(w.theme, THEMES)) + '</p>' +
+    '<p class="small">' + stateWord(w) + ' ・ 第' + w.eps + '話 ・ ' + popWord(w.pop) + '<br>ファン ' + fmtFans(w.fans) + ' ・ 累計収益 ' + fmtMoney(w.rev) + '</p></div></div>';
+  h += '<h4 class="h3">読みどころ</h4><ul class="clues">' + m.clues.map(function (l) { return '<li>' + esc(l.t) + '</li>'; }).join("") + '</ul>';
+  var mk = Object.keys(w.media);
+  if (mk.length) h += '<h4 class="h3">これまでの展開</h4><div class="chips static">' + mk.map(function (k) { return '<span class="tag">' + MEDIA[k].name + ':' + TIER[w.media[k].tier - 1] + '</span>'; }).join("") + '</div>';
+  if (w.hall) h += '<p class="tag gold">殿堂入り</p>';
+  if (live || w.state === "finished") {
+    if (live && mine) {
+      h += '<h4 class="h3">今週の執筆' + (S.written[w.id] ? "(済)" : "") + '</h4><div class="grid2">' + STYLES.map(function (s) { return '<button class="btn sm' + (S.written[w.id] ? " dis" : "") + '" data-act="write" data-id="' + w.id + '" data-s="' + s.id + '"><b>' + s.name + '</b><small>' + s.desc + '</small></button>'; }).join("") + '</div>';
+    }
+    if (live) {
+      h += '<h4 class="h3">打ち合わせ</h4><div class="chips">' + chip("物語を詰める", "meet", { id: w.id, d: "story" }) + chip("山場を作る", "meet", { id: w.id, d: "hook" }) + chip(w.medium === "manga" ? "絵を整える" : "文体を整える", "meet", { id: w.id, d: "art" }) + '</div>' +
+        '<h4 class="h3">宣伝</h4><div class="chips">' + chip("小(30万)", "promo", { id: w.id, l: 0 }) + chip("中(100万)", "promo", { id: w.id, l: 1 }) + chip("大(300万)", "promo", { id: w.id, l: 2 }) + '</div>' +
+        '<h4 class="h3">増刷</h4><div class="chips">' + chip("控えめ(20万)", "reprint", { id: w.id, l: 0 }) + chip("標準(60万)", "reprint", { id: w.id, l: 1 }) + chip("強気(150万)", "reprint", { id: w.id, l: 2 }) + '</div>' +
+        '<div class="grid2">' + btn("賞に応募", "contest", { id: w.id }, "sm") + btn("路線変更(50万)", "reroute", { id: w.id }, "sm") + '</div>';
+      if (S.unlock.edit && !mine) {
+        var eds = S.staff.filter(function (s) { return s.role === "editor"; });
+        h += '<h4 class="h3">担当編集</h4><div class="chips">' + chip("なし", "assign", { id: w.id, e: "" }, !w.editor) + eds.map(function (e) { return chip(e.name + "(" + skWord(e.skill) + ")", "assign", { id: w.id, e: e.id }, w.editor === e.id); }).join("") + '</div>';
+      }
+    }
+    h += '<div class="grid2">' + (w.sequel ? "" : btn("続編を始める(30万)", "sequel", { id: w.id }, "sm")) + (live ? btn("完結させる", "end", { id: w.id }, "sm") : "") + '</div>';
+  }
+  var ax = hallAxes(S, w);
+  if (!w.hall && w.state !== "canceled") h += '<h4 class="h3">殿堂への道のり</h4>' + (w.weeks < 144 ? '<p class="small muted">歴史を重ねるにはまだ早い。</p>' : ax.map(function (a) { return '<div class="skl"><span>' + a.lab + '</span>' + bar(a.v / a.th * 100, 100, a.v >= a.th ? "ok" : "") + '</div>'; }).join(""));
+  return h;
+}
+function vPlan(S) {
+  var f = G.form.plan, needIll = f.medium === "manga" && S.player.sk.art < 30;
+  if (needIll && !S.flags.illList) genIllus(S);
+  var syn = synergy(f.genre, f.theme, f.hero);
+  var h = '<h3 class="h2">新連載の企画</h3><label class="fld"><span>題名</span><input data-in="plan.title" value="' + esc(f.title) + '" maxlength="20" placeholder="自由に決めよう"></label>' +
+    '<div class="chips">' + chip("🎲 題名の案", "randtitle") + '</div>' +
+    '<div class="fld"><span>形式</span><div class="chips">' + chip("小説", "pf", { k: "medium", v: "novel" }, f.medium === "novel") + chip("漫画", "pf", { k: "medium", v: "manga" }, f.medium === "manga") + '</div></div>' +
+    '<div class="fld"><span>ジャンル</span><div class="chips">' + GENRES.map(function (g) { return chip(g.name, "pf", { k: "genre", v: g.id }, f.genre === g.id); }).join("") + '</div><p class="muted small">' + esc(gname(f.genre, GENRES) && GENRES.find(function (g) { return g.id === f.genre; }).mood) + '</p></div>' +
+    '<div class="fld"><span>テーマ</span><div class="chips">' + THEMES.map(function (g) { return chip(g.name, "pf", { k: "theme", v: g.id }, f.theme === g.id); }).join("") + '</div></div>' +
+    '<div class="fld"><span>主人公</span><div class="chips">' + HEROES.map(function (g) { return chip(g.name, "pf", { k: "hero", v: g.id }, f.hero === g.id); }).join("") + '</div></div>' +
+    '<p class="note small">この組み合わせは、' + synWord(syn) + '。 流行: ' + (S.trend.hot.indexOf(f.genre) > -1 ? "追い風" : S.trend.cold.indexOf(f.genre) > -1 ? "向かい風" : "ふつう") + '</p>';
+  if (needIll) h += '<div class="fld"><span>絵を描く人(画力が足りないので組む)</span><div class="chips">' + S.flags.illList.map(function (i) { return chip(i.name + "(絵は" + skWord(i.art) + ")", "pf", { k: "illusId", v: i.id }, f.illusId === i.id); }).join("") + '</div></div>';
+  return h + btn("企画を通す(10万円)", "doplan", null, "pri big");
+}
+function vMediaStart(S) {
+  var f = G.form.m, m = MEDIA[f.type];
+  var h = '<h3 class="h2">' + m.name + 'を企画する</h3><p class="small muted">' + m.desc + '(必要: 人気・ファン数の目安 ' + m.req.fans + '万人)</p><div class="fld"><span>作品</span>';
+  var any = false;
+  S.works.forEach(function (w) { var c = canMedia(S, w, f.type); any = true; h += '<button class="rowbtn' + (f.wid === w.id ? " on" : "") + (c.ok ? "" : " dis") + '" data-act="mpick" data-k="wid" data-v="' + w.id + '"' + (c.ok ? "" : ' data-no="' + esc(c.reason) + '"') + '><b>' + esc(w.title) + '</b><span class="small muted">' + (c.ok ? popWord(w.pop) + ' ・ ファン ' + fmtFans(w.fans) : c.reason) + '</span></button>'; });
+  if (!any) h += '<p class="muted">作品がない。</p>';
+  h += '</div>';
+  var ih = inhouseSkill(S, f.type), ps = partners(S, f.type);
+  h += '<div class="fld"><span>制作</span>';
+  if (m.ih) h += '<button class="rowbtn' + (f.mode === "inhouse" ? " on" : "") + (ih ? "" : " dis") + '" data-act="mpick" data-k="mode" data-v="inhouse" data-pid="' + (ih ? "" : "x") + '"' + (ih ? "" : ' data-no="対応する自社スタッフがいない"') + '><b>自社制作</b><span class="small muted">' + (ih ? "自社の腕前は" + skillWord(ih) + "。費用が安く済む" : "対応するスタッフがいない(編集部で採用)") + '</span></button>';
+  ps.forEach(function (p) { h += '<button class="rowbtn' + (f.mode === "partner" && f.pid === p.id ? " on" : "") + '" data-act="mpick" data-k="partner" data-v="' + p.id + '"><b>' + esc(p.name) + '</b><span class="small muted">' + skillWord(p.skill) + ' ・ ' + esc(p.style) + ' ・ 費用の目安 ' + (p.price < 1 ? "安め" : p.price < 1.2 ? "ふつう" : "高め") + '</span></button>'; });
+  h += '</div><div class="fld"><span>予算</span><div class="chips">' + BUD.map(function (b, i) { return chip(b, "mpick", { k: "budget", v: i }, f.budget === i); }).join("") + '</div></div>' +
+    '<div class="fld"><span>原作との距離</span><div class="chips">' + FID.map(function (b, i) { return chip(b, "mpick", { k: "fid", v: i }, f.fid === i); }).join("") + '</div><p class="muted small">大胆なアレンジは当たれば評価が跳ねるが、ファンの反発も招く。</p></div>';
+  var pt = f.mode === "partner" ? ps.find(function (p) { return p.id === f.pid; }) : null, cost = mediaCost(f.type, f.budget, pt, f.mode === "inhouse");
+  h += '<p class="note">製作費 ' + fmtMoney(cost) + '(手持ち ' + fmtMoney(S.money) + ')</p>' + btn("始動する", "mgo", null, "pri big");
+  return h;
+}
+function vParkPick(S) {
+  var h = '<h3 class="h2">どの作品のエリアを作る?</h3>';
+  S.works.forEach(function (w) { var a = parkAvail(S, w); h += '<button class="rowbtn' + (a.ok ? "" : " dis") + '" data-act="parkgo" data-id="' + w.id + '"' + (a.ok ? "" : ' data-no="' + esc(a.why[0]) + '"') + '><b>' + esc(w.title) + '</b><span class="small muted">' + (a.ok ? "開園できる" : a.why.join(" / ")) + '</span></button>'; });
+  return h || "<p>作品がない</p>";
+}
+function vSlots(m) {
+  var h = '<h3 class="h2">' + (m.mode === "save" ? "セーブ" : "ロード") + '</h3>';
+  for (var i = 1; i <= 3; i++) {
+    var s = G.slots[i - 1], c = G.cloudSlots[i - 1] && G.cloudSlots[i - 1].meta;
+    h += '<section class="card slot"><b>スロット' + i + '</b>' + (s ? '<p class="small">' + esc(s.company) + ' ・ ' + esc(s.label) + '<br>資金 ' + fmtMoney(s.money) + ' ・ 作品' + s.works + ' ・ 殿堂' + s.hall + ' ・ v' + s.gv + '</p>' : '<p class="small muted">空き</p>') +
+      '<div class="row2">' + (m.mode === "save" ? btn("ここに保存", "doslot", { i: i, m: "save" }, "pri sm") : (s ? btn("ロード", "doslot", { i: i, m: "load" }, "pri sm") : "")) + (s ? btn("消す", "delslot", { i: i }, "sm") : "") + '</div>' +
+      (CLOUD.ready && c ? '<p class="small muted">クラウド: ' + esc(c.label) + '</p>' + (m.mode === "load" ? btn("クラウドから取り込む", "cloudpull", { i: i }, "sm") : "") : "") + '</section>';
+  }
+  return h;
+}
+function vSettings() {
+  return '<h3 class="h2">設定</h3>' +
+    '<label class="fld"><span>BGMの音量</span><input type="range" min="0" max="1" step="0.05" value="' + SET.bgm + '" data-rng="bgm"></label>' +
+    '<label class="fld"><span>効果音の音量</span><input type="range" min="0" max="1" step="0.05" value="' + SET.se + '" data-rng="se"></label>' +
+    '<label class="fld"><span>画面の明るさ</span><input type="range" min="0.6" max="1.1" step="0.02" value="' + SET.bright + '" data-rng="bright"></label>' +
+    '<p class="muted small">設定はこの端末に保存されます。</p>';
+}
+function vCode() {
+  return '<h3 class="h2">引き継ぎ</h3><p class="small">別の端末へ遊びを移すには、コードを書き出して、移したい端末で読み込みます。</p>' +
+    (G.S ? btn("いまのデータをコードにする", "mkcode", null, "pri") : "") +
+    '<label class="fld"><span>コード</span><textarea data-in="code" rows="5" placeholder="GS1:…">' + esc(G.form.code) + '</textarea></label>' +
+    '<div class="grid2">' + btn("コピー", "copycode") + btn("このコードを読み込む", "loadcode", null, "pri") + '</div><p class="small muted" id="codemsg"></p>';
+}
+
+/* ===== 操作 ===== */
+function applyRes(r) { if (!r) return; toast(r.msg, r.ok); se(r.ok ? "ok" : "ng"); }
+function setPath(obj, path, v) { var a = path.split("."); var o = obj; for (var i = 0; i < a.length - 1; i++) o = o[a[i]]; o[a[a.length - 1]] = v; }
+function refreshSlots() { G.slots = readSlots(); }
+function enterGame(S, slot) { G.S = S; G.slot = slot; G.screen = "game"; G.tab = "home"; G.modal = []; G.cur = null; G.cine = null; bgmStart(); render(); pump(); }
+function autosave() { if (G.slot && G.S) saveSlot(G.slot, G.S).then(function () { refreshSlots(); }); }
+
+function act(a, el) {
+  var d = el ? el.dataset : {}, S = G.S, r;
+  if (a !== "noop") auResume();
+  switch (a) {
+    case "noop": return;
+    case "newgame": G.form.ng.slot = (G.slots.findIndex(function (s) { return !s; }) + 1) || 1; G.screen = "new"; se("tap"); return render();
+    case "totitle": G.screen = "title"; G.modal = []; refreshSlots(); return render();
+    case "ng": G.form.ng[d.k] = d.k === "slot" ? +d.v : d.v; se("tap"); return render();
+    case "start": var f = G.form.ng; var S0 = newGame({ name: f.name, company: f.company, role: f.role, diff: f.diff }); se("ok"); enterGame(S0, +f.slot); return autosave();
+    case "tab": G.tab = d.t; se("page"); window.scrollTo(0, 0); return render();
+    case "hallt": G.hallTab = d.t; return render();
+    case "close": G.modal.pop(); return render();
+    case "slots": refreshSlots(); G.modal.push({ t: "slots", mode: d.mode }); if (CLOUD.ready) cloudList().then(function (l) { G.cloudSlots = l; render(); }); return render();
+    case "settings": return pushModal({ t: "settings" });
+    case "code": return pushModal({ t: "code" });
+    case "log": return pushModal({ t: "log" });
+    case "next":
+      if (G.busy) return; se("page"); tick(S); autosave(); toast(dinfo(S.t).label, true); window.scrollTo(0, 0); G.cur = null; return pump();
+    case "curnext": S.queue.shift(); G.cur = null; G.curRes = null; return pump();
+    case "choose": G.curRes = resolveEv(S, G.cur, +d.i) || "…"; se("ok"); return render();
+    case "cinenext": S.queue.shift(); G.cine = null; return pump();
+    case "work": return pushModal({ t: "work", wid: d.id, clues: workClues(S, W(S, d.id)) });
+    case "rest": r = actRest(S); break;
+    case "network": r = actNetwork(S); break;
+    case "study": r = actStudy(S, d.k); break;
+    case "train": r = actTrain(S); break;
+    case "openoffice": r = actOpenOffice(S); break;
+    case "takepen": r = actTakePen(S); break;
+    case "plan": G.form.plan.title = G.form.plan.title || mkTitle(); return pushModal({ t: "plan" });
+    case "randtitle": G.form.plan.title = mkTitle(); return render();
+    case "pf": G.form.plan[d.k] = d.v; if (d.k === "medium") S.flags.illList = null; se("tap"); return render();
+    case "doplan": r = actPlan(S, G.form.plan); if (r.ok) { G.modal = []; G.form.plan.title = ""; G.form.plan.illusId = ""; G.tab = "works"; } break;
+    case "write": r = actWrite(S, d.id, d.s); if (r.ok) se("write"); break;
+    case "meet": r = actMeet(S, d.id, d.d); break;
+    case "promo": r = actPromo(S, d.id, +d.l); break;
+    case "reprint": r = actReprint(S, d.id, +d.l); if (r.ok) se("coin"); break;
+    case "contest": r = actContest(S, d.id); break;
+    case "reroute": r = actReroute(S, d.id); break;
+    case "sequel": r = actSequel(S, d.id); break;
+    case "end": r = actEnd(S, d.id); break;
+    case "assign": r = actAssign(S, d.id, d.e); break;
+    case "scout": r = actScout(S, d.kind); break;
+    case "sign": r = actSign(S, d.id); break;
+    case "pass": r = actPass(S, d.id); break;
+    case "hire": r = actHire(S, d.id); break;
+    case "fire": r = actFire(S, d.id); break;
+    case "offer-yes": r = actOfferYes(S, d.id); break;
+    case "offer-no": r = actOfferNo(S, d.id); break;
+    case "offer-neg": r = actOfferNeg(S, d.id); break;
+    case "mstart": G.form.m = { type: d.t, wid: "", mode: "partner", pid: partners(S, d.t)[0].id, budget: 1, fid: 1 }; return pushModal({ t: "media" });
+    case "mpick":
+      if (el.dataset.no) { toast(el.dataset.no, false); return se("ng"); }
+      var fm = G.form.m;
+      if (d.k === "partner") { fm.mode = "partner"; fm.pid = d.v; } else if (d.k === "mode") fm.mode = "inhouse"; else fm[d.k] = d.k === "wid" ? d.v : +d.v;
+      se("tap"); return render();
+    case "mgo":
+      var fm2 = G.form.m; if (!fm2.wid) { toast("作品を選んでください", false); return se("ng"); }
+      var pt = fm2.mode === "partner" ? partners(S, fm2.type).find(function (p) { return p.id === fm2.pid; }) : null;
+      r = startMedia(S, { wid: fm2.wid, type: fm2.type, partner: pt, inhouse: fm2.mode === "inhouse", budget: fm2.budget, fid: fm2.fid });
+      if (r.ok) { G.modal = []; } break;
+    case "parkbuild": if (S.park.areas.length >= 9) return; return pushModal({ t: "parkpick" });
+    case "parkgo": if (el.dataset.no) { toast(el.dataset.no, false); return se("ng"); } r = actParkBuild(S, d.id); if (r.ok) G.modal = []; break;
+    case "parkup": r = actParkUp(S, d.id); break;
+    case "parkmode": r = actParkMode(S, d.m); break;
+    case "parkpol": r = actParkPolicy(S, d.p); break;
+    case "doslot":
+      if (d.m === "save") { saveSlot(+d.i, S).then(function (x) { refreshSlots(); toast(x.msg, x.ok); se(x.ok ? "ok" : "ng"); render(); }); return; }
+      loadSlot(+d.i).then(function (S2) { G.modal = []; enterGame(S2, +d.i); toast("ロードしました", true); }).catch(function (e) { toast(e.message, false); });
+      return;
+    case "delslot": deleteSlot(+d.i); refreshSlots(); return render();
+    case "cloudpull": cloudPull(+d.i).then(function (S2) { refreshSlots(); G.modal = []; enterGame(S2, +d.i); toast("クラウドから読み込みました", true); }).catch(function (e) { toast(e.message, false); }); return;
+    case "mkcode": exportCode(S).then(function (c) { G.form.code = c; render(); }); return;
+    case "copycode":
+      var txt = G.form.code; if (!txt) { toast("先にコードを作ってください", false); return; }
+      var fb = function () { toast("コードを選択しました。手動でコピーしてください", true); var ta = document.querySelector("textarea"); if (ta) { ta.focus(); ta.select(); } };
+      try { navigator.clipboard.writeText(txt).then(function () { toast("コピーしました", true); }, fb); } catch (e) { fb(); }
+      return;
+    case "loadcode":
+      importCode(G.form.code).then(function (S2) { G.modal = []; var sl = G.slot || ((G.slots.findIndex(function (s) { return !s; }) + 1) || 1); enterGame(S2, sl); autosave(); toast("引き継ぎました(スロット" + sl + ")", true); }).catch(function (e) { toast(e.message, false); se("ng"); });
+      return;
+    default: return;
+  }
+  applyRes(r); pump();
+  var top = G.modal[G.modal.length - 1];
+  if (top && top.t === "work") { var w = W(S, top.wid); if (w) top.clues = top.clues || workClues(S, w); }
+}
+
+/* ===== 入力・クリック ===== */
+function bindEvents() {
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-act]"); if (!el) return;
+    if (el.classList.contains("dis") && !el.dataset.no) { se("ng"); return; }
+    act(el.dataset.act, el);
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.dataset.in) { setPath(G.form, t.dataset.in, t.value); return; }
+    if (t.dataset.rng) { SET[t.dataset.rng] = +t.value; saveSettings(); applyBright(); auVol(); if (t.dataset.rng === "bgm") { if (SET.bgm > 0) bgmStart(); } }
+  });
+  document.addEventListener("change", function (e) { var t = e.target; if (t.dataset.rng === "se") se("ok"); });
+}
+
+function boot() {
+  loadSettings();
+  G.slots = readSlots();
+  bindEvents();
+  render();
+  cloudInit().then(function (ok) { if (ok) render(); });
+}
+if (typeof document !== "undefined" && document.getElementById("app")) {
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+}
+
+
+try{if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!/claude/.test(location.hostname)){navigator.serviceWorker.register('sw.js').catch(function(){})}}catch(e){}
+</script>
+</body>
+</html>
