@@ -259,8 +259,11 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.9.5", SAVE_VER = 1;
+var GAME_VER = "0.9.6", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.9.6", date: "2026-11-02", notes: [
+    "展開の画面で、一部の操作が反応しない不具合を修正しました。"
+  ] },
   { ver: "0.9.5", date: "2026-11-02", notes: [
     "ゲーム開始時の動作を調整しました。"
   ] },
@@ -3696,7 +3699,7 @@ var _parkbuild6 = XACT.parkbuild;
 XACT.parkbuild = function (d, el) {
   var S = G.S;
   if (S.park.areas.length < 9 && !parkReady(S)) { var m = parkWhy(S); if (m) { toast(m, false); se("ng"); return; } }
-  return _parkbuild6 ? _parkbuild6(d, el) : undefined;
+  if (S.park.areas.length >= 9) return; se("tap"); return pushModal({ t: "parkpick" });
 };
 var _mstart6 = XACT.mstart;
 XACT.mstart = function (d, el) {
@@ -3705,7 +3708,7 @@ XACT.mstart = function (d, el) {
     var why = !S.works.length ? "まだ作品がありません。" : "『" + S.works[0].title + "』の場合: " + canMedia(S, S.works[0], t).reason;
     toast("まだ「" + MEDIA[t].name + "」はできません。" + why, false); se("ng"); return;
   }
-  return _mstart6 ? _mstart6(d, el) : undefined;
+  G.form.m = { type: d.t, wid: "", mode: "partner", pid: partners(S, d.t)[0].id, budget: 1, fid: 1 }; se("tap"); return pushModal({ t: "media" });
 };
 var _vPark6 = vPark;
 vPark = function (S) {
