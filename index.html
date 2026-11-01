@@ -234,6 +234,12 @@ body[data-lay=pc] #scrl{bottom:28px}
 .skipev{margin-top:10px;width:100%;display:flex;flex-direction:column;gap:2px;opacity:.9}.skipev small{font-weight:500;font-size:11px;opacity:.8}
 .cineskip{position:absolute;right:14px;bottom:18px;background:rgba(0,0,0,.35);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:8px 14px;font:700 13px "Zen Kaku Gothic New",sans-serif;cursor:pointer;z-index:5}
 @media (prefers-color-scheme:dark){.ef.up{color:#5fd49a}.ef.dn{color:#ff8f85}.ef.mo{color:#f2c04d}}
+.chl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}.chl li{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;background:var(--panel);border:1px solid var(--line)}
+.chl li.mine{background:rgba(255,214,90,.22);border-color:#e0b43a}.chl li b{font:800 15px "Zen Kaku Gothic New",sans-serif;text-align:center}
+.chl .tt{display:flex;flex-direction:column;font-size:13.5px;font-weight:700;min-width:0}.chl .tt small{font-weight:500;color:var(--muted);font-size:11px}
+.dl{font-style:normal;font:700 11.5px "Zen Kaku Gothic New",sans-serif;color:var(--muted)}.dl.up{color:#14804a}.dl.dn{color:#c0392b}.dl.nw{color:#c07a00}
+.era{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:8px 10px;margin:4px 0 10px;background:var(--panel)}
+.card.bond .skl{margin:6px 0 10px}.tag.ever{display:inline-block;margin:6px 0}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -245,8 +251,14 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.8.2", SAVE_VER = 1;
+var GAME_VER = "0.9.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.9.0", date: "2026-11-02", notes: [
+    "大型アップデート。多数の新要素を追加しました。",
+    "競争と時代の流れに関する要素を追加しました。",
+    "人との関わりと、会社の成長に関する要素を追加しました。",
+    "長く愛される作品に関する要素を追加しました。"
+  ] },
   { ver: "0.8.2", date: "2026-11-02", notes: [
     "遊び方を、最新の内容に書き直しました。",
     "イベントの出る頻度とタイミングを調整しました。",
@@ -3890,7 +3902,7 @@ function staffStart(S, s) {
 }
 function staffFinish(S, s) {
   var j = s.job; s.job = null; var w = j.wid ? W(S, j.wid) : null;
-  if (j.a === "edit" && w) { var pow = 2 + s.skill / 30; w.q.pol = cl(w.q.pol + pow * 0.6, 5, 95); w.q.story = cl(w.q.story + pow * 0.3 * (0.6 + rnd() * 0.8), 5, 98); w.q.hook = cl(w.q.hook + pow * 0.3 * (0.6 + rnd() * 0.8), 5, 98); s.hits += 0; }
+  if (j.a === "edit" && w) { var pow = (2 + s.skill / 30) * (1 + Math.max(0, (bondOf(s) - 50) / 100)); w.q.pol = cl(w.q.pol + pow * 0.6, 5, 95); w.q.story = cl(w.q.story + pow * 0.3 * (0.6 + rnd() * 0.8), 5, 98); w.q.hook = cl(w.q.hook + pow * 0.3 * (0.6 + rnd() * 0.8), 5, 98); s.hits += 0; }
   if (j.a === "pr" && w) { S.money -= 3; w.promo += 4 + s.skill / 12; }
   if (j.a === "park") S.park.sat = cl(S.park.sat + 1.5, 0, 100);
 }
@@ -4219,6 +4231,8 @@ function buildGuide() {
   pages.push({ h: "行動の選び方", b: ["各行動のカードには、終わったときに変わる数値が出ます。緑は上がるもの、赤は減るもの、黄色はお金です。", "能力は5つ。文章力・画力は作品の出来、発想力は企画の強さ、目利きは才能を見つける力、交渉力はお金や人づきあいに効きます。能力は伸びるほど、上がりにくくなります。", "体力・資金・名声は、画面上部と行動カードの上で確認できます。"] });
   pages.push({ h: "作品を育てる", b: ["「作品」タブで作品をタップ。細かい数字は見えませんが、「読みどころ」の文章にヒントがあります。", "連載は、執筆するたびに更新した扱いになり、しばらく続きます。途切れさせると人気が落ちやすくなります。打ち合わせ・宣伝・増刷なども大切です。", "ジャンルと題材の相性や、世の中の風向きも結果を左右します。"] });
   pages.push({ h: "チャンス・スタッフ・イベント", b: ["期限つきの「チャンス」が届くことがあります。引き受けると作業枠を使い、取材や講演、書店フェアなどで名声やお金が得られます。", "スタッフは自動で働きます。編集者と宣伝担当は、担当する作品を指定できます。", "イベントは「おまかせで決める(スキップ)」で飛ばせます。設定で、重要なもの以外を自動にすることもできます。"] });
+  pages.push({ h: "ランキングと時代", b: ["ホームの「週刊ランキング」では、毎週、自社と他社の連載が順位を争います。看板作品を「巻頭に飾る」などで押し上げましょう。1位をとると名声やお金が入ります。", "3か月に1回、「編集会議」が開かれます。看板に力を入れる・新人に枠を空ける・不調な作品を整理するなど、方針を決められます。", "時代は数年ごとに変わり、追い風・向かい風のジャンルが入れ替わります。ときどきブームも起きます。流行は大切ですが、追いかけすぎないことも大切です。", "連載を長く続けて人気を保つと、流行に左右されない「不朽の名作」になります。世代を超えて読まれ、周年のお祝いもあります。"] });
+  pages.push({ h: "人との関係と会社の成長", b: ["作家やスタッフは、「食事に誘う」「話を聞く」で信頼が深まります(編集部タブ)。信頼が高いと、作品が伸びやすくなり、スタッフの働きも良くなります。時間がたつと、少しずつ薄れます。", "名声が上がると、会社は自宅の一室から自社ビル、本社ビルへと成長します。ホームの街の景色も変わります。"] });
   pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。条件が足りないときは、足りないものが表示されます。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
   pages.push({ h: "殿堂入りと競争", b: ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。"] });
   pages.push({ h: "困ったときは", b: ["ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
@@ -4269,6 +4283,275 @@ nextAdvice = function (S) {
   var a = _nextAdvice13(S);
   if (/週を進める|今週の行動|今週分/.test(a.t)) return { t: free ? "作業枠が空いている。腕を磨く・取材に出るなど、気になる行動を選ぼう。" : "作業枠がいっぱい。終わるのを待ちながら、画面を見て回ろう。", tab: "home" };
   return a;
+};
+
+/* ===== v0.9.0 時代・不朽の名作・週刊ランキング・人間関係・オフィス(ロジック) ===== */
+var NEW = { EVER_WEEKS: 144, EVER_POP: 50, CHART_N: 10, RIVAL_N: 14, MEET_EVERY: 12, BOOM_RATE: 0.03 };
+
+/* ---------- 時代 ---------- */
+var ERAS = [
+  { from: 0, id: "paper", name: "紙の全盛期", note: "書店と雑誌が出版の中心だった。", fav: ["school", "romance", "sports"], cold: [] },
+  { from: 5, id: "ebook", name: "電子書籍の普及期", note: "手軽に読める電子書籍が広がった。", fav: ["daily", "work", "mystery"], cold: ["history"] },
+  { from: 10, id: "stream", name: "動画配信の時代", note: "アニメやドラマの配信が、原作を押し上げる。", fav: ["fantasy", "scifi", "horror"], cold: ["daily"] },
+  { from: 16, id: "sns", name: "SNSと短尺動画の時代", note: "口コミと切り抜きが、作品を広げる。", fav: ["romance", "school", "daily"], cold: ["history", "mystery"] },
+  { from: 24, id: "diverse", name: "多様化の時代", note: "創作も読み方も、ますます多様になった。", fav: ["work", "scifi", "mystery"], cold: ["sports"] }
+];
+function eraOf(S) { var y = Math.floor(S.t / 48), e = ERAS[0]; ERAS.forEach(function (x) { if (y >= x.from) e = x; }); return e; }
+function isEver(w) { return !!w.ever; }
+var _tfit14 = tfit;
+tfit = function (S, w) {
+  var f = _tfit14(S, w), e = eraOf(S);
+  if (e.fav.indexOf(w.genre) > -1) f += 0.5; if (e.cold.indexOf(w.genre) > -1) f -= 0.5;
+  if (S.boom && S.boom.until > S.t && S.boom.genre === w.genre) f += 1;
+  if (isEver(w)) f = Math.max(0, f) + 0.4;   /* 流行に流されない */
+  return f;
+};
+function eraTick(S, news) {
+  var e = eraOf(S); S.flags = S.flags || {};
+  if (S.flags.eraId == null) S.flags.eraId = e.id;
+  else if (S.flags.eraId !== e.id) {
+    S.flags.eraId = e.id;
+    queue(S, { k: "info", title: "時代が変わった:" + e.name, text: e.note + "追い風は「" + e.fav.map(function (g) { return gname(g, GENRES); }).join("」「") + "」。向かい風は" + (e.cold.length ? "「" + e.cold.map(function (g) { return gname(g, GENRES); }).join("」「") + "」" : "ほぼない") + "。流行に左右されない不朽の名作は、時代が変わっても揺らがない。" });
+    addLog(S, "時代が「" + e.name + "」に変わった。");
+  }
+  if (S.t >= 16 && (!S.boom || S.boom.until <= S.t) && ch(NEW.BOOM_RATE)) {
+    var g = pick(GENRES); S.boom = { genre: g.id, until: S.t + ri(10, 16) };
+    news.unshift("「" + g.name + "」ブームが到来した。しばらく追い風が吹く。");
+  }
+}
+
+/* ---------- 不朽の名作(流行に流されない長寿連載) ---------- */
+var EVER_MS = [[240, 5], [480, 10], [960, 20], [1440, 30]];
+function everTick(S, news) {
+  S.works.forEach(function (w) {
+    if (!w.ever && w.state === "serial" && w.weeks >= NEW.EVER_WEEKS && w.pop >= NEW.EVER_POP) {
+      w.ever = true; w.everT = S.t; S.fame += 5; w.culture += 4; w.boost += 3;
+      addLog(S, "『" + w.title + "』は、流行に左右されない不朽の名作になった。");
+      queue(S, { k: "info", title: "不朽の名作", text: "『" + w.title + "』は連載を3年以上続け、世代を超えて愛される作品になった。流行が変わっても、人気は揺らがない。" });
+    }
+    if (!w.ever) return;
+    if (w.pop < 48) w.pop += 0.4;
+    if (w.weeks % 48 === 0) { w.fans *= 1.04; w.boost += 1; var b = Math.round(20 + w.fans / 40000); S.money += b; news.push("『" + w.title + "』に新しい世代の読者がついた。重版収入 " + b + "万円。"); }
+    EVER_MS.forEach(function (m) {
+      w.everMs = w.everMs || {};
+      if (w.weeks >= m[0] && !w.everMs[m[1]]) {
+        w.everMs[m[1]] = 1; S.fame += m[1] * 0.6; S.money += m[1] * 30; w.culture += m[1] * 0.5;
+        queue(S, { k: "info", title: "連載" + m[1] + "周年", text: "『" + w.title + "』は連載" + m[1] + "周年を迎えた。記念の特集と展覧会が組まれ、街じゅうが祝った。(記念収入 " + (m[1] * 30) + "万円)" });
+        addLog(S, "『" + w.title + "』連載" + m[1] + "周年。");
+      }
+    });
+  });
+}
+function everYears(w) { return Math.floor(w.weeks / 48); }
+
+/* ---------- 週刊ランキング ---------- */
+function rivalInit(S) {
+  if (S.rivalWorks && S.rivalWorks.length) return;
+  S.rivalWorks = []; for (var i = 0; i < NEW.RIVAL_N; i++) S.rivalWorks.push(newRivalWork(S));
+}
+function newRivalWork(S) { return { id: uid("rw"), title: mkTitle(), pub: pick(RIVALS.concat(["他社", "新興社"])), pop: ri(28, 58) }; }
+function chartTick(S, news) {
+  rivalInit(S); S.flags = S.flags || {};
+  var tgt = 52 + Math.min(38, Math.floor(S.t / 48) * 3);
+  S.rivalWorks.forEach(function (r, i) { if (!(r.surge > S.t) && ch(0.012)) r.surge = S.t + ri(8, 20); r.pop = cl(r.pop + ((r.surge > S.t ? tgt + 30 : tgt) - r.pop) * 0.06 + nrm() * 3.2, 5, 100); if (r.pop < 14 && ch(0.2)) S.rivalWorks[i] = newRivalWork(S); });
+  var rows = [];
+  S.works.forEach(function (w) { if (w.state === "serial") rows.push({ key: w.id, title: w.title, pub: S.company, score: w.pop + Math.min(8, Math.max(0, w.boost) * 0.3) + (isEver(w) ? 3 : 0), mine: true, wid: w.id }); });
+  S.rivalWorks.forEach(function (r) { rows.push({ key: r.id, title: r.title, pub: r.pub, score: r.pop, mine: false }); });
+  rows.sort(function (a, b) { return b.score - a.score; });
+  var prev = (S.chart && S.chart.rank) || {}, rank = {};
+  rows.forEach(function (r, i) { r.rank = i + 1; r.prev = prev[r.key] || 0; rank[r.key] = i + 1; });
+  S.chart = { t: S.t, rows: rows.slice(0, NEW.CHART_N), rank: rank, total: rows.length };
+  var best = rows.filter(function (r) { return r.mine; })[0];
+  if (best) {
+    if (best.rank === 1) {
+      S.flags.top1 = (S.flags.top1Last === S.t - 1 ? (S.flags.top1 || 0) : 0) + 1; S.flags.top1Last = S.t;
+      var w1 = W(S, best.wid); if (w1) { w1.boost += 0.05; }
+      if (S.flags.top1 === 1 || S.flags.top1 % 8 === 0) { S.fame += 0.8; S.money += 10; news.push("『" + best.title + "』が週間ランキング1位!(" + S.flags.top1 + "週連続)"); }
+      S.flags.top1Total = (S.flags.top1Total || 0) + 1;
+    } else if (best.rank <= 3) { var w3 = W(S, best.wid); if (w3) w3.boost += 0.02; }
+  }
+}
+EXEC.headline = function (S) {
+  var ws = liveWorks(S).sort(function (a, b) { return b.pop - a.pop; }); if (!ws.length) return no("連載中の作品がありません");
+  if (!pay(S, 20)) return no("特集の費用(20万円)が足りません");
+  var w = ws[0]; w.boost += 6; w.promo += 8; S.fame += 0.5; return yes("『" + w.title + "』が雑誌の巻頭カラーを飾った。ランキングの上昇が期待できる");
+};
+/* 編集会議 */
+EVDEF.meeting = {
+  title: "編集会議", text: function (S) { var c = S.chart, b = c && c.rows.filter(function (r) { return r.mine; })[0]; return "月例の編集会議が開かれた。" + (b ? "いま自社の最高位は『" + b.title + "』の第" + b.rank + "位。" : "") + "今期の誌面をどう作るか、方針を決めたい。"; },
+  choices: function () {
+    return [
+      { label: "看板作品に力を入れる(15万円)", fn: function (S) { var ws = liveWorks(S).sort(function (a, b) { return b.pop - a.pop; }); if (!ws.length) return "連載中の作品がなく、会議は流れた。"; if (!spend(S, 15)) return "資金が足りず、見送った。"; ws[0].boost += 5; ws[0].promo += 6; return "『" + ws[0].title + "』を誌面の柱に据えることになった。"; } },
+      { label: "新しい才能に枠を空ける", fn: function (S) { if (S.unlock.edit && S.pool.length < 8) { S.pool.push(genCand(S, "sub")); gainSkill(S, "eye", 1.2); return "新人の企画を1本通した。編集部に新しい候補が加わった。"; } gainSkill(S, "eye", 1.5); return "新人の原稿に目を通し、目が養われた。"; } },
+      { label: "不調な作品を整理する", fn: function (S) { var ws = liveWorks(S).sort(function (a, b) { return a.pop - b.pop; }); if (ws.length < 2 || ws[0].pop >= 30) return "整理するほど低迷している作品はなかった。"; var w = ws[0]; w.state = "canceled"; w.canceledAt = S.t; S.fame = Math.max(0, S.fame - 0.3); addLog(S, "『" + w.title + "』は編集会議で連載終了となった。"); return "『" + w.title + "』は連載を終えることになった。枠が空いた。"; } }
+    ];
+  }
+};
+function meetingTick(S) {
+  if (S.t >= 24 && S.t % NEW.MEET_EVERY === 6 && liveWorks(S).length && !S.queue.length) queue(S, { k: "ev", id: "meeting", p: {} });
+}
+
+/* ---------- 人との関係 ---------- */
+function bondOf(p) { return p.bond == null ? 30 : p.bond; }
+function findPerson(S, id) { return S.authors.find(function (a) { return a.id === id; }) || (S.staff || []).find(function (s) { return s.id === id; }) || null; }
+function bondWord(b) { return b >= 85 ? "生涯の戦友" : b >= 65 ? "固い絆" : b >= 45 ? "信頼している" : b >= 25 ? "顔なじみ" : "まだ距離がある"; }
+AP_ACTS.push("meal", "talk", "headline");
+EXEC.meal = function (S, d) {
+  var p = findPerson(S, d.pid); if (!p) return no("相手が見つかりません");
+  if (!pay(S, 8)) return no("食事代(8万円)が足りません");
+  var g = 9 * (0.8 + rnd() * 0.4) * (1 + S.player.sk.biz / 200) * (p.trait === "人懐っこい" ? 1.3 : p.trait === "寡黙" ? 0.75 : 1);
+  p.bond = Math.min(100, bondOf(p) + g); gainSkill(S, "biz", 0.6);
+  return yes(p.name + "と食事に行った。距離が縮まった(信頼 +" + Math.round(g) + ")");
+};
+EXEC.talk = function (S, d) {
+  var p = findPerson(S, d.pid); if (!p) return no("相手が見つかりません");
+  var g = 5 * (0.8 + rnd() * 0.4) * (p.trait === "人懐っこい" ? 1.3 : p.trait === "寡黙" ? 0.75 : 1);
+  p.bond = Math.min(100, bondOf(p) + g); p.skill = Math.min(p.pot || 100, p.skill + 0.6 + rnd() * 0.8); gainSkill(S, "eye", 0.5);
+  return yes(p.name + "の相談に乗った。(信頼 +" + Math.round(g) + "、少し成長した)");
+};
+JOBT.DUR.meal = 1; JOBT.DUR.talk = 1; JOBT.DUR.headline = 1;
+FREE_STA.meal = 3; FREE_STA.talk = 4; FREE_STA.headline = 4;
+var _label14 = actLabel;
+actLabel = function (a, d, S) {
+  if (a === "meal" || a === "talk") { var p = S ? findPerson(S, d.pid) : null; return (p ? p.name + "と" : "") + (a === "meal" ? "食事に行く" : "話を聞く"); }
+  if (a === "headline") return "雑誌の巻頭を飾る";
+  return _label14(a, d, S);
+};
+function bondTick(S) {
+  S.authors.forEach(function (a) {
+    var b = bondOf(a); if (b > 30) a.bond = Math.max(30, b - 0.05);
+    if (b >= 60) S.works.forEach(function (w) { if (w.author.id === a.id && w.state === "serial") w.boost += 0.04 * (b - 50) / 50; });
+    if (b >= 80 && ch(0.012)) { a.skill = Math.min(a.pot, a.skill + 1); }
+  });
+  (S.staff || []).forEach(function (s) { var b = bondOf(s); if (b > 30) s.bond = Math.max(30, b - 0.05); });
+}
+function bondPeople(S) { return S.authors.map(function (a) { return { p: a, kind: "作家" }; }).concat((S.staff || []).map(function (s) { return { p: s, kind: STAFF_ROLES[s.role] ? STAFF_ROLES[s.role].name : "スタッフ" }; })); }
+mkEx("ex3_bond", "気心の知れた仲間", function (S, p) { var q = findPerson(S, p.pid); return (q ? q.name : "仲間") + "が、いつになく真剣な顔で「聞いてほしい話がある」と切り出した。"; },
+  { label: "じっくり耳を傾ける", fn: function (S, p) { var q = findPerson(S, p.pid); if (q) { q.bond = Math.min(100, bondOf(q) + 8); q.skill = Math.min(q.pot || 100, q.skill + 2); } gainSkill(S, "eye", 1); return "胸の内を語ってくれた。互いの理解が深まり、前向きになれたようだ。"; } },
+  { label: "手短に励ます", fn: function (S, p) { var q = findPerson(S, p.pid); if (q) q.bond = Math.min(100, bondOf(q) + 2); return "短い言葉で背中を押した。"; } });
+function bondEvent(S) {
+  if (S.queue.length || S.t < 24 || !ch(0.01)) return;
+  var l = bondPeople(S).filter(function (x) { return bondOf(x.p) >= 50; }); if (!l.length) return;
+  queue(S, { k: "ev", id: "ex3_bond", p: { pid: pick(l).p.id } });
+}
+
+/* ---------- オフィスの成長 ---------- */
+var OFFICE = [[0, "自宅の一室"], [15, "小さな事務所"], [50, "雑居ビルの一室"], [120, "自社ビル"], [250, "大型の自社ビル"], [500, "本社ビルと複合施設"]];
+function officeLv(S) { var l = 0; OFFICE.forEach(function (o, i) { if (S.fame >= o[0]) l = i; }); return l; }
+function officeTick(S) {
+  S.flags = S.flags || {}; var l = officeLv(S);
+  if (S.flags.officeLv == null) S.flags.officeLv = l;
+  else if (l > S.flags.officeLv) { S.flags.officeLv = l; queue(S, { k: "info", title: "会社が大きくなった", text: "名声が高まり、会社は「" + OFFICE[l][1] + "」になった。ホームの街の景色にも、新しい社屋が建った。" }); addLog(S, "会社が「" + OFFICE[l][1] + "」になった。"); }
+}
+
+/* ---------- 実績 ---------- */
+ACH.push(
+  { id: "ever1", name: "世代を超えて", title: "不朽の作者", desc: "不朽の名作を生み出す", ck: function (S) { return S.works.some(function (w) { return w.ever; }); } },
+  { id: "top1", name: "週間1位", title: "ヒットメーカー", desc: "週間ランキングで1位をとる", ck: function (S) { return (S.flags.top1Total || 0) >= 1; } },
+  { id: "top1x10", name: "常勝", title: "王者", desc: "週間1位を通算10回とる", ck: function (S) { return (S.flags.top1Total || 0) >= 10; } },
+  { id: "bond90", name: "生涯の戦友", title: "人たらし", desc: "誰かとの信頼を90以上にする", ck: function (S) { return bondPeople(S).some(function (x) { return bondOf(x.p) >= 90; }); } },
+  { id: "office5", name: "本社ビル", title: "大社長", desc: "会社を最大の規模にする", ck: function (S) { return officeLv(S) >= 5; } }
+);
+
+/* ---------- 週ごとの処理 ---------- */
+var _tick14 = tick;
+tick = function (S) {
+  var r = _tick14(S);
+  try {
+    var news = []; eraTick(S, news); everTick(S, news); chartTick(S, news); bondTick(S); officeTick(S); meetingTick(S); bondEvent(S);
+    if (news.length) S.news = news.concat(S.news).slice(0, 10);
+  } catch (e) { console.error(e); }
+  return r;
+};
+
+/* ===== v0.9.0 ランキング・時代・人間関係・オフィスの見た目(画面) ===== */
+
+/* ---- 週刊ランキング ---- */
+function chartCard(S) {
+  var c = S.chart; if (!c || !c.rows.length) return "";
+  var mine = {}; S.works.forEach(function (w) { mine[w.id] = 1; });
+  var best = 0; Object.keys(c.rank).forEach(function (k) { if (mine[k] && (!best || c.rank[k] < best)) best = c.rank[k]; });
+  var streak = (S.flags.top1Last >= S.t - 1 && S.flags.top1) ? S.flags.top1 : 0;
+  var h = '<section class="card chart"><h2 class="h2">週刊ランキング <small class="muted">TOP' + c.rows.length + '</small></h2>' +
+    (streak ? '<p class="small"><span class="tag gold">1位 ' + streak + '週連続</span></p>' : (best ? '<p class="small muted">自社の最高位: 第' + best + '位(' + c.total + '作品中)</p>' : '<p class="small muted">連載を始めると、ここに順位が出ます。</p>')) + '<ol class="chl">';
+  c.rows.forEach(function (r) {
+    var d = !r.prev ? '<i class="dl nw">NEW</i>' : r.rank < r.prev ? '<i class="dl up">▲' + (r.prev - r.rank) + '</i>' : r.rank > r.prev ? '<i class="dl dn">▼' + (r.rank - r.prev) + '</i>' : '<i class="dl">―</i>';
+    h += '<li class="' + (r.mine ? "mine" : "") + '"><b>' + r.rank + '</b><span class="tt">' + esc(r.title) + '<small>' + (r.mine ? "自社" : esc(r.pub)) + '</small></span>' + d + '</li>';
+  });
+  return h + '</ol></section>';
+}
+var _newsCard15 = newsCard;
+newsCard = function (S) { return _newsCard15(S) + chartCard(S); };
+
+/* ---- 時代・ブーム ---- */
+var _moreCard15 = moreCard;
+moreCard = function (S) {
+  var e = eraOf(S), b = S.boom && S.boom.until > S.t ? S.boom : null;
+  var ban = '<div class="era"><b>いまは「' + esc(e.name) + '」</b><span class="small">' + esc(e.note) + '</span><span class="small muted">追い風:' + e.fav.map(function (g) { return esc(gname(g, GENRES)); }).join("・") + (e.cold.length ? ' / 向かい風:' + e.cold.map(function (g) { return esc(gname(g, GENRES)); }).join("・") : "") + '</span>' +
+    (b ? '<span class="small"><span class="tag up">' + esc(gname(b.genre, GENRES)) + 'ブーム(あと' + (b.until - S.t) + '週)</span></span>' : "") + '<span class="small muted">※流行に左右されない「不朽の名作」は、時代が変わっても揺らぎません。</span></div>';
+  return _moreCard15(S).replace('<h4 class="h3">世の中の風向き</h4>', ban + '<h4 class="h3">世の中の風向き</h4>');
+};
+
+/* ---- 人との関係(編集部タブ) ---- */
+var _vScout15 = vScout;
+vScout = function (S) {
+  var o = _vScout15(S), ppl = bondPeople(S); if (!ppl.length || o.indexOf('<h3 class="h3">スタッフ (') < 0) return o;
+  ppl.sort(function (a, b) { return bondOf(b.p) - bondOf(a.p); });
+  var h = '<h3 class="h3">人との関係 <small class="muted">(信頼が高いと、作品や仕事に良い影響が出ます)</small></h3>' + ppl.slice(0, 12).map(function (x) {
+    var p = x.p, b = bondOf(p);
+    return '<section class="card bond"><div class="cand-h"><b>' + esc(p.name) + '</b><span class="tag">' + esc(x.kind) + '</span></div><p class="small muted">' + esc(TRAIT_NOTE[p.trait] || "") + '</p>' +
+      '<div class="skl"><span>信頼</span>' + bar(b, 100, b >= 65 ? "ok" : "") + '<em class="small">' + Math.round(b) + ' ' + bondWord(b) + '</em></div>' +
+      '<div class="grid2">' + btn("🍽 食事に誘う<small>8万円・1週</small>", "meal", { pid: p.id }, "sm") + btn("💬 話を聞く<small>体力-4・1週</small>", "talk", { pid: p.id }, "sm") + '</div></section>';
+  }).join("");
+  return o.replace('<h3 class="h3">スタッフ (', h + '<h3 class="h3">スタッフ (');
+};
+
+/* ---- 不朽の名作のバッジ ---- */
+var _vWorkModal15 = vWorkModal;
+vWorkModal = function (S, m) {
+  var o = _vWorkModal15(S, m), w = W(S, m.wid);
+  if (w && w.ever) o = o.replace('<h4 class="h3">登場人物</h4>', '<p class="tag gold ever">🏛 不朽の名作 ・ 連載' + everYears(w) + '年目 ・ 流行に左右されない</p><h4 class="h3">登場人物</h4>');
+  return o;
+};
+var _shelf15 = shelfCard;
+shelfCard = function (S) {
+  var o = _shelf15(S); if (!o) return o;
+  S.works.forEach(function (w) { if (w.ever) o = o.replace('<b>' + esc(w.title) + '</b>', '<b>🏛 ' + esc(w.title) + '</b>'); });
+  return o;
+};
+
+/* ---- 巻頭を飾る(行動) ---- */
+var _actionsCard15 = actionsCard;
+actionsCard = function (S) {
+  var o = _actionsCard15(S); if (!jobMode() || !liveWorks(S).length) return o;
+  return o.replace('<h4 class="h3">発信・交流</h4>', '<h4 class="h3">発信・交流</h4>' + arow(S, "headline", {}, "📰", "雑誌の巻頭を飾る", [ef("看板作品の人気 ↑", "up"), ef("ランキング上昇", "up"), monEf(-20), staEf(4)], { money: 20, sta: 4 }));
+};
+
+/* ---- オフィスの景色 ---- */
+function officeSvg(S, lv) {
+  var hue = hstr(S.company) % 360, f = [1, 2, 3, 5, 7, 9][lv], w = [34, 42, 50, 58, 66, 76][lv], x = 150 - Math.round(w / 2) + 20, fh = 8.5, h = Math.round(f * fh) + 6, y = 108 - h, o = "<g>";
+  if (lv >= 4) { var w2 = 30, x2 = x - w2 - 3, h2 = Math.round(h * 0.6); o += '<rect x="' + x2 + '" y="' + (108 - h2) + '" width="' + w2 + '" height="' + h2 + '" fill="hsl(' + hue + ',22%,52%)"/>'; for (var a = 108 - h2 + 4; a < 104; a += 7) for (var b = x2 + 3; b < x2 + w2 - 3; b += 6) o += '<rect x="' + b + '" y="' + a + '" width="3" height="3.5" fill="#ffe9a0"/>'; }
+  if (lv === 0) {
+    o += '<rect x="' + (x + 6) + '" y="86" width="' + (w - 12) + '" height="22" fill="#f3e4c8" stroke="#a8875a"/><polygon points="' + (x + 2) + ',87 ' + (x + w / 2) + ',72 ' + (x + w - 2) + ',87" fill="#c0603e"/><rect x="' + (x + w / 2 - 4) + '" y="96" width="8" height="12" fill="#7a5a3a"/><rect x="' + (x + 10) + '" y="92" width="7" height="7" fill="#ffe27a"/>';
+  } else {
+    o += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="hsl(' + hue + ',30%,' + (lv >= 5 ? 58 : 46) + '%)" stroke="rgba(0,0,0,.25)"/>';
+    for (var r = 0; r < f; r++) for (var c = 0; c < Math.floor((w - 8) / 8); c++) { var lit = (r * 7 + c * 3 + lv) % 4 !== 0; o += '<rect x="' + (x + 5 + c * 8) + '" y="' + (y + 4 + r * fh) + '" width="4.5" height="4.5" fill="' + (lit ? "#ffe9a0" : "rgba(255,255,255,.5)") + '"/>'; }
+    o += '<rect x="' + (x + w / 2 - 5) + '" y="98" width="10" height="10" fill="#4b3b2a"/>';
+    o += '<rect x="' + (x + 2) + '" y="' + (y - 9) + '" width="' + (w - 4) + '" height="9" rx="2" fill="#fff" stroke="hsl(' + hue + ',40%,35%)"/><text x="' + (x + w / 2) + '" y="' + (y - 2.2) + '" text-anchor="middle" font-size="6.2" font-weight="700" fill="hsl(' + hue + ',45%,28%)" font-family="Zen Kaku Gothic New,sans-serif">' + esc(S.company.slice(0, 7)) + '</text>';
+    if (lv >= 3) o += '<line x1="' + (x + w - 8) + '" y1="' + (y - 9) + '" x2="' + (x + w - 8) + '" y2="' + (y - 22) + '" stroke="#555"/><polygon points="' + (x + w - 8) + ',' + (y - 22) + ' ' + (x + w + 2) + ',' + (y - 19) + ' ' + (x + w - 8) + ',' + (y - 16) + '" fill="#e0504a"/>';
+    if (lv >= 5) o += '<rect x="' + (x + w + 4) + '" y="40" width="14" height="68" fill="hsl(' + ((hue + 40) % 360) + ',30%,60%)"/><rect x="' + (x + w + 4) + '" y="40" width="14" height="5" fill="#fff" opacity=".7"/>';
+  }
+  return o + "</g>";
+}
+var _skyline15 = skyline;
+skyline = function (S) { var o = _skyline15(S); return o.replace(/<\/svg>$/, officeSvg(S, officeLv(S)) + "</svg>"); };
+var _heroCard15 = heroCard;
+heroCard = function (S) { return _heroCard15(S).replace('<div class="small muted">', '<div class="small muted">' + esc(OFFICE[officeLv(S)][1]) + ' ・ '); };
+var _vHome15 = vHome;
+vHome = function (S) {
+  var o = _vHome15(S); if (G.pc) return o;
+  var h = heroCard(S), i = o.lastIndexOf(h); if (i > -1) o = o.slice(0, i) + o.slice(i + h.length);
+  return h + o;
 };
 
 function boot() {
