@@ -97,8 +97,18 @@ input[type=range]{width:100%}
 .stamp{display:inline-block;margin:22px 0 10px;padding:6px 22px;border:4px solid var(--mark);color:var(--mark);font:400 34px "Dela Gothic One";transform:rotate(-6deg) scale(1.6);opacity:0;animation:stamp .5s forwards}
 .stamp.t1,.stamp.t2{border-color:#8a90a0;color:#8a90a0}
 .cine-b{opacity:0;animation:fade .6s forwards;margin-top:20px;min-width:180px}
+.rise{animation:rise .28s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.spin{transform-box:fill-box;transform-origin:center;animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cf{position:fixed;top:-12px;width:8px;height:12px;border-radius:1px;opacity:.9;animation:fall 3.4s linear infinite;pointer-events:none}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
+.nm{width:100%;margin:3px 0;padding:8px 10px;border:1.5px solid var(--ink);border-radius:8px;background:var(--panel)}
+.chars{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;align-items:end}.chars .btn{grid-column:1/4}
+.dexc{display:flex;gap:12px}.dexc .cover{width:56px;align-self:flex-start}
+.gold-c{background:linear-gradient(100deg,var(--panel) 60%,color-mix(in srgb,var(--gold) 18%,var(--panel)))}
 @keyframes fade{to{opacity:1}}@keyframes stamp{to{opacity:1;transform:rotate(-6deg) scale(1)}}
-@media (prefers-reduced-motion:reduce){.cine-l,.stamp,.cine-b{animation-duration:.01s!important;animation-delay:0s!important}.bar i{transition:none}}
+@media (prefers-reduced-motion:reduce){.rise,.spin,.cf{animation:none!important}.cf{display:none}.cine-l,.stamp,.cine-b{animation-duration:.01s!important;animation-delay:0s!important}.bar i{transition:none}}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;max-width:min(560px,calc(100vw - 32px));background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s;font-weight:700;text-align:center}
 #toast.show{opacity:1}#toast.ng{background:var(--ng);color:#fff}
 @media (max-width:420px){.logo{font-size:36px}.tabs button{font-size:10.5px}}
@@ -113,8 +123,16 @@ input[type=range]{width:100%}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.2.0", SAVE_VER = 1;
+var GAME_VER = "0.3.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.3.0", date: "2026-11-01", notes: [
+    "登場人物の名前を自由に決められるようになりました。作品の図鑑も見られます。",
+    "企画に「切り口」を選べるようになりました。ジャンルとの相性で手応えが変わります。",
+    "ライバルの出版社が登場し、出版社ランキングが見られます。",
+    "パークに飲食とグッズ店、満足度、イベント開催を追加しました。",
+    "できごとを大きく増やしました。場面ごとにBGMが変わります。",
+    "画面の動きと、結果発表の演出を少し足しました。"
+  ] },
   { ver: "0.2.0", date: "2026-11-01", notes: [
     "はじまりを変えました。最初は、ふつうの人から始まります。",
     "習作を書き溜めると書き手の道が、投稿作を読み込むと見つける道が開きます。",
@@ -229,6 +247,26 @@ var LEGENDS = [
 var UNLOCK_FAME = 18;
 var COMPANY_RANKS = [[0, "駆け出し"], [10, "新進"], [25, "中堅"], [50, "大手"], [90, "業界の顔"], [150, "伝説"]];
 
+var GIMMICKS = [
+  { id: "twist", name: "どんでん返し", desc: "終盤で景色が反転する", q: { story: 4, hook: 6, art: 0, pol: -2 }, fav: ["mystery", "horror", "scifi"] },
+  { id: "ensemble", name: "群像劇", desc: "多くの人物が交差する", q: { story: 6, hook: 0, art: 0, pol: 2 }, fav: ["history", "work", "school"] },
+  { id: "master", name: "師弟の絆", desc: "教える者と学ぶ者の物語", q: { story: 3, hook: 2, art: 0, pol: 3 }, fav: ["sports", "fantasy", "work"] },
+  { id: "foreshadow", name: "伏線回収", desc: "序盤の一言が最後に効く", q: { story: 5, hook: 3, art: 0, pol: 3 }, fav: ["mystery", "fantasy"] },
+  { id: "dailymys", name: "日常の謎", desc: "身近な出来事に潜む不思議", q: { story: 2, hook: 5, art: 0, pol: 2 }, fav: ["daily", "school", "romance"] },
+  { id: "underdog", name: "逆境からの逆転", desc: "いちばん弱い者が勝つ", q: { story: 2, hook: 4, art: 2, pol: 0 }, fav: ["sports", "school", "work"] },
+  { id: "visual", name: "絵の見せ場", desc: "一枚で語る場面を作る", q: { story: 0, hook: 3, art: 7, pol: 0 }, fav: ["fantasy", "scifi", "romance"] }
+];
+var PARK_FAC = { ride: { name: "アトラクション", cost: 3000 }, food: { name: "飲食", cost: 1500 }, shop: { name: "グッズ店", cost: 1200 } };
+var RIVALS = ["青潮書房", "千代田出版", "月星社"];
+var BGM_MOODS = {
+  title: { root: 57, tempo: 620, bar: 8, prog: [[0, 4, 7, 12], [-3, 0, 4, 9], [-5, -1, 2, 7], [-7, -3, 0, 5]], mel: [0, 2, 4, 7, 4, 2, 7, 9, 7, 4, 2, 0, 4, 7, 9, 12], wave: "sine" },
+  calm: { root: 60, tempo: 520, bar: 8, prog: [[0, 4, 7, 12], [-3, 0, 4, 9], [-5, -1, 2, 7], [-7, -3, 0, 5]], mel: [0, 2, 4, 7, 4, 2, 7, 9, 7, 4, 2, 0, 4, 7, 9, 12], wave: "sine" },
+  bright: { root: 62, tempo: 400, bar: 8, prog: [[0, 4, 7, 12], [5, 9, 12, 17], [7, 11, 14, 19], [0, 4, 7, 12]], mel: [0, 4, 7, 9, 12, 9, 7, 4, 2, 4, 7, 11, 9, 7, 4, 2], wave: "triangle" },
+  drama: { root: 57, tempo: 470, bar: 8, prog: [[0, 3, 7, 12], [-4, 0, 3, 8], [-2, 2, 5, 10], [-7, -3, 0, 5]], mel: [0, 3, 5, 7, 10, 7, 5, 3, 0, 3, 7, 10, 12, 10, 7, 5], wave: "triangle" },
+  waltz: { root: 60, tempo: 330, bar: 6, prog: [[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]], mel: [12, 9, 7, 9, 12, 16, 14, 11, 7, 11, 14, 17], wave: "sine" },
+  grand: { root: 55, tempo: 700, bar: 8, prog: [[0, 7, 12, 16], [-5, 2, 7, 11], [-3, 4, 9, 12], [-7, 0, 5, 9]], mel: [12, 11, 7, 4, 7, 9, 11, 14, 12, 9, 7, 4, 7, 11, 12, 16], wave: "sine" }
+};
+
 /* ===== 共通ヘルパー ===== */
 function rnd() { return Math.random(); }
 function ri(a, b) { return a + Math.floor(rnd() * (b - a + 1)); }
@@ -280,7 +318,7 @@ function newGame(o) {
     player: { id: "p0", name: (o.name || "あなた").slice(0, 10), role: role, sk: sk, sta: 100, exp: 0, weeks: 0, hits: 0, classics: 0, mentees: 0, apprentice: null, hall: false, wrote: 0, read: 0, jobs: 0 },
     ap: 3, apMax: 3, unlock: { edit: role === "editor", write: role === "writer" },
     works: [], authors: [], staff: [], pool: [], offers: [], projects: [], partners: {}, hire: [],
-    trend: null, park: { areas: [], mode: "auto", policy: null, policyMonth: -1 },
+    trend: null, park: { areas: [], mode: "auto", policy: null, policyMonth: -1, sat: 60, eventUntil: 0, eventCool: 0 }, rivals: RIVALS.map(function (n) { return { name: n, score: ri(18, 40) }; }),
     hall: { works: [], people: [], cats: {} }, rank: { year: [], all: [] },
     log: [], news: [], queue: [], hist: [], written: {}, yearRev: 0, totalRev: 0,
     settings: { bgm: 0.5, se: 0.6, bright: 1 }, flags: {}, dex: []
@@ -317,12 +355,14 @@ function synergy(g, t, h) { return (SYN[g + "|" + t] || 0) + (HSYN[h + "|" + g] 
 function synWord(s) { return s >= 10 ? "これ以上ないほど噛み合っていそうだ" : s >= 4 ? "しっくりくる組み合わせだ" : s >= -3 ? "悪くないが、見せ方次第だ" : "噛み合わせが難しそうだ"; }
 function baseQ(q) { return 0.30 * q.story + 0.22 * q.art + 0.28 * q.hook + 0.20 * q.pol; }
 function hallBonus(S) { return Math.min(8, S.hall.works.length * 0.8); }
-function makePlayerQ(S, medium, syn, illus) {
+function gimBonus(gim, genre) { var g = GIMMICKS.find(function (x) { return x.id === gim; }); if (!g) return { story: 0, art: 0, hook: 0, pol: 0, fav: false }; var f = g.fav.indexOf(genre) > -1, m = f ? 1.5 : 0.8; return { story: g.q.story * m, art: g.q.art * m, hook: g.q.hook * m, pol: g.q.pol * m, fav: f }; }
+function makePlayerQ(S, medium, syn, illus, gim, genre) {
   var s = S.player.sk;
   var story = cl(s.prose * 0.45 + s.idea * 0.4 + 8 + nrm() * 6, 5, 95);
   var art = medium === "manga" ? (illus ? illus.art : s.art) : cl(s.prose * 0.7 + s.idea * 0.15 + nrm() * 5, 5, 95);
   var hook = cl(s.idea * 0.7 + syn * 1.2 + 10 + nrm() * 8 + hallBonus(S), 5, 98);
-  return { story: story, art: cl(art, 5, 95), hook: hook, pol: 25 };
+  var gb = gimBonus(gim, genre);
+  return { story: cl(story + gb.story, 5, 95), art: cl(art + gb.art, 5, 95), hook: cl(hook + gb.hook, 5, 98), pol: cl(25 + gb.pol, 5, 90) };
 }
 function lvl(v) { return v < 35 ? 0 : v < 52 ? 1 : v < 68 ? 2 : 3; }
 function skillWord(sk) { return sk < 45 ? "まだ実績は浅い" : sk < 62 ? "堅実な仕事をする" : sk < 75 ? "実力派" : "業界屈指"; }
@@ -405,7 +445,7 @@ function mkWork(S, o) {
     q: o.q, syn: o.syn || 0, state: "serial", born: S.t, weeks: 0, eps: 0, vols: 0, pop: o.pop || 8, fans: o.fans || 0,
     critic: baseQ(o.q) * 0.6, long: 0, era: 0, culture: 0, reach: 0, rev: 0, yrev: 0, peak: 0, promo: 0, boost: 0, low: 0,
     editor: null, media: {}, chars: genChars(), hit: false, hall: false, cand: null, lastEp: baseQ(o.q), lastContest: -99, sequel: false,
-    askCancel: false, canceledAt: null
+    askCancel: false, canceledAt: null, gim: o.gim || null
   };
   S.works.push(w);
   S.dex.push({ id: w.id, title: w.title, chars: w.chars });
@@ -469,14 +509,27 @@ function simWork(S, w, news) {
   }
   return rev * share;
 }
+function parkMgr(S) { return S.staff.filter(function (s) { return s.role === "parkmgr"; }).sort(function (a, b) { return b.skill - a.skill; })[0]; }
+function parkSatTarget(S, d) {
+  var P = S.park, pm = parkMgr(S), t = 38 + (pm ? pm.skill * 0.28 : 0), fans = 0, cap = 0, bal = 0;
+  P.areas.forEach(function (a) { var w = W(S, a.wid); if (w) fans += w.fans; cap += a.lv * 1.6 + (a.food || 0) * 0.7 + (a.shop || 0) * 0.5; if (Math.min(a.lv, a.food || 0, a.shop || 0) >= 1) bal += 1; });
+  t += Math.min(18, bal * 6);
+  var crowd = (fans / 100000) / Math.max(1, cap); if (crowd > 1) t -= Math.min(30, (crowd - 1) * 20);
+  if (P.mode === "manual" && P.policyMonth === monthKey(d) && P.policy === parkMood(d).best) t += 6;
+  if (P.eventUntil > S.t) t += 8;
+  return cl(t, 5, 98);
+}
 function simPark(S) {
-  var tot = 0, pm = S.staff.filter(function (s) { return s.role === "parkmgr"; }).sort(function (a, b) { return b.skill - a.skill; })[0];
-  var d = dinfo(S.t), pol = policyMult(S, d);
-  S.park.areas.forEach(function (a) {
+  var tot = 0, P = S.park, pm = parkMgr(S), d = dinfo(S.t), pol = policyMult(S, d);
+  if (!P.areas.length) return 0;
+  P.sat = (P.sat == null ? 60 : P.sat); P.sat += (parkSatTarget(S, d) - P.sat) * 0.06;
+  var satM = 0.7 + P.sat / 166, evM = P.eventUntil > S.t ? 1.25 : 1;
+  P.areas.forEach(function (a) {
     var w = W(S, a.wid); if (!w) return;
-    var r = (w.fans / 10000) * 1.0 * a.lv * (w.pop / 60) * pol * (1 + (pm ? pm.skill / 200 : 0));
+    var f = (a.food || 0), sh = (a.shop || 0);
+    var r = (w.fans / 10000) * (w.pop / 60) * (0.4 + a.lv * 0.6 + f * 0.3 + sh * 0.35) * pol * satM * evM * (1 + (pm ? pm.skill / 200 : 0));
     a.rev = r; a.tot = (a.tot || 0) + r; tot += r;
-    w.culture += 0.06 * a.lv; w.reach = Math.min(100, w.reach + 0.01 * a.lv);
+    w.culture += 0.06 * a.lv + 0.02 * (f + sh); w.reach = Math.min(100, w.reach + 0.01 * a.lv);
   });
   return tot;
 }
@@ -523,6 +576,7 @@ function seasonal(S, d, news) {
   if (d.wk === 1) {
     if (d.mi === 0) {
       S.trend = makeTrend(); S.partners = {}; genHire(S); S.yearRev = 0;
+      (S.rivals || []).forEach(function (r) { if (r.k == null) r.k = 0.1 + rnd() * 0.6; r.score += ri(2, 11) + (ch(0.15) ? ri(5, 12) : 0); var tg = ourScore(S) * (0.7 + r.k); if (tg > r.score) r.score += (tg - r.score) * 0.25; });
       news.push("新年度。今年は「" + S.trend.hot.map(function (g) { return gname(g, GENRES); }).join("」「") + "」に追い風が吹いている。");
     }
     if (d.mi === 2 && S.unlock.edit) {
@@ -549,7 +603,7 @@ function yearEnd(S, news) {
   var d = dinfo(S.t), rows = [];
   S.works.forEach(function (w) { if (w.state === "canceled" && w.weeks < 10) return; rows.push({ title: w.title, author: w.author.name, comp: compOf(w), mine: true, wid: w.id }); });
   var scale = Math.min(24, (d.y - 1) * 3);
-  for (var i = 0; i < 12; i++) rows.push({ title: mkTitle(), author: pname(), comp: cl(45 + scale * 0.8 + nrm() * 13, 10, 98), mine: false });
+  for (var i = 0; i < 12; i++) rows.push({ title: mkTitle(), author: pname() + "(" + pick(S.rivals && S.rivals.length ? S.rivals : [{ name: "他社" }]).name + ")", comp: cl(45 + scale * 0.8 + nrm() * 13, 10, 98), mine: false });
   rows.sort(function (a, b) { return b.comp - a.comp; });
   var top = rows.slice(0, 10);
   S.rank.year.unshift({ y: d.y, rows: top.map(function (r) { return { title: r.title, author: r.author, mine: r.mine, wid: r.wid || null, comp: Math.round(r.comp) }; }) });
@@ -708,6 +762,7 @@ function personHallCheck(S) {
 }
 
 /* ===== パーク ===== */
+function ourScore(S) { return S.fame; }
 function parkAvail(S, w) {
   var r = { ok: true, why: [] };
   if (w.state === "canceled") { r.ok = false; r.why.push("打ち切り済み"); }
@@ -728,11 +783,20 @@ function actParkBuild(S, wid) {
   queue(S, { k: "info", title: "パーク開園", text: "『" + w.title + "』のエリアが開園した。街のはずれに、作品の世界がそのまま立ち上がっている。" });
   return yes("エリアを開園しました");
 }
-function actParkUp(S, id) {
+function parkFacCost(a, fac) { var cur = fac === "ride" ? a.lv : (a[fac] || 0); return PARK_FAC[fac].cost * (fac === "ride" ? cur : cur + 1); }
+function actParkUp(S, id, fac) {
+  fac = fac || "ride";
   var a = S.park.areas.find(function (x) { return x.id === id; }); if (!a) return no("区画が見つかりません");
-  if (a.lv >= 5) return no("これ以上は拡張できません");
-  var c = 3000 * a.lv; if (S.money < c) return no("資金が足りません(必要 " + fmtMoney(c) + ")");
-  S.money -= c; a.lv++; return yes("アトラクションを増設しました");
+  var cur = fac === "ride" ? a.lv : (a[fac] || 0); if (cur >= 5) return no("これ以上は拡張できません");
+  var c = parkFacCost(a, fac); if (S.money < c) return no("資金が足りません(必要 " + fmtMoney(c) + ")");
+  S.money -= c; if (fac === "ride") a.lv++; else a[fac] = cur + 1; return yes(PARK_FAC[fac].name + "を" + (cur ? "増設" : "新設") + "しました");
+}
+function actParkEvent(S) {
+  var P = S.park; if (!P.areas.length) return no("エリアがありません");
+  if (P.eventCool > S.t) return no("次の開催まで あと" + (P.eventCool - S.t) + "週");
+  if (S.ap < 1) return no("行動点が足りません"); if (S.money < 800) return no("資金が足りません(800万円)");
+  S.ap--; S.money -= 800; P.eventUntil = S.t + 4; P.eventCool = S.t + 12; P.sat = Math.min(100, P.sat + 8);
+  S.fame += 0.5; return yes("期間限定イベントを開催した。4週間、客足が伸びる");
 }
 function actParkMode(S, mode) { S.park.mode = mode; return yes(mode === "auto" ? "運営をおまかせにしました" : "運営を自分で行います"); }
 function actParkPolicy(S, pol) {
@@ -771,9 +835,16 @@ function actPlan(S, o) {
     if (!illus) return no("絵師を選んでください");
   }
   S.ap--; S.money -= 10;
-  var w = mkWork(S, { title: title, medium: o.medium, genre: o.genre, theme: o.theme, hero: o.hero, author: { id: "p0", name: S.player.name, type: "player" }, illus: illus ? { name: illus.name, art: illus.art } : null, q: makePlayerQ(S, o.medium, syn, illus), syn: syn });
+  var w = mkWork(S, { title: title, medium: o.medium, genre: o.genre, theme: o.theme, hero: o.hero, author: { id: "p0", name: S.player.name, type: "player" }, illus: illus ? { name: illus.name, art: illus.art } : null, q: makePlayerQ(S, o.medium, syn, illus, o.gim, o.genre), syn: syn, gim: o.gim });
+  if (o.chars) { var roles = ["主人公", "ライバル", "仲間"]; w.chars = [0, 1, 2].map(function (i) { var nm = (o.chars[i] || "").trim().slice(0, 8); return { name: nm || pick(GIVEN), role: w.chars[i] ? w.chars[i].role : roles[i] }; }); }
   S.flags.illList = null; addLog(S, "新連載『" + title + "』を企画した。");
   return yes("『" + title + "』の連載が始まる", { wid: w.id });
+}
+function actRename(S, wid, names) {
+  var w = W(S, wid); if (!w) return no("作品が見つかりません");
+  names.forEach(function (n, i) { n = (n || "").trim().slice(0, 8); if (n && w.chars[i]) w.chars[i].name = n; });
+  var d = S.dex.find(function (x) { return x.id === wid; }); if (d) d.chars = w.chars;
+  return yes("登場人物の名前を変えた");
 }
 function actWrite(S, wid, sid) {
   var w = W(S, wid), st = STYLES.find(function (x) { return x.id === sid; });
@@ -1071,6 +1142,106 @@ var EVDEF = {
       ];
     }
   }
+  ,
+  tv: {
+    title: "テレビ出演の依頼",
+    text: function (S, p) { var w = evWork(S, p); return "情報番組から、『" + (w ? w.title : "あなたの作品") + "』をテーマに出演してほしいと依頼が来た。"; },
+    choices: function () { return [
+      { label: "出演する", fn: function (S, p) { var w = evWork(S, p); S.player.sta = Math.max(0, S.player.sta - 15); if (w) { w.boost += 6; w.fans += 1500; } S.fame += 1; gainSkill(S, "biz", 1); return "緊張したが、反響は大きかった。"; } },
+      { label: "断る", fn: function () { return "執筆に専念することにした。"; } }]; }
+  },
+  interview: {
+    title: "取材の申し込み",
+    text: function (S, p) { var w = evWork(S, p); return "雑誌から、『" + (w ? w.title : "作品") + "』の創作の裏側を聞きたいと取材の申し込みがあった。"; },
+    choices: function () { return [
+      { label: "じっくり語る", fn: function (S, p) { var w = evWork(S, p); if (w) w.boost += 3; gainSkill(S, "idea", 1.5); return "言葉にするうちに、自分でも気づかなかった狙いが見えてきた。"; } },
+      { label: "控えめに答える", fn: function (S) { S.player.sta = Math.min(100, S.player.sta + 5); return "短い取材で、すぐ終わった。"; } }]; }
+  },
+  bookfair: {
+    title: "書店フェアのお誘い",
+    text: function (S, p) { var w = evWork(S, p); return "大手書店のフェアで、『" + (w ? w.title : "作品") + "』を並べないかと声がかかった。"; },
+    choices: function () { return [
+      { label: "参加する(30万円)", fn: function (S, p) { var w = evWork(S, p); if (S.money < 30) return "資金が足りず、見送った。"; S.money -= 30; if (w) w.promo += 50; return "平台に並び、手に取る人が増えた。"; } },
+      { label: "見送る", fn: function () { return "今回は見送った。"; } }]; }
+  },
+  doujin: {
+    title: "即売会への誘い",
+    text: function () { return "ファンの集まる即売会に、売り子として出てみないかと誘われた。"; },
+    choices: function () { return [
+      { label: "出てみる", fn: function (S, p) { var w = evWork(S, p); S.player.sta = Math.max(0, S.player.sta - 10); S.money += 20; if (w) { w.fans += 800; w.boost += 2; } return "ファンと直接話せて、元気をもらった。"; } },
+      { label: "遠慮する", fn: function () { return "人混みは苦手で、遠慮した。"; } }]; }
+  },
+  similar: {
+    title: "「似ている」という指摘",
+    text: function (S, p) { var w = evWork(S, p); return "『" + (w ? w.title : "作品") + "』のある場面が、他の作品に似ているとSNSで指摘されている。"; },
+    choices: function () { return [
+      { label: "丁寧に経緯を説明する", fn: function (S, p) { var w = evWork(S, p); if (w) w.pop = Math.max(0, w.pop - 1); return "経緯が伝わり、大きな騒ぎにはならなかった。"; } },
+      { label: "強く反論する", fn: function (S, p) { var w = evWork(S, p); if (w) { if (ch(0.5)) { w.pop = Math.max(0, w.pop - 8); return "火に油を注ぎ、人気が落ちた。"; } w.boost += 2; return "筋の通った反論が支持された。"; } return "何も起きなかった。"; } }]; }
+  },
+  overseasreq: {
+    title: "海外から翻訳の打診",
+    text: function (S, p) { var w = evWork(S, p); return "海外の出版社から、『" + (w ? w.title : "作品") + "』を翻訳したいと連絡が来た。"; },
+    choices: function () { return [
+      { label: "受ける", fn: function (S, p) { var w = evWork(S, p); S.money += 80; S.fame += 1; if (w) { w.culture += 2; w.fans += 3000; } return "契約がまとまり、海外の読者が増えた。(80万円)"; } },
+      { label: "断る", fn: function () { return "今回は国内に集中する。"; } }]; }
+  },
+  fanart: {
+    title: "ファンアートが話題に",
+    text: function (S, p) { var w = evWork(S, p); return "『" + (w ? w.title : "作品") + "』のファンアートがSNSで広まっている。"; },
+    choices: function () { return [
+      { label: "公式でも紹介する", fn: function (S, p) { var w = evWork(S, p); if (w) { w.boost += 4; w.fans += 1200; } return "輪が広がり、新しい読者が増えた。"; } },
+      { label: "そっと見守る", fn: function (S, p) { var w = evWork(S, p); if (w) w.boost += 1.5; return "静かな盛り上がりが続いた。"; } }]; }
+  },
+  judge: {
+    title: "新人賞の審査員",
+    text: function () { return "ある新人賞から、審査員を務めてほしいと頼まれた。"; },
+    choices: function () { return [
+      { label: "引き受ける", fn: function (S) { gainSkill(S, "eye", 2); S.fame += 1; if (S.pool.length < 10) S.pool.push(genCand(S, "sub")); return "多くの原稿に触れ、目が磨かれた。気になる書き手も見つかった。"; } },
+      { label: "断る", fn: function () { return "時間が足りず、断った。"; } }]; }
+  },
+  authorslump: {
+    title: "作家の不調",
+    text: function (S, p) { return (p.name || "担当の作家") + "が、書けなくなったと打ち明けてきた。"; },
+    choices: function () { return [
+      { label: "旅行を勧める(40万円)", fn: function (S, p) { var a = S.authors.find(function (x) { return x.id === p.aid; }); if (S.money < 40) return "資金が足りず、励ますだけになった。"; S.money -= 40; if (a) a.skill = Math.min(a.pot, a.skill + 2); return "戻ってきた顔は、すっきりしていた。"; } },
+      { label: "しばらく休ませる", fn: function (S, p) { var a = S.authors.find(function (x) { return x.id === p.aid; }); if (a) a.skill = Math.min(a.pot, a.skill + 0.8); S.works.forEach(function (w) { if (w.author.id === p.aid && w.state === "serial") w.boost -= 2; }); return "休載は痛いが、落ち着きを取り戻した。"; } },
+      { label: "厳しく発破をかける", fn: function (S, p) { var a = S.authors.find(function (x) { return x.id === p.aid; }); if (a) { if (ch(0.5)) { a.skill = Math.min(a.pot, a.skill + 3); return "火がつき、見違える原稿が上がってきた。"; } a.skill = Math.max(10, a.skill - 2); return "傷つけてしまった。関係の修復が必要だ。"; } return "何も起きなかった。"; } }]; }
+  },
+  rivalhit: {
+    title: "ライバルの躍進",
+    text: function (S, p) { return (p.name || "ライバル社") + "の新作が書店で話題をさらっている。業界の空気が動いた。"; },
+    choices: function () { return [
+      { label: "宣伝で応戦する(100万円)", fn: function (S) { if (S.money < 100) return "資金が足りず、応戦できなかった。"; S.money -= 100; liveWorks(S).forEach(function (w) { w.promo += 40; }); return "全作品に宣伝を打ち、流れを引き戻した。"; } },
+      { label: "自分たちの道を行く", fn: function (S) { gainSkill(S, "idea", 1); return "他人の評判は気にせず、足元を固めることにした。"; } }]; }
+  },
+  collab: {
+    title: "共同企画の誘い",
+    text: function (S, p) { return (p.name || "他社") + "から、共同でフェアを開かないかと誘いがあった。(80万円)"; },
+    choices: function () { return [
+      { label: "乗る", fn: function (S) { if (S.money < 80) return "資金が足りず、見送った。"; var l = liveWorks(S); if (!l.length) return "連載がなく、話は流れた。"; S.money -= 80; var w = l.sort(function (a, b) { return b.pop - a.pop; })[0]; w.boost += 8; w.fans += 3000; S.fame += 1; return "『" + w.title + "』を中心に、フェアは盛況だった。"; } },
+      { label: "断る", fn: function () { return "自社の力で伸ばす道を選んだ。"; } }]; }
+  },
+  poach: {
+    title: "引き抜きの動き",
+    text: function (S, p) { return (p.rival || "他社") + "が、" + (p.name || "スタッフ") + "を引き抜こうとしているらしい。"; },
+    choices: function () { return [
+      { label: "待遇を上げて引き留める(100万円)", fn: function (S, p) { if (S.money < 100) return "資金が足りず、引き留められなかった。"; S.money -= 100; var s = S.staff.find(function (x) { return x.id === p.sid; }); if (s) s.skill = Math.min(s.pot, s.skill + 1.5); return "残ってくれることになった。"; } },
+      { label: "送り出す(移籍金100万円)", fn: function (S, p) { S.staff = S.staff.filter(function (x) { return x.id !== p.sid; }); S.works.forEach(function (w) { if (w.editor === p.sid) w.editor = null; }); S.money += 100; return "快く送り出した。移籍金が入った。"; } }]; }
+  },
+  parktrouble: {
+    title: "パークの行列",
+    text: function () { return "休日のパークで長い行列ができ、来場者から不満の声が上がっている。"; },
+    choices: function () { return [
+      { label: "スタッフを増員する(200万円)", fn: function (S) { if (S.money < 200) return "資金が足りず、増員できなかった。"; S.money -= 200; S.park.sat = Math.min(100, S.park.sat + 10); return "案内が改善され、満足度が上がった。"; } },
+      { label: "様子を見る", fn: function (S) { S.park.sat = Math.max(0, S.park.sat - 8); return "不満が募り、満足度が下がった。"; } }]; }
+  },
+  parkfest: {
+    title: "パークでのサイン会",
+    text: function () { return "パークの人気エリアで、作家のサイン会を開かないかという提案が出た。(150万円)"; },
+    choices: function () { return [
+      { label: "開催する", fn: function (S) { if (S.money < 150) return "資金が足りず、見送った。"; S.money -= 150; S.park.sat = Math.min(100, S.park.sat + 6); S.fame += 1; var a = S.park.areas.length ? pick(S.park.areas) : null; var w = a ? W(S, a.wid) : null; if (w) w.fans += 2500; return "長い列ができ、パークが熱気に包まれた。"; } },
+      { label: "見送る", fn: function () { return "今回は見送った。"; } }]; }
+  }
 };
 
 /* ===== 発生判定 ===== */
@@ -1086,16 +1257,26 @@ function rollEvent(S, news) {
   }
   if (S.flags.askOfficeLater && S.t >= S.flags.askOfficeLater) { S.flags.askOffice = false; S.flags.askOfficeLater = 0; }
   if (S.flags.askPenLater && S.t >= S.flags.askPenLater) { S.flags.askPen = false; S.flags.askPenLater = 0; }
-  if (!ch(0.045)) return;
-  var opts = [];
-  if (live.length) { opts.push("fan", "fan", "scandal"); }
+  if (!ch(0.075)) return;
+  var mine = live.filter(function (w) { return w.author.type === "player"; }), opts = [];
+  if (live.length) opts.push("fan", "fan", "scandal", "rivalhit", "bookfair");
+  if (mine.length) opts.push("tv", "interview", "doujin", "similar");
+  if (live.some(function (w) { return w.pop >= 40; })) opts.push("overseasreq");
+  if (live.length) opts.push("collab");
   if (S.player.sta < 40 || S.unlock.write) opts.push("slump");
+  if (S.unlock.edit) opts.push("judge");
+  if (S.authors.some(function (a) { return S.works.some(function (w) { return w.author.id === a.id && w.state === "serial"; }); })) opts.push("authorslump", "authorslump");
   opts.push("rival", "windfall");
-  if (S.staff.length) opts.push("staffleave");
+  if (S.staff.length) opts.push("staffleave", "poach");
+  if (S.park.areas.length) opts.push("parktrouble", "parkfest");
   var id = pick(opts), p = {};
-  if (id === "fan" || id === "scandal") p.wid = pick(live).id;
-  if (id === "staffleave") { var s = pick(S.staff); p.sid = s.id; p.name = s.name; }
-  if (id === "scandal" && live.length && pick(live).pop < 20) return;
+  if (id === "fan" || id === "scandal" || id === "bookfair") p.wid = pick(live).id;
+  if (id === "tv" || id === "interview" || id === "doujin" || id === "similar") p.wid = pick(mine).id;
+  if (id === "overseasreq") p.wid = pick(live.filter(function (w) { return w.pop >= 40; })).id;
+  if (id === "staffleave" || id === "poach") { var s = pick(S.staff); p.sid = s.id; p.name = s.name; if (id === "poach") p.rival = (pick(S.rivals && S.rivals.length ? S.rivals : [{ name: "他社" }])).name; }
+  if (id === "authorslump") { var cand = S.authors.filter(function (a) { return S.works.some(function (w) { return w.author.id === a.id && w.state === "serial"; }); }); var au = pick(cand); p.aid = au.id; p.name = au.name; }
+  if (id === "rivalhit" || id === "collab") p.name = (pick(S.rivals && S.rivals.length ? S.rivals : [{ name: "他社" }])).name;
+  if (id === "scandal" && W(S, p.wid).pop < 20) return;
   queue(S, { k: "ev", id: id, p: p });
 }
 
@@ -1231,7 +1412,7 @@ function importCode(code) {
 }
 
 /* ===== 音(Web Audio で合成) ===== */
-var AU = { ctx: null, master: null, bgmGain: null, seGain: null, timer: null, step: 0, on: false, mood: "calm" };
+var AU = { moodName: "title", ctx: null, master: null, bgmGain: null, seGain: null, timer: null, step: 0, on: false, mood: "calm" };
 function auInit() {
   if (AU.ctx) return;
   try {
@@ -1251,17 +1432,21 @@ function tone(freq, t0, dur, type, vol, dest) {
   o.connect(g); g.connect(dest); o.start(t0); o.stop(t0 + dur + 0.05);
 }
 function mf(n) { return 440 * Math.pow(2, (n - 69) / 12); }
-var BGM_CH = [[0, 4, 7, 12], [-3, 0, 4, 9], [-5, -1, 2, 7], [-7, -3, 0, 5]];
-var BGM_MEL = [0, 2, 4, 7, 4, 2, 7, 9, 7, 4, 2, 0, 4, 7, 9, 12];
+var BGM_TAB = { title: "title", home: "calm", works: "bright", scout: "calm", media: "drama", park: "waltz", hall: "grand", menu: "calm" };
+function bgmMood(name) {
+  var key = BGM_TAB[name] || "calm"; if (AU.moodName === key) return;
+  AU.moodName = key; AU.step = 0;
+  if (AU.on) { clearInterval(AU.timer); AU.timer = setInterval(bgmStep, BGM_MOODS[key].tempo); }
+}
 function bgmStep() {
   if (!AU.ctx || !AU.on || SET.bgm <= 0) return;
-  var t = AU.ctx.currentTime + 0.05, s = AU.step++, bar = Math.floor(s / 8) % 4, ch_ = BGM_CH[bar], root = 60;
-  if (s % 8 === 0) ch_.forEach(function (n, i) { tone(mf(root + n - 12 + (i > 1 ? 0 : 0)), t, 3.2, "triangle", 0.12, AU.bgmGain); });
-  if (s % 2 === 0) { var m = BGM_MEL[(s / 2) % BGM_MEL.length] + BGM_CH[bar][0]; if (ch(0.8)) tone(mf(root + 12 + m), t, 0.9, "sine", 0.1, AU.bgmGain); }
+  var m = BGM_MOODS[AU.moodName || "calm"], t = AU.ctx.currentTime + 0.05, s = AU.step++, bar = Math.floor(s / m.bar) % m.prog.length, chd = m.prog[bar];
+  if (s % m.bar === 0) chd.forEach(function (n) { tone(mf(m.root + n - 12), t, m.bar * m.tempo / 1000 * 0.9, "triangle", 0.12, AU.bgmGain); });
+  if (s % 2 === 0 || m.bar === 6) { var n2 = m.mel[Math.floor(s / (m.bar === 6 ? 1 : 2)) % m.mel.length] + chd[0]; if (rnd() < 0.8) tone(mf(m.root + 12 + n2), t, 0.9, m.wave, 0.1, AU.bgmGain); }
 }
 function bgmStart() {
   auResume(); if (!AU.ctx || AU.on) return; AU.on = true;
-  AU.timer = setInterval(bgmStep, 520);
+  AU.timer = setInterval(bgmStep, BGM_MOODS[AU.moodName || "calm"].tempo);
 }
 function bgmStop() { AU.on = false; if (AU.timer) { clearInterval(AU.timer); AU.timer = null; } }
 function se(kind) {
@@ -1281,7 +1466,7 @@ function se(kind) {
 }
 
 /* ===== 状態 ===== */
-var G = { S: null, slot: 0, screen: "title", tab: "home", hallTab: "works", modal: [], form: { ng: { name: "", company: "", role: "writer", diff: "normal", slot: 1 }, plan: { title: "", medium: "novel", genre: "school", theme: "youth", hero: "plodder", illusId: "" }, m: {}, code: "" }, cur: null, curRes: null, cine: null, busy: false, slots: [null, null, null], cloudSlots: [null, null, null], toastT: null };
+var G = { S: null, slot: 0, screen: "title", tab: "home", hallTab: "works", modal: [], form: { ng: { name: "", company: "", role: "writer", diff: "normal", slot: 1 }, plan: { title: "", medium: "novel", genre: "school", theme: "youth", hero: "plodder", illusId: "", gim: "twist", chars: ["", "", ""] }, rn: ["", "", ""], m: {}, code: "" }, cur: null, curRes: null, cine: null, busy: false, slots: [null, null, null], cloudSlots: [null, null, null], toastT: null };
 function $(s) { return document.querySelector(s); }
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 function btn(label, act, data, cls) {
@@ -1322,6 +1507,7 @@ function render() {
   if (G.screen === "title") app.innerHTML = vTitle();
   else if (G.screen === "new") app.innerHTML = vNew();
   else app.innerHTML = vGame();
+  G.fx = false; bgmMood(G.screen === "game" ? G.tab : "title");
   window.scrollTo(0, y);
   renderOverlay();
 }
@@ -1371,7 +1557,7 @@ function vGame() {
   return '<header class="top"><div class="top-l"><b class="co">' + esc(S.company) + '</b><span class="mono small">' + d.label + '</span></div>' +
     '<div class="top-r"><span class="mono money">' + fmtMoney(S.money) + '</span><span class="small">' + playerTitle(S) + ' ・ ' + companyRank(S) + '</span></div>' +
     '<div class="top-b"><span class="small">行動</span>' + ap + '<span class="small sp">体力</span>' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</div></header>' +
-    '<main class="wrap">' + body + '</main>' +
+    '<main class="wrap' + (G.fx ? ' rise' : '') + '">' + body + '</main>' +
     '<footer class="foot"><button class="btn pri next" data-act="next">週を進める ▶</button><nav class="tabs">' +
     tabs.map(function (t) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (G.tab === t[0] ? "on" : "") + '">' + t[1] + '</button>'; }).join("") + '</nav></footer>';
 }
@@ -1466,7 +1652,7 @@ function vPark(S) {
       var w = W(S, a.wid), hue = w ? (GHUE[w.genre] || 200) : 200, hh = 24 + a.lv * 8;
       plots += '<g><rect x="' + x + '" y="' + y + '" width="100" height="84" rx="8" fill="hsl(' + hue + ',45%,86%)" stroke="hsl(' + hue + ',50%,40%)"/>' +
         '<rect x="' + (x + 14) + '" y="' + (y + 78 - hh) + '" width="30" height="' + hh + '" fill="hsl(' + hue + ',55%,45%)"/><polygon points="' + (x + 12) + ',' + (y + 78 - hh) + ' ' + (x + 29) + ',' + (y + 62 - hh) + ' ' + (x + 46) + ',' + (y + 78 - hh) + '" fill="hsl(' + ((hue + 30) % 360) + ',65%,60%)"/>' +
-        '<circle cx="' + (x + 72) + '" cy="' + (y + 52) + '" r="' + (10 + a.lv * 2) + '" fill="none" stroke="hsl(' + hue + ',55%,45%)" stroke-width="3"/>' +
+        '<g class="spin"><circle cx="' + (x + 72) + '" cy="' + (y + 50) + '" r="' + (10 + a.lv * 2) + '" fill="none" stroke="hsl(' + hue + ',55%,45%)" stroke-width="3"/><line x1="' + (x + 72) + '" y1="' + (y + 50 - 10 - a.lv * 2) + '" x2="' + (x + 72) + '" y2="' + (y + 50 + 10 + a.lv * 2) + '" stroke="hsl(' + hue + ',55%,45%)" stroke-width="2"/><line x1="' + (x + 72 - 10 - a.lv * 2) + '" y1="' + (y + 50) + '" x2="' + (x + 72 + 10 + a.lv * 2) + '" y2="' + (y + 50) + '" stroke="hsl(' + hue + ',55%,45%)" stroke-width="2"/></g>' + ((a.food || 0) ? '<circle cx="' + (x + 20) + '" cy="' + (y + 20) + '" r="4" fill="hsl(25,85%,55%)"/>' : "") + ((a.shop || 0) ? '<rect x="' + (x + 28) + '" y="' + (y + 16) + '" width="9" height="8" fill="hsl(340,70%,60%)"/>' : "") +
         '<text x="' + (x + 6) + '" y="' + (y + 12) + '" font-size="9" fill="currentColor" font-family="Zen Kaku Gothic New,sans-serif">' + esc(w ? w.title.slice(0, 8) : "") + '</text><text x="' + (x + 94) + '" y="' + (y + 80) + '" text-anchor="end" font-size="9" fill="currentColor" font-family="IBM Plex Mono,monospace">Lv' + a.lv + '</text></g>';
     } else {
       plots += '<g class="plot" data-act="parkbuild"><rect x="' + x + '" y="' + y + '" width="100" height="84" rx="8" fill="none" stroke="currentColor" stroke-dasharray="5 4" opacity=".4"/><text x="' + (x + 50) + '" y="' + (y + 48) + '" text-anchor="middle" font-size="11" fill="currentColor" opacity=".5" font-family="Zen Kaku Gothic New,sans-serif">' + (i === P.areas.length ? "＋ 区画" : "空き地") + '</text></g>';
@@ -1477,7 +1663,16 @@ function vPark(S) {
   if (P.mode === "manual") h += '<div class="chips">' + PARK_POL.map(function (p) { return chip(p.name, "parkpol", { p: p.id }, P.policyMonth === monthKey(d) && P.policy === p.id); }).join("") + '</div><p class="muted small">月ごとの空気に合った方針を選ぶと、収益が大きく伸びる。選ばないと少し落ちる。</p>';
   h += '</section>';
   if (!P.areas.length) h += '<section class="card note"><p class="small">パークは、ファンが50万人・世の中への浸透・展開の成功実績がそろった作品から開園できる。</p></section>';
-  P.areas.forEach(function (a) { var w = W(S, a.wid); h += '<section class="card"><b>『' + esc(w ? w.title : "?") + '』エリア</b><p class="small muted mono">週 ' + fmtMoney(a.rev || 0) + ' ・ 累計 ' + fmtMoney(a.tot || 0) + '</p>' + (a.lv < 5 ? btn("アトラクション増設(" + fmtMoney(3000 * a.lv) + ")", "parkup", { id: a.id }, "sm") : '<span class="tag gold">最大規模</span>') + '</section>'; });
+  if (P.areas.length) {
+    var evOn = P.eventUntil > S.t, cool = Math.max(0, P.eventCool - S.t);
+    h += '<section class="card"><h2 class="h2">来場者の満足度</h2><div class="skl"><span>満足度</span>' + bar(P.sat, 100, P.sat < 35 ? "warn" : "ok") + '<em class="small">' + (P.sat < 35 ? "不満が多い" : P.sat < 60 ? "ふつう" : P.sat < 80 ? "満足" : "大満足") + '</em></div>' +
+      '<p class="small muted">アトラクション・飲食・グッズ店をそろえ、客数に見合う規模にすると上がる。</p>' +
+      (evOn ? '<p class="tag up">期間限定イベント開催中(あと' + (P.eventUntil - S.t) + '週)</p>' : btn("期間限定イベントを開く(800万円)" + (cool ? " <small>あと" + cool + "週</small>" : ""), "parkevent", null, "sm" + (cool ? " dis" : ""))) + '</section>';
+  }
+  P.areas.forEach(function (a) {
+    var w = W(S, a.wid), fs = ["ride", "food", "shop"].map(function (f) { var cur = f === "ride" ? a.lv : (a[f] || 0); return cur >= 5 ? '<span class="tag gold">' + PARK_FAC[f].name + ' 最大</span>' : btn(PARK_FAC[f].name + ' Lv' + cur + ' → ' + fmtMoney(parkFacCost(a, f)), "parkup", { id: a.id, fac: f }, "sm"); }).join("");
+    h += '<section class="card"><b>『' + esc(w ? w.title : "?") + '』エリア</b><p class="small muted mono">週 ' + fmtMoney(a.rev || 0) + ' ・ 累計 ' + fmtMoney(a.tot || 0) + '</p><div class="grid2">' + fs + '</div></section>';
+  });
   h += btn("エリアを新設(" + fmtMoney(PARK_COST) + ")", "parkbuild", null, "pri");
   return h;
 }
@@ -1498,6 +1693,8 @@ function vHall(S) {
     MEDIA_ORDER.forEach(function (k) { var arr = S.hall.cats[k]; if (arr && arr.length) { any = true; h += '<section class="card"><b>' + MEDIA[k].name + 'の名作</b>' + arr.map(function (x) { return '<p class="small">『' + esc(x.title) + '』 ' + x.y + '年目</p>'; }).join("") + '</section>'; } });
     if (!any) h += '<p class="muted">展開で「大ヒット」を出すと、ここに名が刻まれる。</p>';
   } else {
+    var co = (S.rivals || []).map(function (r) { return { name: r.name, score: r.score, me: false }; }).concat([{ name: S.company, score: ourScore(S), me: true }]).sort(function (a, b) { return b.score - a.score; });
+    h += '<h3 class="h3">出版社ランキング</h3><ol class="rank">' + co.map(function (c) { return '<li' + (c.me ? ' class="mine"' : '') + '><b>' + esc(c.name) + '</b><span class="muted small">' + (c.me ? "あなた ★" : "") + '</span></li>'; }).join("") + '</ol>';
     h += '<h3 class="h3">歴代の名作</h3>' + rankList(S.rank.all.slice(0, 10).map(function (x) { return { title: x.title, author: x.author, mine: x.mine }; }));
     S.rank.year.forEach(function (r) { h += '<h3 class="h3">' + r.y + '年目の年間ランキング</h3>' + rankList(r.rows); });
   }
@@ -1509,7 +1706,7 @@ function vMenu(S) {
   var up = UPDATES.map(function (u) { return '<b class="mono">v' + u.ver + '</b><ul>' + u.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + '</ul>'; }).join("");
   var pts = S.hist.slice(-40), spark = "";
   if (pts.length > 2) { var mx = Math.max.apply(null, pts.map(function (p) { return p.m; })), mn = Math.min.apply(null, pts.map(function (p) { return p.m; })); spark = '<svg viewBox="0 0 200 50" class="spark"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="' + pts.map(function (p, i) { return (i * 200 / (pts.length - 1)).toFixed(1) + ',' + (46 - (p.m - mn) / Math.max(1, mx - mn) * 42).toFixed(1); }).join(" ") + '"/></svg>'; }
-  return '<h2 class="h1">メニュー</h2><div class="grid2">' + btn("セーブする", "slots", { mode: "save" }, "pri") + btn("ロード", "slots", { mode: "load" }) + btn("引き継ぎ", "code") + btn("設定", "settings") + btn("人物と作品の記録", "log") + btn("タイトルへ", "totitle") + '</div>' +
+  return '<h2 class="h1">メニュー</h2><div class="grid2">' + btn("セーブする", "slots", { mode: "save" }, "pri") + btn("ロード", "slots", { mode: "load" }) + btn("引き継ぎ", "code") + btn("設定", "settings") + btn("作品図鑑", "dex") + btn("できごとの記録", "log") + btn("タイトルへ", "totitle") + '</div>' +
     '<section class="card"><h2 class="h2">会社のあゆみ</h2>' + spark + '<p class="small">名声 ' + Math.round(S.fame) + ' ・ ' + companyRank(S) + ' ・ 累計収益 ' + fmtMoney(S.totalRev) + '</p></section>' +
     '<section class="card"><h2 class="h2">アップデート情報</h2>' + up + '</section>';
 }
@@ -1540,6 +1737,7 @@ function vCine(c) {
     var w2 = W(G.S, c.item.wid);
     h += '<p class="mono cine-k">' + c.item.y + '年目 年間大賞</p><h2 class="cine-t">『' + esc(w2 ? w2.title : "") + '』</h2><p class="cine-l" style="animation-delay:.8s">年間ランキング第1位。賞金300万円。</p>';
   }
+  if (c.kind !== "mres" || c.item.tier >= 4) h += confetti();
   h += '<button class="btn pri cine-b" data-act="cinenext" style="animation-delay:' + (c.wait || 2.2) + 's">つづける</button></div>';
   return h;
 }
@@ -1567,6 +1765,7 @@ function vModal(m) {
     case "code": return close + vCode();
     case "log": return close + '<h3 class="h2">記録</h3><ul class="logl">' + S.log.slice(-60).reverse().map(function (l) { return '<li><span class="mono small muted">' + dinfo(l.t).label + '</span> ' + esc(l.text) + '</li>'; }).join("") + '</ul>';
     case "parkpick": return close + vParkPick(S);
+    case "dex": return close + vDex(S);
     case "text": return close + '<h3 class="h2">' + esc(m.title) + '</h3><p>' + esc(m.body) + '</p>';
   }
   return "";
@@ -1576,6 +1775,8 @@ function vWorkModal(S, m) {
   var mine = w.author.type === "player", live = w.state === "serial", ed = editorOf(S, w);
   var h = '<div class="wm-h">' + cover(w) + '<div><h3 class="h2">' + esc(w.title) + '</h3><p class="small muted">' + esc(w.author.name) + (w.illus ? ' / 絵 ' + esc(w.illus.name) : '') + ' ・ ' + (w.medium === "manga" ? "漫画" : "小説") + ' ・ ' + esc(gname(w.genre, GENRES)) + '×' + esc(gname(w.theme, THEMES)) + '</p>' +
     '<p class="small">' + stateWord(w) + ' ・ 第' + w.eps + '話 ・ ' + popWord(w.pop) + '<br>ファン ' + fmtFans(w.fans) + ' ・ 累計収益 ' + fmtMoney(w.rev) + '</p></div></div>';
+  if (w.gim) { var gg = GIMMICKS.find(function (x) { return x.id === w.gim; }); if (gg) h += '<p class="small">切り口: <b>' + esc(gg.name) + '</b></p>'; }
+  h += '<h4 class="h3">登場人物</h4>' + (mine ? '<div class="chars">' + w.chars.map(function (c, i) { return '<label class="small">' + esc(c.role) + '<input class="nm" data-in="rn.' + i + '" value="' + esc(G.form.rn[i] != null && G.form.rn[i] !== "" ? G.form.rn[i] : c.name) + '" maxlength="8"></label>'; }).join("") + btn("名前を変える", "rename", { id: w.id }, "sm") + '</div>' : '<p class="small">' + w.chars.map(function (c) { return esc(c.role) + ' ' + esc(c.name); }).join(' ・ ') + '</p>');
   h += '<h4 class="h3">読みどころ</h4><ul class="clues">' + m.clues.map(function (l) { return '<li>' + esc(l.t) + '</li>'; }).join("") + '</ul>';
   var mk = Object.keys(w.media);
   if (mk.length) h += '<h4 class="h3">これまでの展開</h4><div class="chips static">' + mk.map(function (k) { return '<span class="tag">' + MEDIA[k].name + ':' + TIER[w.media[k].tier - 1] + '</span>'; }).join("") + '</div>';
@@ -1610,6 +1811,8 @@ function vPlan(S) {
     '<div class="fld"><span>ジャンル</span><div class="chips">' + GENRES.map(function (g) { return chip(g.name, "pf", { k: "genre", v: g.id }, f.genre === g.id); }).join("") + '</div><p class="muted small">' + esc(gname(f.genre, GENRES) && GENRES.find(function (g) { return g.id === f.genre; }).mood) + '</p></div>' +
     '<div class="fld"><span>テーマ</span><div class="chips">' + THEMES.map(function (g) { return chip(g.name, "pf", { k: "theme", v: g.id }, f.theme === g.id); }).join("") + '</div></div>' +
     '<div class="fld"><span>主人公</span><div class="chips">' + HEROES.map(function (g) { return chip(g.name, "pf", { k: "hero", v: g.id }, f.hero === g.id); }).join("") + '</div></div>' +
+    '<div class="fld"><span>切り口</span><div class="chips">' + GIMMICKS.map(function (g) { return chip(g.name, "pf", { k: "gim", v: g.id }, f.gim === g.id); }).join("") + '</div><p class="muted small">' + esc(GIMMICKS.find(function (g) { return g.id === f.gim; }).desc) + (gimBonus(f.gim, f.genre).fav ? '。このジャンルと相性が良い' : '') + '</p></div>' +
+    '<div class="fld"><span>登場人物の名前</span>' + ["主人公", "ライバル", "仲間"].map(function (r, i) { return '<input class="nm" data-in="plan.chars.' + i + '" value="' + esc(f.chars[i]) + '" maxlength="8" placeholder="' + r + '" aria-label="' + r + '">'; }).join("") + '<div class="chips">' + chip("🎲 名前の案", "randchars") + '</div></div>' +
     '<p class="note small">この組み合わせは、' + synWord(syn) + '。 流行: ' + (S.trend.hot.indexOf(f.genre) > -1 ? "追い風" : S.trend.cold.indexOf(f.genre) > -1 ? "向かい風" : "ふつう") + '</p>';
   if (needIll) h += '<div class="fld"><span>絵を描く人(画力が足りないので組む)</span><div class="chips">' + S.flags.illList.map(function (i) { return chip(i.name + "(絵は" + skWord(i.art) + ")", "pf", { k: "illusId", v: i.id }, f.illusId === i.id); }).join("") + '</div></div>';
   return h + btn("企画を通す(10万円)", "doplan", null, "pri big");
@@ -1676,7 +1879,7 @@ function act(a, el) {
     case "totitle": G.screen = "title"; G.modal = []; refreshSlots(); return render();
     case "ng": G.form.ng[d.k] = d.k === "slot" ? +d.v : d.v; se("tap"); return render();
     case "start": var f = G.form.ng; var S0 = newGame({ name: f.name, company: f.company, diff: f.diff }); se("ok"); enterGame(S0, +f.slot); return autosave();
-    case "tab": G.tab = d.t; se("page"); window.scrollTo(0, 0); return render();
+    case "tab": G.tab = d.t; G.fx = true; se("page"); window.scrollTo(0, 0); return render();
     case "hallt": G.hallTab = d.t; return render();
     case "close": G.modal.pop(); return render();
     case "slots": refreshSlots(); G.modal.push({ t: "slots", mode: d.mode }); if (CLOUD.ready) cloudList().then(function (l) { G.cloudSlots = l; render(); }); return render();
@@ -1688,7 +1891,7 @@ function act(a, el) {
     case "curnext": S.queue.shift(); G.cur = null; G.curRes = null; return pump();
     case "choose": G.curRes = resolveEv(S, G.cur, +d.i) || "…"; se("ok"); return render();
     case "cinenext": S.queue.shift(); G.cine = null; return pump();
-    case "work": return pushModal({ t: "work", wid: d.id, clues: workClues(S, W(S, d.id)) });
+    case "work": G.form.rn = ["", "", ""]; return pushModal({ t: "work", wid: d.id, clues: workClues(S, W(S, d.id)) });
     case "rest": r = actRest(S); break;
     case "job": r = actJob(S); if (r.ok) se("coin"); break;
     case "practice": r = actPractice(S); if (r.ok) se("write"); break;
@@ -1698,7 +1901,11 @@ function act(a, el) {
     case "train": r = actTrain(S); break;
     case "openoffice": r = actOpenOffice(S); break;
     case "takepen": r = actTakePen(S); break;
-    case "plan": G.form.plan.title = G.form.plan.title || mkTitle(); return pushModal({ t: "plan" });
+    case "plan": G.form.plan.title = G.form.plan.title || mkTitle(); if (!G.form.plan.chars.some(function (x) { return x; })) G.form.plan.chars = genChars().map(function (c) { return c.name; }); return pushModal({ t: "plan" });
+    case "randchars": G.form.plan.chars = genChars().map(function (c) { return c.name; }); return render();
+    case "rename": r = actRename(S, d.id, G.form.rn); G.form.rn = ["", "", ""]; break;
+    case "dex": return pushModal({ t: "dex" });
+    case "parkevent": r = actParkEvent(S); break;
     case "randtitle": G.form.plan.title = mkTitle(); return render();
     case "pf": G.form.plan[d.k] = d.v; if (d.k === "medium") S.flags.illList = null; se("tap"); return render();
     case "doplan": r = actPlan(S, G.form.plan); if (r.ok) { G.modal = []; G.form.plan.title = ""; G.form.plan.illusId = ""; G.tab = "works"; } break;
@@ -1732,7 +1939,7 @@ function act(a, el) {
       if (r.ok) { G.modal = []; } break;
     case "parkbuild": if (S.park.areas.length >= 9) return; return pushModal({ t: "parkpick" });
     case "parkgo": if (el.dataset.no) { toast(el.dataset.no, false); return se("ng"); } r = actParkBuild(S, d.id); if (r.ok) G.modal = []; break;
-    case "parkup": r = actParkUp(S, d.id); break;
+    case "parkup": r = actParkUp(S, d.id, d.fac); break;
     case "parkmode": r = actParkMode(S, d.m); break;
     case "parkpol": r = actParkPolicy(S, d.p); break;
     case "doslot":
@@ -1762,6 +1969,7 @@ function bindEvents() {
   document.addEventListener("click", function (e) {
     var el = e.target.closest("[data-act]"); if (!el) return;
     if (el.classList.contains("dis") && !el.dataset.no) { se("ng"); return; }
+    if (!AU.on && SET.bgm > 0) bgmStart();
     act(el.dataset.act, el);
   });
   document.addEventListener("input", function (e) {
@@ -1770,6 +1978,21 @@ function bindEvents() {
     if (t.dataset.rng) { SET[t.dataset.rng] = +t.value; saveSettings(); applyBright(); auVol(); if (t.dataset.rng === "bgm") { if (SET.bgm > 0) bgmStart(); } }
   });
   document.addEventListener("change", function (e) { var t = e.target; if (t.dataset.rng === "se") se("ok"); });
+}
+
+function vDex(S) {
+  var h = '<h3 class="h2">作品図鑑</h3><p class="small muted">これまでに関わった作品の記録。</p>';
+  if (!S.works.length) return h + '<p class="muted">まだ作品がない。</p>';
+  S.works.slice().sort(function (a, b) { return b.born - a.born; }).forEach(function (w) {
+    var mk = Object.keys(w.media);
+    h += '<section class="card dexc">' + cover(w) + '<div><b>' + esc(w.title) + '</b>' + (w.hall ? ' <span class="tag gold">殿堂入り</span>' : '') + '<p class="small muted">' + esc(w.author.name) + ' ・ ' + stateWord(w) + ' ・ 最高「' + popWord(w.peak) + '」</p><p class="small">' + w.chars.map(function (c) { return esc(c.role) + ' ' + esc(c.name); }).join(' ・ ') + '</p>' + (mk.length ? '<div class="chips static">' + mk.map(function (k) { return '<span class="tag">' + MEDIA[k].name + ':' + TIER[w.media[k].best - 1] + '</span>'; }).join("") + '</div>' : '') + '</div></section>';
+  });
+  return h;
+}
+function confetti() {
+  var cfs = "", cols = ["#FFE25A", "#ff7a90", "#7fd1ff", "#9be28a", "#ffffff"];
+  for (var q = 0; q < 26; q++) cfs += '<i class="cf" style="left:' + ri(2, 98) + '%;animation-delay:' + (rnd() * 2.5).toFixed(2) + 's;background:' + pick(cols) + '"></i>';
+  return cfs;
 }
 
 function boot() {
