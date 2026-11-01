@@ -275,8 +275,13 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.4.1", SAVE_VER = 1;
+var GAME_VER = "1.4.2", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.4.2", date: "2026-11-03", notes: [
+    "画面の明るさを、ゲーム設定からすぐ調整できるようになりました。",
+    "一部の画面で文字が読みにくかった表示を直しました。",
+    "遊び方ガイドに、出典・クレジットなどを追加しました。"
+  ] },
   { ver: "1.4.1", date: "2026-11-03", notes: [
     "通信が遅いときやオフラインでも、すぐに起動できるようになりました。"
   ] },
@@ -2571,7 +2576,7 @@ function vSettings() {
   return '<h3 class="h2">設定</h3>' +
     '<label class="fld"><span>BGMの音量</span><input type="range" min="0" max="1" step="0.05" value="' + SET.bgm + '" data-rng="bgm"></label>' +
     '<label class="fld"><span>効果音の音量</span><input type="range" min="0" max="1" step="0.05" value="' + SET.se + '" data-rng="se"></label>' +
-    '<label class="fld"><span>画面の明るさ</span><input type="range" min="0.6" max="1.1" step="0.02" value="' + SET.bright + '" data-rng="bright"></label>' +
+    '<label class="fld"><span>画面の明るさ</span><input type="range" min="0.5" max="1.2" step="0.02" value="' + SET.bright + '" data-rng="bright"></label>' +
     '<p class="muted small">設定はこの端末に保存されます。</p>';
 }
 function vCode() {
@@ -2841,7 +2846,7 @@ function vSettings() {
       '<div class="fld"><span>効果音の音色</span><div class="chips">' + SETHEMES.map(function (x) { return chip(x[1], "setheme", { v: x[0] }, SET.seTheme === x[0]); }).join("") + '</div></div>' +
       '<div class="fld"><span>試し聴き</span><div class="chips">' + [["ok", "決定"], ["coin", "お金"], ["fan", "喝采"], ["hall", "殿堂"], ["ach", "実績"], ["stamp", "判定"]].map(function (x) { return chip(x[1], "setest", { v: x[0] }); }).join("") + '</div></div>';
   } else if (t === "play") {
-    h += '<label class="fld"><span>画面の明るさ</span><input type="range" min="0.6" max="1.1" step="0.02" value="' + SET.bright + '" data-rng="bright"></label>' +
+    h += '<label class="fld"><span>画面の明るさ</span><input type="range" min="0.5" max="1.2" step="0.02" value="' + SET.bright + '" data-rng="bright"></label>' +
       '<div class="fld"><span>遊び方のヒント(各タブの一言解説)</span><div class="chips">' + chip("ON", "setflag", { k: "guide", v: 1 }, !!SET.guide) + chip("OFF", "setflag", { k: "guide", v: 0 }, !SET.guide) + '</div></div>' +
       '<div class="fld"><span>「次のおすすめ」の表示</span><div class="chips">' + chip("ON", "setflag", { k: "hint", v: 1 }, !!SET.hint) + chip("OFF", "setflag", { k: "hint", v: 0 }, !SET.hint) + '</div></div>' +
       btn("遊び方をもう一度見る", "guide", null, "sm");
@@ -4316,8 +4321,9 @@ function buildGuide() {
   pages.push({ h: "会社への投資", b: ["「編集部」タブの「投資」で、お金を使って会社を強くできます。", "拠点(地方支社・海外支社・制作スタジオ)と設備(資料室・福利厚生・広報室・試写室)は、毎週の維持費がかかるかわりに、作品や展開を後押しします。名声が高いほど、拡張できます。", "編集部署はジャンル特化の部署です。他社の編集者の引き抜き、スタッフの研修、新人賞の主催もできます。", "事業(書店・電子配信・映画館)、本社ビル、文化財団、蒐集品、作品への広告・特装版・ファン感謝祭、社員旅行もあります。出版社への出資は、毎週の配当と関係が得られます。持ち分が30%を超えると、買収も選べます。維持費はお金の出入りの内訳で確認できます。"] });
   pages.push({ h: "業界の仲間と争奪戦", b: ["世の中には、約100人の作家と編集者がいます。「編集部」タブの「業界」で、各社の社長・得意分野・方針を確認でき、挨拶や贈り物で関係を深め、条件がそろえば提携できます。「業界名簿」では顔ぶれや腕前も見られます。毎年、成長・引退・世代交代があります。", "有望な新人は、ライバル社と取り合いになります(編集部タブの「作家の争奪戦」)。契約金の「控えめ・標準・奮発」から選ぶか、「直接会って口説く」で挑みます。勝てそうかどうかの目安が出ます。期限までに決めないと、ライバル社が契約します。", "事務所が大きくなるほど、雇えるスタッフの人数が増えます(10人から最大40人)。"] });
   pages.push({ h: "会社の方針と目標", b: ["毎年のはじめに、会社の方針を選びます(新人発掘/ヒット集中/多角展開/安定経営)。一年間、会社の動きに影響します。", "約3か月ごとに「四半期目標」が届きます。達成すると報酬が出ます。ホームの「経営の目標」で進み具合を見られます。", "連載中の作品は、数か月ごとに「連載会議」で路線(王道・挑戦・ファンサービス)を決めます。長く続いた作品は人気の鮮度が落ちやすいので、路線の変更が助けになります。", "年に数回、新人賞・夏の大型イベント・年間ランキングの発表といった行事があります。"] });
-  pages.push({ h: "イベントと設定", b: ["イベントには重要度があります(軽・中・重)。重いものほど、会社や人間関係に大きく関わります。", "「ゲーム設定」(⚙ボタン。パソコンは左上、スマホは画面上部)で、時間の速さ・作業枠が空いたときの扱い・イベントのスキップ(全部見る/軽をスキップ/中以下をスキップ)・難易度を、いつでも切り替えられます。「重」のイベントは、スキップの設定にかかわらず自分で選びます。", "ランキングには、ときどき「話題の大型連載」が現れます。連載が長くなると人気の鮮度が落ちるので、新しい連載や路線の変更で入れ替えていきましょう。"] });
-  pages.push({ h: "困ったときは", b: ["自分のステータス(体力・名声・各能力の数値)は、どの画面でも上の「自分のステータス」(パソコンは左の欄)で見られます。", "お金の出入りは、ホームの「状況」にあります。収入は「作品の売上」「パークの収益」「メディア化の収益」「行動・副業の報酬」などに分けて、作品ごとの売上も見られます。", "スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
+  pages.push({ h: "イベントと設定", b: ["イベントには重要度があります(軽・中・重)。重いものほど、会社や人間関係に大きく関わります。", "「ゲーム設定」(⚙ボタン。パソコンは左上、スマホは画面上部)で、画面の明るさ・時間の速さ・作業枠が空いたときの扱い・イベントのスキップ(全部見る/軽をスキップ/中以下をスキップ)・難易度を、いつでも切り替えられます。「重」のイベントは、スキップの設定にかかわらず自分で選びます。", "ランキングには、ときどき「話題の大型連載」が現れます。連載が長くなると人気の鮮度が落ちるので、新しい連載や路線の変更で入れ替えていきましょう。"] });
+  pages.push({ h: "出典・クレジット", b: ["本作はオリジナルの作品です。作品名・人物名・会社名・団体名は、すべて架空のものです。実在のものとは関係ありません。", "作品の表紙・パークの地図・街並みなどのイラストは、ゲームの中で自動的に描いています(あらかじめ用意した画像ではありません)。", "BGMと効果音は、お使いの端末の音声機能で、その場で作って鳴らしています。", "文字には、Google Fonts で提供されている「Zen Kaku Gothic New」「Dela Gothic One」「IBM Plex Mono」を使っています(いずれも SIL Open Font License 1.1 のもとで公開されているフォントです)。", "セーブデータや設定は、お使いの端末の中にだけ保存されます。"] });
+  pages.push({ h: "困ったときは", b: ["自分のステータス(体力・名声・各能力の数値)は、どの画面でも上の「自分のステータス」(パソコンは左の欄)で見られます。通信が遅い・つながらないときは、4秒ほどで保存済みの版から起動し、オフラインでも遊べます。", "お金の出入りは、ホームの「状況」にあります。収入は「作品の売上」「パークの収益」「メディア化の収益」「行動・副業の報酬」などに分けて、作品ごとの売上も見られます。", "スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
   GUIDE.length = 0; pages.forEach(function (p) { GUIDE.push(p); });
 }
 guideModal = function (i) {
@@ -5752,6 +5758,7 @@ function quickBody(S) {
     [1, 2, 3].map(function (v) { return chip("×" + v, "rtset", { v: v }, SET.rtSpd === v); }).join("") + '</div></div>';
   if (typeof slotModeChips === "function" && jobMode()) h += '<div class="fld"><span>作業枠が空いたとき</span>' + slotModeChips() + '</div>';
   h += evSkipBlock();
+  h += '<div class="fld"><span>画面の明るさ <small class="muted">(暗い・まぶしいときに)</small></span><input type="range" min="0.5" max="1.2" step="0.02" value="' + SET.bright + '" data-rng="bright" aria-label="画面の明るさ"></div>';
   h += '<div class="fld"><span>難易度 <small class="muted">(いつでも変えられます)</small></span><div class="chips">' + ["easy", "normal", "hard"].map(function (k) { return chip(DIFFNAME[k], "setdiff", { v: k }, S.diff === k); }).join("") +
     '</div><p class="muted small">ランキングの相手の強さや、運の幅が変わります。</p></div>';
   h += '<div class="grid2">' + btn("すべての設定", "settings", null, "sm") + btn("遊び方", "guide", null, "sm") + '</div>';
@@ -6239,7 +6246,7 @@ function powerWord(v) { return v >= 80 ? "業界の巨頭" : v >= 68 ? "有力" 
 function segIndustry(S) {
   var h = '<p class="small muted">ほかの出版社にも、社長と個性があります。関係が深まると、争奪戦や共同企画で味方になってくれます。</p>';
   cosOf(S).slice().sort(function (a, b) { return b.power - a.power; }).forEach(function (c) {
-    h += '<section class="card co"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags"><span class="tag">' + powerWord(c.power) + '</span>' + (c.ally ? '<span class="tag gold">提携中</span>' : "") + '</span></div>' +
+    h += '<section class="card corp"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags"><span class="tag">' + powerWord(c.power) + '</span>' + (c.ally ? '<span class="tag gold">提携中</span>' : "") + '</span></div>' +
       '<p class="small">社長 ' + esc(c.boss) + '(' + esc(c.trait) + ') ・ 得意: ' + esc(gname(c.genre, GENRES)) + '</p><p class="small muted">方針: ' + esc(c.style) + '</p>' +
       '<div class="skl"><span>関係</span>' + bar(Math.max(2, (c.rel + 100) / 2), 100, c.rel >= 30 ? "ok" : "") + '<em class="small">' + coWord(c.rel) + '</em></div>' +
       '<div class="grid3">' + btn("挨拶に伺う<small>体力-5</small>", "cogreet", { n: c.name }, "sm") + btn("贈り物<small>20万円</small>", "cogift", { n: c.name }, "sm") + btn(c.ally ? "提携を解く" : "提携する<small>80万円</small>", "coally", { n: c.name }, "sm") + '</div></section>';
@@ -6643,7 +6650,7 @@ function segInvest(S) {
   h += '<h3 class="h3">出資・買収</h3><p class="small muted">出版社に出資すると、毎週の配当と良好な関係が得られます。持ち分が30%を超えると、買収も選べます。(名声60以上・2社まで)</p>';
   cosOf(S).forEach(function (c) {
     var s = stakeOf(S, c.name), own = !!b.own[c.name];
-    h += '<section class="card co"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags">' + (own ? '<span class="tag gold">子会社</span>' : s ? '<span class="tag up">持ち分 ' + Math.round(s * 100) + '%</span>' : "") + '<span class="tag">' + powerWord(c.power) + '</span></span></div>' +
+    h += '<section class="card corp"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags">' + (own ? '<span class="tag gold">子会社</span>' : s ? '<span class="tag up">持ち分 ' + Math.round(s * 100) + '%</span>' : "") + '<span class="tag">' + powerWord(c.power) + '</span></span></div>' +
       '<p class="small muted">' + (own ? "毎週の収益 約" + fmtMoney(Math.round(c.power * 12) / 100) : s ? "毎週の配当 約" + fmtMoney(Math.round(c.power * s * 30) / 100) : "出資すると配当が入ります") + '</p>' +
       (own ? "" : '<div class="grid2">' + btn("10%出資する<small>" + fmtMoney(stakeCost(c)) + "</small>", "invest", { n: c.name }, "sm" + (s >= 0.49 ? " dis" : "")) + btn("買収する<small>" + fmtMoney(buyCost(S, c)) + (s < 0.3 ? " ・ 持ち分30%〜" : "") + "</small>", "buyout", { n: c.name }, "sm" + (s < 0.3 ? " dis" : "")) + '</div>') + '</section>';
   });
