@@ -240,6 +240,9 @@ body[data-lay=pc] #scrl{bottom:28px}
 .dl{font-style:normal;font:700 11.5px "Zen Kaku Gothic New",sans-serif;color:var(--muted)}.dl.up{color:#14804a}.dl.dn{color:#c0392b}.dl.nw{color:#c07a00}
 .era{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:8px 10px;margin:4px 0 10px;background:var(--panel)}
 .card.bond .skl{margin:6px 0 10px}.tag.ever{display:inline-block;margin:6px 0}
+.pc-side .dl,.top2 .dl{background:#fff;padding:2px 10px;border-radius:999px;font-weight:800;font-size:12px;width:fit-content}
+.pc-side .dl.up,.top2 .dl.up{color:#14703f}.pc-side .dl.dn,.top2 .dl.dn{color:#b3261e}
+.slotmode{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.slotmode .chips{margin:4px 0}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -251,8 +254,12 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.9.0", SAVE_VER = 1;
+var GAME_VER = "0.9.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.9.1", date: "2026-11-02", notes: [
+    "操作を助ける機能を追加しました。",
+    "表示の見えにくい部分を改善しました。"
+  ] },
   { ver: "0.9.0", date: "2026-11-02", notes: [
     "大型アップデート。多数の新要素を追加しました。",
     "競争と時代の流れに関する要素を追加しました。",
@@ -4224,7 +4231,7 @@ amBlock = function () {
 function buildGuide() {
   var m = SET.am, pages = [];
   pages.push({ h: "このゲームは？", b: ["小説や漫画の「原作」を世に出し、育てていくゲームです。人気が出れば、アニメ・映画・舞台・ゲームへ。やがてテーマパークまで広がります。", "終わりはありません。好きなだけ、自分のペースで遊べます。目標は、作品や人が「殿堂入り」すること。"] });
-  if (m === "free") pages.push({ h: "時間と作業枠", b: ["時間は自動で流れます。右上の ⏸ で一時停止、×1・×2・×3 で速さを変えられます。「次週▶」で、待たずに1週進めることもできます。", "行動は「作業枠」を使い、1〜3週間かけて進みます。枠は最初3つ(名声が上がると増えます)。終わると結果が届きます。×で中止もできます。", "体力が減ったら「休む」。お金が足りないと始められない行動もあります。"] });
+  if (m === "free") pages.push({ h: "時間と作業枠", b: ["時間は自動で流れます。右上の ⏸ で一時停止、×1・×2・×3 で速さを変えられます。「次週▶」で、待たずに1週進めることもできます。", "行動は「作業枠」を使い、1〜3週間かけて進みます。枠は最初3つ(名声が上がると増えます)。終わると結果が届きます。×で中止もできます。", "体力が減ったら「休む」。お金が足りないと始められない行動もあります。", "作業枠が空いたときの扱いは、ホームの作業枠の下で切り替えられます。「手動」「止める(自動で一時停止)」「おまかせ(自動で行動を入れる)」の3つです。"] });
   else if (m === "plan") pages.push({ h: "一週間のくり返し", b: ["画面の「今週の予定」に、やりたいことを3つまで入れておきます。", "右上の「週を進める ▶」を押すと、予定が順番に実行され、1週間が過ぎます。", "体力(バー)が減ったら「休む」を予定に入れましょう。"] });
   else pages.push({ h: "一週間のくり返し", b: ["画面上部の●が「行動点」です。1週間に" + (m === "ap6" ? 6 : 3) + "つ使えます。", "使い切ったら「週を進める ▶」。時間が進み、結果が出ます。", "体力(バー)が減ったら「休む」で回復しましょう。"] });
   pages.push({ h: "最初の一歩", b: ["最初は、ただの一般人です。肩書きはありません。", "「習作を書く」を4回重ねると、自分の連載を企画できる「書き手の道」が開きます。", "「投稿作を読む」を4回重ねると、自分の編集部を開ける「見つける道」が開きます。両方進んでもかまいません。"] });
@@ -4553,6 +4560,58 @@ vHome = function (S) {
   var h = heroCard(S), i = o.lastIndexOf(h); if (i > -1) o = o.slice(0, i) + o.slice(i + h.length);
   return h + o;
 };
+
+/* ===== v0.9.1 作業枠が空いたときの扱い(手動 / 止める / おまかせ) ===== */
+var SLOTMODES = [["manual", "手動", "空いても何もしません。"], ["pause", "止める", "枠が空いたら、時間を自動で一時停止します。"], ["auto", "おまかせ", "枠が空いたら、体力やお金の状況に合った行動を自動で入れます。大きな出費や新連載の企画はしません。"]];
+function slotModeInfo() { return SLOTMODES.find(function (m) { return m[0] === SET.slotMode; }) || SLOTMODES[0]; }
+
+/* おまかせで空き枠を埋める(新連載の企画・高額の出費はしない) */
+function autoPickList(S) {
+  var me = S.player, out = [], live = liveWorks(S).filter(function (w) { return w.author.type === "player"; }), cv = S.flags.cover || {};
+  function add(a, d) { out.push({ a: a, d: d || {} }); }
+  if (me.sta < 40) add("rest");
+  if (S.money < 40) add("job");
+  live.forEach(function (w) { if ((cv[w.id] || 0) <= S.t + 1) add("write", { id: w.id, s: "royal" }); });
+  if (!S.unlock.write && me.wrote < 4) add("practice");
+  if (!S.unlock.edit && me.read < 4) add("slush");
+  if (S.unlock.edit && S.pool.length < 3 && S.money > 80) add("scout", { kind: "net" });
+  var ppl = bondPeople(S).filter(function (x) { return bondOf(x.p) < 70; }).sort(function (a, b) { return bondOf(a.p) - bondOf(b.p); });
+  if (ppl.length && S.money > 60) add("talk", { pid: ppl[0].p.id });
+  chancesOf(S).forEach(function (c) { if (c.money <= S.money && me.sta >= c.sta + 10) add("__chance", { cid: c.id }); });
+  var ks = Object.keys(SKILLS).sort(function (a, b) { return me.sk[a] - me.sk[b]; });
+  add("study", { k: ks[0] }); add("study", { k: ks[1] }); add("inputs"); add("sns");
+  return out;
+}
+function fillSlots(S) {
+  var started = [], list = autoPickList(S), i = 0;
+  while (jobsOf(S).length < slotMax(S) && i < list.length) {
+    var it = list[i++], r = it.a === "__chance" ? takeChance(S, it.d.cid) : startJob(S, it.a, it.d);
+    if (r.ok) started.push(r.job ? r.job.label : r.msg);
+  }
+  return started;
+}
+var _tick16 = tick;
+tick = function (S) {
+  if (!jobMode()) return _tick16(S);
+  var n0 = jobsOf(S).length, r = _tick16(S), mode = SET.slotMode || "manual";
+  if (mode === "auto") { var st = fillSlots(S); if (st.length) S.news = ["おまかせで作業を開始: " + st.join("、")].concat(S.news).slice(0, 10); }
+  else if (mode === "pause" && typeof G !== "undefined" && G.S === S && jobsOf(S).length < slotMax(S) && (jobsOf(S).length < n0 || jobsOf(S).length === 0)) { G.rtPause = true; G.slotPaused = true; }
+  return r;
+};
+
+/* ===== v0.9.1 空き枠の切り替え(画面) ===== */
+function slotModeChips() {
+  return '<div class="slotmode"><span class="small muted">空き枠の扱い</span><div class="chips">' + SLOTMODES.map(function (m) { return chip(m[1], "slotmode", { v: m[0] }, (SET.slotMode || "manual") === m[0]); }).join("") + '</div><p class="small muted">' + esc(slotModeInfo()[2]) + '</p></div>';
+}
+XACT.slotmode = function (d) { SET.slotMode = d.v; saveSettings(); se("tap"); if (G.S && d.v === "auto" && jobMode()) { var st = fillSlots(G.S); if (st.length) toast("おまかせで作業を開始: " + st.join("、"), true); } render(); };
+var _slotCard17 = slotCard;
+slotCard = function (S) { return _slotCard17(S).replace(/<\/section>$/, slotModeChips() + '</section>'); };
+var _amBlock17 = amBlock;
+amBlock = function () { return _amBlock17() + '<div class="fld">' + slotModeChips() + '</div>'; };
+var _vModal17 = vModal;
+XACT.slotresume = function () { G.rtPause = false; G.slotPaused = false; render(); };
+var _toastWatch = 0;
+setInterval(function () { if (G && G.slotPaused && G.rtPause && G.screen === "game" && !(G.modal && G.modal.length) && !G.cur && !G.cine) { G.slotPaused = false; toast("作業枠が空きました。行動を選んでください(▶で再開)", true); } }, 400);
 
 function boot() {
   loadSettings();
