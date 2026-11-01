@@ -246,7 +246,7 @@ body[data-lay=pc] #scrl{bottom:28px}
 .hseg button{border:0;background:none;padding:9px 0;font:700 14px "Zen Kaku Gothic New";border-radius:10px;color:var(--ink);cursor:pointer;position:relative}
 .hseg button.on{background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .bdg{font-style:normal;font:700 10px "IBM Plex Mono";background:#E4572E;color:#fff;border-radius:9px;padding:1px 6px;margin-left:5px;vertical-align:2px}
-.fin-row.sub{padding-left:10px;opacity:.85}.where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
+.fin-row.sub{padding-left:10px;opacity:.85}.pitch{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}.where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
 .slotmode{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.slotmode .chips{margin:4px 0}
 </style>
 
@@ -259,8 +259,11 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.9.3", SAVE_VER = 1;
+var GAME_VER = "0.9.4", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.9.4", date: "2026-11-02", notes: [
+    "展開まわりに、新しい動きを追加しました。"
+  ] },
   { ver: "0.9.3", date: "2026-11-02", notes: [
     "お金の収入まわりの表示を見やすくしました。"
   ] },
@@ -4252,7 +4255,7 @@ function buildGuide() {
   pages.push({ h: "チャンス・スタッフ・イベント", b: ["期限つきの「チャンス」が届くことがあります。引き受けると作業枠を使い、取材や講演、書店フェアなどで名声やお金が得られます。", "スタッフは自動で働きます。編集者と宣伝担当は、担当する作品を指定できます。", "イベントは「おまかせで決める(スキップ)」で飛ばせます。設定で、重要なもの以外を自動にすることもできます。"] });
   pages.push({ h: "ランキングと時代", b: ["ホームの「週刊ランキング」では、毎週、自社と他社の連載が順位を争います。看板作品を「巻頭に飾る」などで押し上げましょう。1位をとると名声やお金が入ります。", "3か月に1回、「編集会議」が開かれます。看板に力を入れる・新人に枠を空ける・不調な作品を整理するなど、方針を決められます。", "時代は数年ごとに変わり、追い風・向かい風のジャンルが入れ替わります。ときどきブームも起きます。流行は大切ですが、追いかけすぎないことも大切です。", "連載を長く続けて人気を保つと、流行に左右されない「不朽の名作」になります。世代を超えて読まれ、周年のお祝いもあります。"] });
   pages.push({ h: "人との関係と会社の成長", b: ["作家やスタッフは、「食事に誘う」「話を聞く」で信頼が深まります(編集部タブ)。信頼が高いと、作品が伸びやすくなり、スタッフの働きも良くなります。時間がたつと、少しずつ薄れます。", "名声が上がると、会社は自宅の一室から自社ビル、本社ビルへと成長します。ホームの街の景色も変わります。"] });
-  pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。条件が足りないときは、足りないものが表示されます。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
+  pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。条件が足りないときは、足りないものが表示されます。", "企画画面の「この相手に売り込む」で、こちらから先方に打診できます。少額の費用と数週間かかり、通れば先方が費用の一部を持つ条件が届きます(見送りもあります)。交渉の腕や名声、作品の人気が高いほど通りやすくなります。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
   pages.push({ h: "殿堂入りと競争", b: ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。"] });
   pages.push({ h: "困ったときは", b: ["お金の出入りは、ホームの「状況」にあります。収入は「作品の売上」「パークの収益」「メディア化の収益」「行動・副業の報酬」などに分けて、作品ごとの売上も見られます。", "スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
   GUIDE.length = 0; pages.forEach(function (p) { GUIDE.push(p); });
@@ -4740,6 +4743,61 @@ finCard = function (S) {
   o = o.replace(/<div class="fin-row tot">[\s\S]*?<\/div>/, '<div class="fin-row tot"><span>差し引き(前の週)</span><b class="' + (nt >= 0 ? "up" : "dn") + '">' + (nt >= 0 ? "+" : "−") + mny(Math.abs(nt)) + '</b></div>');
   return o;
 };
+
+/* ===== v0.9.4 展開の売り込み(こちらからの打診) ===== */
+var PITCH = { WEEKS: 2, STA: 4, COOLDOWN: 8, LIFE: 10, MAXOFF: 4 };
+JOBT.DUR.pitch = PITCH.WEEKS; FREE_STA.pitch = PITCH.STA;
+function pitchFee(type) { return Math.round(3 + MEDIA[type].cost / 400); }
+function pitchChance(S, w, type, pt) {
+  var m = MEDIA[type], p = 0.3 + (w.pop - m.req.pop) / 140 + S.fame / 700 + S.player.sk.biz / 260 + Math.min(0.1, bestTier(w) * 0.03) - (pt.skill - 50) / 350;
+  if (w.ever) p += 0.1;
+  return Math.max(0.12, Math.min(0.9, p));
+}
+function pitchWhy() { return pick(["「今は別の企画で手一杯でして」", "「社内の予算が通らなかったようです」", "「面白いが、もう少し実績が欲しいとのこと」", "「時期が合わず、今回は見送りで」"]); }
+EXEC.pitch = function (S, d) {
+  var w = W(S, d.wid), m = MEDIA[d.type]; if (!w) return no("作品が見つかりません");
+  S.flags.pitchCd = S.flags.pitchCd || {};
+  var key = d.wid + ":" + d.type;
+  if (S.offers.length >= PITCH.MAXOFF) return yes("先方は前向きだったが、いま抱えている打診が多く、話は流れた");
+  if (S.offers.some(function (o) { return o.wid === d.wid && o.type === d.type; })) return yes("すでに同じ話が進んでいる");
+  if (ch(pitchChance(S, w, d.type, d.partner))) {
+    var share = Math.max(0.3, Math.min(0.75, 0.62 - S.player.sk.biz / 450 - (w.pop - m.req.pop) / 400 + (rnd() - 0.5) * 0.12));
+    S.offers.push({ id: uid("o"), wid: d.wid, type: d.type, partner: d.partner, share: Math.round(share * 100) / 100, exp: S.t + PITCH.LIFE, neg: 0, pitched: true });
+    gainSkill(S, "biz", 1.6); S.fame += 0.3;
+    return yes(d.partner.name + "が前向きに検討し、『" + w.title + "』の" + m.name + "の条件が届いた(「展開」タブで返事を)");
+  }
+  S.flags.pitchCd[key] = S.t + PITCH.COOLDOWN; gainSkill(S, "biz", 0.8);
+  return yes(d.partner.name + "への売り込みは見送りに。" + pitchWhy());
+};
+var _label19 = actLabel;
+actLabel = function (a, d, S) {
+  if (a === "pitch") { var w = W(S, d.wid); return "『" + (w ? w.title : "作品") + "』の" + MEDIA[d.type].name + "を売り込む"; }
+  return _label19(a, d, S);
+};
+XACT.mpitch = function () {
+  var S = G.S, f = G.form.m;
+  if (!f.wid) { toast("作品を選んでください", false); return se("ng"); }
+  if (f.mode === "inhouse") { toast("自社で作る場合は売り込みは不要です。相手先を選んでください", false); return se("ng"); }
+  var c = canMedia(S, W(S, f.wid), f.type); if (!c.ok) { toast(c.reason, false); return se("ng"); }
+  var cd = (S.flags.pitchCd || {})[f.wid + ":" + f.type]; if (cd && cd > S.t) { toast("先方に断られたばかりです。あと" + (cd - S.t) + "週ほど間をあけましょう", false); return se("ng"); }
+  if (S.offers.some(function (o) { return o.wid === f.wid && o.type === f.type; })) { toast("すでに同じ展開の打診が届いています", false); return se("ng"); }
+  var pt = partners(S, f.type).find(function (p) { return p.id === f.pid; }); if (!pt) { toast("売り込む相手を選んでください", false); return se("ng"); }
+  var fee = pitchFee(f.type), w = W(S, f.wid), part = { name: pt.name, skill: pt.skill };
+  if (jobMode()) {
+    var r = startJob(S, "pitch", { id: f.wid + f.type, wid: f.wid, type: f.type, partner: part }, { money: fee });
+    if (!r.ok) { toast(r.msg, false); return se("ng"); }
+    G.modal = []; se("tap"); toast(r.msg + "。結果を待ちましょう", true); return render();
+  }
+  if (S.money < fee) { toast("資金が足りません(" + fmtMoney(fee) + ")", false); return se("ng"); }
+  S.money -= fee; var rr = EXEC.pitch(S, { wid: f.wid, type: f.type, partner: part }); G.modal = []; toast(rr.msg, true); se("ok"); render();
+};
+var _vMediaStart19 = vMediaStart;
+vMediaStart = function (S) {
+  var o = _vMediaStart19(S), f = G.form.m, fee = pitchFee(f.type);
+  var add = '<div class="pitch"><p class="small muted">売り込み: 選んだ相手に企画を持ち込みます(' + fmtMoney(fee) + '・' + PITCH.WEEKS + '週)。通れば、先方が費用の一部を持つ条件で打診が届きます。見送りになることもあります。</p>' + btn("この相手に売り込む", "mpitch", null, "big") + '</div>';
+  return o.replace(btn("始動する", "mgo", null, "pri big"), btn("始動する", "mgo", null, "pri big") + add);
+};
+var _label19b = 0;
 
 function boot() {
   loadSettings();
