@@ -14,7 +14,7 @@
 <title>成長シミュレーター</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--paper:#F1F2EF;--panel:#FBFBF9;--ink:#191C25;--mute:#6A6F7C;--line:#D9DBD5;--accent:#2446C8;--accent-ink:#fff;--mark:#FFE25A;--ok:#1E8E5A;--ng:#C23B3B;--gold:#B8860B;--bright:1;--gx:max(16px,env(safe-area-inset-left));--gr:max(16px,env(safe-area-inset-right))}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#14161C;--panel:#1D2029;--ink:#ECEDF1;--mute:#9AA0AE;--line:#2D313D;--accent:#7F9BFF;--accent-ink:#10131C;--mark:#E8C93A;--ok:#4FCB8E;--ng:#F07B7B;--gold:#E3B341;color-scheme:dark}}
@@ -260,81 +260,10 @@ body[data-lay=pc] #scrl{bottom:28px}
 .slotmode{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.slotmode .chips{margin:4px 0}
 .places{display:grid;gap:6px;margin-top:8px}.chron li{margin:3px 0}.tags{display:flex;gap:4px;flex-wrap:wrap}.btn.dis{opacity:.5}.hseg.sseg{position:static}
 
-.ic{display:block}
-.tabs2 button i{display:flex;align-items:center;justify-content:center;height:22px}
-.ps-nav button i{display:inline-flex;align-items:center;width:24px}
-.places{display:grid;gap:6px;margin-top:8px}
-.chron li{margin:3px 0}.tags{display:flex;gap:4px;flex-wrap:wrap}
-.lvd{display:inline-flex;gap:4px}.lvd i{width:16px;height:6px;border-radius:3px}
-.inv .btn{margin-top:4px}
-
-/* ===== v1.3 デザイン刷新: 夜の編集部(深い紺 × 金) ===== */
-:root{color-scheme:dark;--paper:#0D1020;--panel:#161A31;--ink:#EEEBE2;--mute:#9DA2BC;--line:#2B3153;--accent:#E6BA5C;--accent-ink:#1B1406;--mark:#F2D27A;--ok:#5CCB98;--ng:#F08585;--gold:#E6BA5C;--serif:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;--glow:0 0 0 1px rgba(230,186,92,.22),0 10px 30px -12px rgba(230,186,92,.35)}
-:root:not([data-theme="light"]){--paper:#0D1020;--panel:#161A31;--ink:#EEEBE2;--mute:#9DA2BC;--line:#2B3153;--accent:#E6BA5C;--accent-ink:#1B1406;--mark:#F2D27A;--ok:#5CCB98;--ng:#F08585;--gold:#E6BA5C}
-:root[data-theme="dark"]{--paper:#0D1020;--panel:#161A31;--ink:#EEEBE2;--mute:#9DA2BC;--line:#2B3153;--accent:#E6BA5C;--accent-ink:#1B1406;--mark:#F2D27A;--ok:#5CCB98;--ng:#F08585;--gold:#E6BA5C}
-body,:root:not([data-theme="light"]) body{background:radial-gradient(900px 520px at 88% -8%,rgba(230,186,92,.15),transparent 62%),radial-gradient(800px 620px at -5% 108%,rgba(96,112,255,.16),transparent 58%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),#0D1020;background-attachment:fixed;color:var(--ink)}
-.h1{font-family:var(--serif);font-weight:900;font-size:29px;letter-spacing:.06em;color:var(--ink);text-shadow:0 2px 18px rgba(230,186,92,.25)}
-.h1::before{content:"";width:9px;height:9px;transform:rotate(45deg);background:linear-gradient(135deg,#F7DC8E,#B98A2C);box-shadow:0 0 12px rgba(230,186,92,.6);flex:none}
-.h1::after{background:linear-gradient(90deg,rgba(230,186,92,.5),transparent)}
-.h2{font-family:var(--serif);font-weight:900;letter-spacing:.04em}
-.h2::before{background:linear-gradient(135deg,#F7DC8E,#B98A2C)!important;width:7px!important;height:7px!important;border-radius:1px!important;transform:rotate(45deg);box-shadow:0 0 8px rgba(230,186,92,.55)}
-.h3{color:var(--accent);border-bottom:1px solid rgba(230,186,92,.28);letter-spacing:.14em}
-.muted,.small.muted{color:var(--mute)}
-.card{background:linear-gradient(180deg,#1B2040,#141830);border:1px solid rgba(255,255,255,.07);border-radius:16px;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 36px -20px rgba(0,0,0,.75)}
-.card.note,.card.goalc,.card.held{border-left:3px solid var(--accent)}
-.card.lock{background:repeating-linear-gradient(135deg,#141830,#141830 10px,#181D38 10px,#181D38 20px);border-style:dashed;border-color:rgba(230,186,92,.3)}
-.card.bidc,.card.chance,.card.co{border-color:rgba(230,186,92,.3);box-shadow:var(--glow)}
-.tip{background:rgba(230,186,92,.08);border:1px solid rgba(230,186,92,.3);color:var(--ink);border-radius:12px}
-.btn{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(230,186,92,.5);color:var(--ink);border-radius:12px;box-shadow:0 2px 0 rgba(0,0,0,.35);letter-spacing:.03em}
-.btn:hover{border-color:var(--mark);box-shadow:0 2px 0 rgba(0,0,0,.35),0 0 18px -4px rgba(230,186,92,.5)}
-.btn:active{transform:translateY(1px)}
-.btn small{color:var(--mute)}
-.btn.pri{background:linear-gradient(180deg,#F7DC8E,#E0A93C 55%,#C48A22);border-color:#F7DC8E;color:#201503;text-shadow:0 1px 0 rgba(255,255,255,.35);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 10px 24px -10px rgba(230,186,92,.75)}
-.btn.pri small{color:#4a3510;opacity:1}
-.btn.dis{opacity:.45;filter:saturate(.6)}
-.chip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);color:var(--ink);border-radius:999px}
-.chip.on{background:linear-gradient(180deg,#F7DC8E,#D9A13A);color:#201503;border-color:#F7DC8E;font-weight:800;box-shadow:0 6px 16px -8px rgba(230,186,92,.8)}
-.rowbtn,.mcard,.wcard,.sh{background:linear-gradient(180deg,#1B2040,#141830);border:1px solid rgba(255,255,255,.08);color:var(--ink);border-radius:14px;box-shadow:0 12px 24px -18px rgba(0,0,0,.8)}
-.rowbtn:hover,.mcard:hover,.wcard:hover{border-color:rgba(230,186,92,.6);box-shadow:var(--glow)}
-.rowbtn.on{border-color:var(--accent);box-shadow:var(--glow)}
-.rowbtn.dis{opacity:.5}
-.tag{background:rgba(230,186,92,.12);border:1px solid rgba(230,186,92,.35);color:var(--mark);border-radius:999px;padding:1px 10px;font-size:11px;font-weight:700;letter-spacing:.05em}
-.tag.up{background:rgba(92,203,152,.12);border-color:rgba(92,203,152,.4);color:#8CE4BC}
-.tag.gold,.tag.gold-o{background:linear-gradient(180deg,#F7DC8E,#D9A13A);color:#201503;border-color:#F7DC8E}
-.bar{background:rgba(255,255,255,.09);border-radius:999px;overflow:hidden}
-.bar i{background:linear-gradient(90deg,#B98A2C,#F2D27A);border-radius:999px}
-.bar.ok i{background:linear-gradient(90deg,#2E9E6E,#7FE0B2)}.bar.warn i{background:linear-gradient(90deg,#C0504D,#F59A97)}
-.top2{background:linear-gradient(180deg,#1A2050 0%,#0E1230 100%)!important;border-bottom:1px solid rgba(230,186,92,.4);box-shadow:0 14px 28px -16px rgba(0,0,0,.9)!important}
-.money2,.money{font-family:var(--serif);font-weight:900;color:var(--mark);letter-spacing:.03em;text-shadow:0 0 16px rgba(230,186,92,.35)}.money2{font-size:23px}
-.dl{background:rgba(255,255,255,.1)!important}
-.tabs2 button{color:var(--mute)}
-.tabs2 button.on{background:linear-gradient(180deg,rgba(230,186,92,.0),rgba(230,186,92,.2));color:var(--mark);box-shadow:0 -2px 0 var(--accent) inset}
-.tabs2 button.on .ic{filter:drop-shadow(0 0 6px rgba(230,186,92,.7))}
-.pc-side{background:linear-gradient(170deg,#1A2050,#0E1230 85%)!important;border:1px solid rgba(230,186,92,.28);box-shadow:0 24px 50px -28px rgba(0,0,0,.9)}
-.ps-nav button.on{background:linear-gradient(90deg,rgba(230,186,92,.25),rgba(230,186,92,.05));color:var(--mark);box-shadow:3px 0 0 var(--accent) inset}
-.ps-co .co{font-family:var(--serif);font-weight:900;color:var(--mark)}
-.hseg{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px}
-.hseg button{color:var(--mute)}
-.hseg button.on{background:linear-gradient(180deg,#2A3166,#1E2450);color:var(--mark);box-shadow:0 0 0 1px rgba(230,186,92,.45) inset,0 6px 14px -8px rgba(0,0,0,.8)}
 .hseg.sseg{position:static;grid-template-columns:repeat(4,1fr)}
-.hero{border:1px solid rgba(230,186,92,.35);border-radius:18px;background:#141830;box-shadow:0 22px 44px -22px rgba(0,0,0,.85),var(--glow)}
-.hero-t{font-family:var(--serif)!important;font-weight:900!important;color:var(--mark);letter-spacing:.05em}
-.sheet{background:linear-gradient(180deg,#1B2142,#11142B);border-top:2px solid var(--accent);color:var(--ink)}
-@media (min-width:900px){.sheet{border:1px solid rgba(230,186,92,.5)}}
-input,textarea,select{background:#0F1330;color:var(--ink);border:1px solid rgba(255,255,255,.18);border-radius:10px}
-input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
-.title .mast{border-bottom:1px solid rgba(230,186,92,.5);color:var(--mute);letter-spacing:.18em}
-.logo{font-family:var(--serif)!important;font-weight:900!important;font-size:clamp(34px,10.4vw,54px)!important;line-height:1.12;display:block!important;background:linear-gradient(180deg,#FFF3C9 0%,#F2D27A 40%,#C48A22 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent;filter:drop-shadow(0 4px 22px rgba(230,186,92,.4));letter-spacing:.04em;margin:26px 0 10px}
-.title .lead,.title p{color:var(--mute)}
-.cine{background:radial-gradient(600px 400px at 50% 38%,rgba(230,186,92,.18),transparent 70%),#080A16}
-.cine-t{font-family:var(--serif);font-weight:900;text-shadow:0 0 30px rgba(230,186,92,.5)}
-.skl em{color:var(--mark)}
-.fin-row .up{color:#7FE0B2}.fin-row .dn{color:#F59A97}
-.rank li.mine b{background:linear-gradient(transparent 60%,rgba(230,186,92,.45) 60%)}
-.lvd i{background:rgba(255,255,255,.14)}.lvd i.on{background:linear-gradient(90deg,#B98A2C,#F2D27A);box-shadow:0 0 8px rgba(230,186,92,.6)}
-.toast,#toast{background:#1B2142;border:1px solid rgba(230,186,92,.5);color:var(--ink);box-shadow:0 14px 30px -10px rgba(0,0,0,.8)}
-::selection{background:rgba(230,186,92,.4)}
-svg.map{color:#2E3B2E;border-radius:12px}
+.lvd{display:inline-flex;gap:4px}.lvd i{width:16px;height:6px;border-radius:3px;background:var(--line)}.lvd i.on{background:var(--accent)}
+.inv .btn{margin-top:4px}.tags{display:flex;gap:4px;flex-wrap:wrap}.chron li{margin:3px 0}.places{display:grid;gap:6px;margin-top:8px}
+svg.map{border-radius:12px}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -349,13 +278,11 @@ svg.map{color:#2E3B2E;border-radius:12px}
 var GAME_VER = "1.3.0", SAVE_VER = 1;
 var UPDATES = [
   { ver: "1.3.0", date: "2026-11-02", notes: [
-    "画面のデザインを一新しました。",
-    "深い紺と金を基調に、より重厚な雰囲気に仕上げました。"
+    "パークの地図を、より見ごたえのある表現に作り直しました。"
   ] },
   { ver: "1.2.0", date: "2026-11-02", notes: [
     "パークを、小さく始めて大きく育てられるようになりました。",
-    "お金の使い道が広がり、会社そのものを強くできます。",
-    "画面の見た目を整え、落ち着いた雰囲気に仕上げました。"
+    "お金の使い道が広がり、会社そのものを強くできます。"
   ] },
   { ver: "1.1.0", date: "2026-11-02", notes: [
     "編集部の画面を整理し、人との関わりを深められるようになりました。",
@@ -6627,8 +6554,6 @@ var ICONS = {
   hall: ico('<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v2a3 3 0 0 0 3 3M16 6h3v2a3 3 0 0 1-3 3M12 13v4M9 20h6M10 17h4"/>'),
   menu: ico('<path d="M5 7h14M5 12h14M5 17h14"/>')
 };
-Object.keys(ICONS).forEach(function (k) { NAVI[k] = ICONS[k]; });
-TABS5.forEach(function (t) { if (ICONS[t[0]]) t[2] = ICONS[t[0]]; });
 
 /* ---- パーク ---- */
 function stageTag(a) { var st = stageOf(a); return '<span class="tag ' + (st === 3 ? "gold" : "") + '">' + ["", "屋台", "常設コーナー", "本格エリア"][st] + '</span>'; }
@@ -6727,6 +6652,60 @@ var _finCard28 = finCard;
 finCard = function (S) {
   var o = _finCard28(S), f = S.fin; if (!f || !f.upk) return o;
   return o.replace('</details>', '<div class="fin-row small"><span>拠点・設備の維持費</span><span>' + mny(f.upk) + '</span></div></details>');
+};
+
+/* ---- パークの地図(作り直し) ---- */
+var MAPPOS = [[20, 20], [140, 12], [260, 22], [14, 120], [140, 124], [262, 118], [24, 224], [138, 230], [262, 226]];
+function mapTree(x, y, s) { s = s || 1; return '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')"><ellipse cx="0" cy="9" rx="7" ry="2.4" fill="#000" opacity=".12"/><rect x="-1.4" y="2" width="2.8" height="8" fill="#7A5638"/><circle cx="0" cy="-2" r="8" fill="#5FA04E"/><circle cx="-3" cy="-4" r="4" fill="#7DBB63"/></g>'; }
+function mapLamp(x, y) { return '<g transform="translate(' + x + ',' + y + ')"><rect x="-.8" y="-10" width="1.6" height="12" fill="#6B6F7A"/><circle cx="0" cy="-12" r="3" fill="#FFE9A0" stroke="#D9B84A" stroke-width=".8"/></g>'; }
+function mapPlot(S, a, x, y, i) {
+  if (!a) {
+    return '<g class="plot" data-act="parkbuild"><rect x="' + x + '" y="' + y + '" width="100" height="84" rx="12" fill="#DDEFC7" opacity=".75"/><rect x="' + x + '" y="' + y + '" width="100" height="84" rx="12" fill="none" stroke="#7FA66B" stroke-width="1.6" stroke-dasharray="6 5"/>' +
+      '<circle cx="' + (x + 50) + '" cy="' + (y + 36) + '" r="13" fill="#fff" opacity=".85"/><path d="M' + (x + 50) + ',' + (y + 29) + 'v14M' + (x + 43) + ',' + (y + 36) + 'h14" stroke="#6E9A5A" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<text x="' + (x + 50) + '" y="' + (y + 64) + '" text-anchor="middle" font-size="11" fill="#5C7A55" font-weight="700" font-family="Zen Kaku Gothic New,sans-serif">空き地</text></g>';
+  }
+  var w = W(S, a.wid), h = w ? (GHUE[w.genre] || 200) : 200, st = stageOf(a), g = '<g>';
+  g += '<rect x="' + x + '" y="' + (y + 3) + '" width="100" height="84" rx="12" fill="#000" opacity=".10"/><rect x="' + x + '" y="' + y + '" width="100" height="84" rx="12" fill="hsl(' + h + ',42%,91%)" stroke="hsl(' + h + ',45%,52%)" stroke-width="1.6"/>';
+  g += '<path d="M' + (x + 8) + ',' + (y + 78) + 'h84" stroke="hsl(' + h + ',30%,80%)" stroke-width="5" stroke-linecap="round"/>';
+  if (st === 1) {
+    var aw = ""; for (var k = 0; k < 6; k++) aw += '<rect x="' + (x + 20 + k * 10) + '" y="' + (y + 32) + '" width="10" height="14" fill="' + (k % 2 ? "#fff" : "hsl(" + h + ",75%,52%)") + '"/>';
+    g += '<rect x="' + (x + 22) + '" y="' + (y + 46) + '" width="56" height="24" rx="2" fill="hsl(' + h + ',45%,40%)"/><rect x="' + (x + 28) + '" y="' + (y + 52) + '" width="44" height="8" rx="2" fill="hsl(' + h + ',60%,78%)"/>' + aw +
+      '<rect x="' + (x + 18) + '" y="' + (y + 28) + '" width="64" height="6" rx="3" fill="hsl(' + h + ',60%,35%)"/><rect x="' + (x + 20) + '" y="' + (y + 34) + '" width="2.4" height="36" fill="#7A5638"/><rect x="' + (x + 77.6) + '" y="' + (y + 34) + '" width="2.4" height="36" fill="#7A5638"/>' +
+      '<circle cx="' + (x + 38) + '" cy="' + (y + 70) + '" r="3" fill="#F6C945"/><circle cx="' + (x + 62) + '" cy="' + (y + 70) + '" r="3" fill="#E9714F"/>';
+  } else if (st === 2) {
+    g += '<rect x="' + (x + 14) + '" y="' + (y + 34) + '" width="46" height="38" rx="2" fill="hsl(' + h + ',40%,84%)" stroke="hsl(' + h + ',45%,40%)" stroke-width="1.2"/><polygon points="' + (x + 10) + ',' + (y + 36) + ' ' + (x + 37) + ',' + (y + 18) + ' ' + (x + 64) + ',' + (y + 36) + '" fill="hsl(' + h + ',65%,48%)"/>' +
+      '<rect x="' + (x + 32) + '" y="' + (y + 52) + '" width="10" height="20" fill="hsl(' + h + ',50%,32%)"/><rect x="' + (x + 19) + '" y="' + (y + 42) + '" width="9" height="9" fill="#FFF3B8"/><rect x="' + (x + 46) + '" y="' + (y + 42) + '" width="9" height="9" fill="#FFF3B8"/>' +
+      '<rect x="' + (x + 36.4) + '" y="' + (y + 8) + '" width="1.6" height="12" fill="#6B6F7A"/><polygon points="' + (x + 38) + ',' + (y + 8) + ' ' + (x + 48) + ',' + (y + 11) + ' ' + (x + 38) + ',' + (y + 14) + '" fill="#E9714F"/>' +
+      '<g class="spin"><circle cx="' + (x + 80) + '" cy="' + (y + 54) + '" r="11" fill="none" stroke="hsl(' + h + ',55%,42%)" stroke-width="2.6"/><path d="M' + (x + 80) + ',' + (y + 43) + 'v22M' + (x + 69) + ',' + (y + 54) + 'h22" stroke="hsl(' + h + ',55%,42%)" stroke-width="1.6"/></g>';
+  } else {
+    var lv = Math.max(1, a.lv), hh = 26 + lv * 6, r = 11 + lv * 1.8, cx = x + 72, cy = y + 50;
+    g += '<rect x="' + (x + 12) + '" y="' + (y + 76 - hh) + '" width="32" height="' + hh + '" rx="2" fill="hsl(' + h + ',50%,46%)"/><polygon points="' + (x + 9) + ',' + (y + 77 - hh) + ' ' + (x + 28) + ',' + (y + 60 - hh) + ' ' + (x + 47) + ',' + (y + 77 - hh) + '" fill="hsl(' + ((h + 30) % 360) + ',68%,58%)"/>';
+    for (var q = 0; q < Math.min(4, lv + 1); q++) g += '<rect x="' + (x + 17 + (q % 2) * 12) + '" y="' + (y + 82 - hh + Math.floor(q / 2) * 11 - 6) + '" width="7" height="7" fill="#FFF3B8"/>';
+    g += '<path d="M' + (cx - 8) + ',' + (cy + 28) + 'L' + cx + ',' + cy + 'L' + (cx + 8) + ',' + (cy + 28) + '" fill="none" stroke="hsl(' + h + ',30%,40%)" stroke-width="2"/>' +
+      '<g class="spin"><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="hsl(' + h + ',55%,42%)" stroke-width="3"/><path d="M' + cx + ',' + (cy - r) + 'v' + (r * 2) + 'M' + (cx - r) + ',' + cy + 'h' + (r * 2) + 'M' + (cx - r * .7) + ',' + (cy - r * .7) + 'l' + (r * 1.4) + ',' + (r * 1.4) + 'M' + (cx + r * .7) + ',' + (cy - r * .7) + 'l' + (-r * 1.4) + ',' + (r * 1.4) + '" stroke="hsl(' + h + ',55%,42%)" stroke-width="1.5"/>' +
+      '<circle cx="' + cx + '" cy="' + (cy - r) + '" r="2.6" fill="#E9714F"/><circle cx="' + cx + '" cy="' + (cy + r) + '" r="2.6" fill="#F6C945"/><circle cx="' + (cx - r) + '" cy="' + cy + '" r="2.6" fill="#59B3E0"/><circle cx="' + (cx + r) + '" cy="' + cy + '" r="2.6" fill="#8E7AE0"/></g>';
+    if (a.food) g += '<circle cx="' + (x + 12) + '" cy="' + (y + 74) + '" r="3.4" fill="#F08A3C"/>'; if (a.shop) g += '<rect x="' + (x + 19) + '" y="' + (y + 71) + '" width="7" height="6" fill="#E26A8D"/>';
+  }
+  g += '<rect x="' + (x + 4) + '" y="' + (y + 4) + '" width="' + Math.min(92, 14 + (w ? Math.min(8, w.title.length) : 3) * 9) + '" height="15" rx="7.5" fill="#fff" opacity=".92"/><text x="' + (x + 11) + '" y="' + (y + 14.8) + '" font-size="9.5" font-weight="700" fill="hsl(' + h + ',45%,28%)" font-family="Zen Kaku Gothic New,sans-serif">' + esc(w ? w.title.slice(0, 8) : "") + '</text>';
+  g += '<text x="' + (x + 94) + '" y="' + (y + 81) + '" text-anchor="end" font-size="8.5" font-weight="700" fill="hsl(' + h + ',40%,34%)" font-family="IBM Plex Mono,monospace">' + (st === 3 ? "Lv" + a.lv : ["", "屋台", "常設"][st]) + '</text>';
+  return g + '</g>';
+}
+function mapSvg(S) {
+  var P = S.park, s = '<svg class="map" viewBox="0 0 380 320" role="img" aria-label="パークの区画図"><defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CBE6B0"/><stop offset="1" stop-color="#A9D18C"/></linearGradient><pattern id="pstr" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="6" height="12" fill="#fff" opacity=".07"/></pattern></defs>';
+  s += '<rect width="380" height="320" rx="14" fill="url(#pg)"/><rect width="380" height="320" rx="14" fill="url(#pstr)"/>';
+  s += '<rect x="0" y="105" width="380" height="16" fill="#F3E7C8"/><rect x="0" y="207" width="380" height="16" fill="#F3E7C8"/><rect x="121" y="0" width="18" height="320" fill="#F3E7C8"/><rect x="241" y="0" width="18" height="320" fill="#F3E7C8"/>';
+  s += '<path d="M0,113h380M0,215h380M130,0v320M250,0v320" stroke="#fff" stroke-width="1.4" stroke-dasharray="7 7" opacity=".85"/>';
+  s += '<circle cx="130" cy="113" r="11" fill="#9ED0E6" stroke="#fff" stroke-width="2"/><circle cx="130" cy="113" r="3.4" fill="#fff"/><circle cx="250" cy="215" r="11" fill="#9ED0E6" stroke="#fff" stroke-width="2"/><circle cx="250" cy="215" r="3.4" fill="#fff"/>';
+  [[10, 112], [370, 112], [10, 214], [370, 214], [130, 8], [130, 312], [250, 8], [250, 312], [196, 112], [196, 214]].forEach(function (t) { s += mapTree(t[0], t[1], .9); });
+  [[121, 100], [139, 126], [241, 202], [259, 228]].forEach(function (t) { s += mapLamp(t[0], t[1]); });
+  for (var i = 0; i < 9; i++) s += mapPlot(S, P.areas[i], MAPPOS[i][0], MAPPOS[i][1], i);
+  popList(S).forEach(function (p, k) { var w = W(S, p.wid); s += '<g transform="translate(' + (150 + k * 78) + ',301)"><rect x="-34" y="-11" width="72" height="17" rx="8.5" fill="#E9714F"/><text x="2" y="1.4" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" font-family="Zen Kaku Gothic New,sans-serif">🎪 ' + esc(w ? w.title.slice(0, 4) : "") + '</text></g>'; });
+  return s + '</svg>';
+}
+var _vPark28b = vPark;
+vPark = function (S) {
+  var o = _vPark28b(S);
+  return o.replace(/<section class="card"><svg class="map"[\s\S]*?<\/svg><\/section>/, '<section class="card mapc">' + mapSvg(S) + '</section>');
 };
 
 function boot() {
