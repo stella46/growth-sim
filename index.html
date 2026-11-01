@@ -242,6 +242,11 @@ body[data-lay=pc] #scrl{bottom:28px}
 .card.bond .skl{margin:6px 0 10px}.tag.ever{display:inline-block;margin:6px 0}
 .pc-side .dl,.top2 .dl{background:#fff;padding:2px 10px;border-radius:999px;font-weight:800;font-size:12px;width:fit-content}
 .pc-side .dl.up,.top2 .dl.up{color:#14703f}.pc-side .dl.dn,.top2 .dl.dn{color:#b3261e}
+.hseg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 10px;background:var(--line);padding:3px;border-radius:12px;position:sticky;top:0;z-index:5}
+.hseg button{border:0;background:none;padding:9px 0;font:700 14px "Zen Kaku Gothic New";border-radius:10px;color:var(--ink);cursor:pointer;position:relative}
+.hseg button.on{background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.bdg{font-style:normal;font:700 10px "IBM Plex Mono";background:#E4572E;color:#fff;border-radius:9px;padding:1px 6px;margin-left:5px;vertical-align:2px}
+.where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
 .slotmode{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.slotmode .chips{margin:4px 0}
 </style>
 
@@ -254,8 +259,12 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.9.1", SAVE_VER = 1;
+var GAME_VER = "0.9.2", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.9.2", date: "2026-11-02", notes: [
+    "画面の分かりやすさを改善しました。",
+    "ゲーム開始時の動作を調整しました。"
+  ] },
   { ver: "0.9.1", date: "2026-11-02", notes: [
     "操作を助ける機能を追加しました。",
     "表示の見えにくい部分を改善しました。"
@@ -4242,7 +4251,7 @@ function buildGuide() {
   pages.push({ h: "人との関係と会社の成長", b: ["作家やスタッフは、「食事に誘う」「話を聞く」で信頼が深まります(編集部タブ)。信頼が高いと、作品が伸びやすくなり、スタッフの働きも良くなります。時間がたつと、少しずつ薄れます。", "名声が上がると、会社は自宅の一室から自社ビル、本社ビルへと成長します。ホームの街の景色も変わります。"] });
   pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。条件が足りないときは、足りないものが表示されます。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
   pages.push({ h: "殿堂入りと競争", b: ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。"] });
-  pages.push({ h: "困ったときは", b: ["ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
+  pages.push({ h: "困ったときは", b: ["スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
   GUIDE.length = 0; pages.forEach(function (p) { GUIDE.push(p); });
 }
 guideModal = function (i) {
@@ -4612,6 +4621,68 @@ var _vModal17 = vModal;
 XACT.slotresume = function () { G.rtPause = false; G.slotPaused = false; render(); };
 var _toastWatch = 0;
 setInterval(function () { if (G && G.slotPaused && G.rtPause && G.screen === "game" && !(G.modal && G.modal.length) && !G.cur && !G.cine) { G.slotPaused = false; toast("作業枠が空きました。行動を選んでください(▶で再開)", true); } }, 400);
+
+/* ===== v0.9.2 ホームの見やすさ・開始時の自動表示をなくす ===== */
+G.hseg = "now";
+var HSEGS = [["now", "いま"], ["act", "行動"], ["state", "状況"]];
+var TABWHERE = {
+  works: "作品の制作・展開(メディア化)をここで行います。",
+  scout: "スタッフの採用・作業、人との関係はここです。",
+  park: "テーマパークの建設と運営はここです。",
+  hall: "殿堂入りした作品や実績の記録です。",
+  menu: "設定・遊び方・セーブはここです。"
+};
+
+/* ---- 開始時に勝手に画面が出ない ---- */
+XACT.start = function () {
+  var f = G.form.ng, S0 = newGame({ name: f.name, company: f.company, diff: f.diff });
+  se("ok"); enterGame(S0, +f.slot); autosave();
+};
+var _enter18 = enterGame;
+enterGame = function (S, slot) {
+  var _p = pump; pump = function () { render(); };
+  try { _enter18(S, slot); } finally { pump = _p; }
+  G.hseg = "now";
+};
+XACT.openq = function () { pump(); };
+XACT.hseg = function (d) { G.hseg = d.v; render(); };
+XACT.guideoff = function () { lsSet("gs_guided", "1"); render(); };
+
+function heldCard(S) {
+  if (!S.queue || !S.queue.length || G.cur || G.cine) return "";
+  return '<section class="card held"><b>未確認のお知らせが ' + S.queue.length + ' 件あります</b><p class="small muted">確認するまで時間は止まっています。</p>' +
+    btn("確認する", "openq", null, "pri") + '</section>';
+}
+function firstCard() {
+  if (lsGet("gs_guided")) return "";
+  return '<section class="card first"><b>はじめての方へ</b><p class="small muted">まずはホームの「行動」から行動を選びます。迷ったら遊び方をどうぞ。</p><div class="grid2">' +
+    btn("遊び方を見る", "guide", null, "sm") + btn("閉じる", "guideoff", null, "sm") + '</div></section>';
+}
+
+/* ---- ホーム(スマホ)を3つに分ける ---- */
+var _vHome18 = vHome;
+vHome = function (S) {
+  if (G.pc) return firstCard() + heldCard(S) + _vHome18(S);
+  var slots = jobMode() ? slotCard(S) : planCard(S), plan = planCard(S);
+  var free = jobMode() ? Math.max(0, slotMax(S) - jobsOf(S).length) : 0, ch = jobMode() ? chancesOf(S).length : 0;
+  var badge = { now: "", act: (jobMode() && free > 0) ? '<i class="bdg">空き' + free + '</i>' : "", state: "" };
+  if (ch) badge.now = '<i class="bdg">' + ch + '</i>';
+  var bar = '<div class="hseg">' + HSEGS.map(function (s) {
+    return '<button data-act="hseg" data-v="' + s[0] + '" class="' + (G.hseg === s[0] ? "on" : "") + '">' + s[1] + badge[s[0]] + '</button>';
+  }).join("") + '</div>';
+  var body;
+  if (G.hseg === "act") body = slots + actionsCard(S);
+  else if (G.hseg === "state") body = shelfCard(S) + finCard(S) + moreCard(S);
+  else body = heroCard(S) + plan + tipHtml("home") + nextCard(S) + newsCard(S);
+  return bar + firstCard() + heldCard(S) + body;
+};
+
+/* ---- 他のタブにも「ここは何の画面か」を一行 ---- */
+var _tabBody18 = tabBody;
+tabBody = function (S) {
+  var o = _tabBody18(S), w = TABWHERE[G.tab];
+  return w ? '<p class="where small muted">' + w + '</p>' + o : o;
+};
 
 function boot() {
   loadSettings();
