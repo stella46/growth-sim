@@ -210,6 +210,12 @@ body[data-lay=pc] #scrl{bottom:28px}
 @media (min-width:900px){.sheet.fixed{height:min(80vh,720px)}}
 .card.lock{border-style:dashed;background:var(--panel)}
 .fld input{width:100%;min-height:48px;font-size:16px}
+.rtw{display:flex;flex-direction:column;gap:4px;min-width:0}.rtc{display:flex;gap:6px}
+.rtb{min-height:44px;min-width:44px;padding:0 10px;border-radius:12px;border:1.5px solid rgba(255,255,255,.55);background:rgba(255,255,255,.14);color:#fff;font:800 14px "Zen Kaku Gothic New",sans-serif;cursor:pointer}
+.rtb.play{background:#ffe15a;color:#2a2200;border-color:#d4b21e;font-size:18px}.rtb.play.off{background:#fff;color:#c33}
+.rtbar{height:5px;border-radius:3px;background:rgba(255,255,255,.28);overflow:hidden}.rtbar i{display:block;height:100%;width:0;background:#ffe15a}
+.rtw.big{width:100%}.rtw.big .rtc{display:grid;grid-template-columns:56px 56px 1fr}.rtw.big .rtb{min-height:56px;border-color:var(--line);background:var(--panel);color:var(--ink)}
+.rtw.big .rtb.play{background:#ffe15a;color:#2a2200}.rtw.big .rtbar{background:var(--line);height:7px}.rtw.big .rtbar i{background:var(--accent)}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -221,8 +227,13 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.5.3", SAVE_VER = 1;
+var GAME_VER = "0.6.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.6.0", date: "2026-11-01", notes: [
+    "時間が自動で流れるようになりました。流れている間に、好きなときに自分で行動できます(ゲーム発展国のような遊び方)。",
+    "⏸で一時停止、×1・×2・×3で速さを変えられます。ポップアップやイベントが出ている間は自動で止まります。",
+    "「まとめて進める」はなくしました。予定制を選んでいる場合だけ、これまでどおり「週を進める」で進みます。"
+  ] },
   { ver: "0.5.3", date: "2026-11-01", notes: [
     "標準の遊び方を、その場で自分で行動する「自由」にしました。設定でいつでも予定制などに戻せます。",
     "「まとめて進める」は、標準では休む・アルバイトだけを自動にしました。新しい機能が開いたときも止まります。",
@@ -2612,7 +2623,7 @@ var GUIDE = [
   { h: "困ったときは", b: ["ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "遊び方のヒントや「次のおすすめ」は、「設定」でいつでもON/OFFできます。この説明も、タイトルやメニューの「遊び方」から読み返せます。"] }
 ];
 var TIPS = {
-  home: "ここが拠点です。今週やることを選んで、右上の「週を進める」を押すと時間が進みます。",
+  home: "ここが拠点です。時間は自動で流れます。右上の⏸で止められ、×1〜×3で速さを変えられます。好きなときに行動しましょう。",
   works: "作品をタップすると、読みどころのヒントと、執筆・宣伝などの操作が出ます。",
   scout: "編集部では、才能のある作者を探して契約したり、スタッフを雇ったりできます。",
   media: "人気とファンが育った作品を、アニメ・映画・舞台などにできます。成功すれば大きな収益に。",
@@ -3691,6 +3702,52 @@ vFF = function () {
   o = o.replace(/<p class="small">[\s\S]*?<\/p><p class="small muted">[\s\S]*?<\/p>/, '<p class="small">時間だけを進めます。自動で行うのは「体力が低いときに休む」「お金が少ないときにアルバイト」だけです(標準)。新しいことができるようになったときや打診が届いたときは、そこで止まります。</p>');
   return o.replace('<div class="grid2">', '<div class="fld"><span>進めている間の自動行動</span><div class="chips">' + chip("休む・バイトだけ", "ffauto", { v: "safe" }, !all) + chip("執筆・腕みがきも任せる", "ffauto", { v: "all" }, all) + '</div></div><div class="grid2">');
 };
+
+/* ===== v0.6.0 時間が自動で流れる(リアルタイム進行)===== */
+var RT_MS = { 1: 6000, 2: 3000, 3: 1200 };
+function rtActive() { return SET.am !== "plan"; }
+SET.rtSpd = SET.rtSpd || 1;
+var _ls7 = loadSettings;
+loadSettings = function () { _ls7(); if (!SET.rtV6) { SET.rtV6 = 1; SET.rtSpd = 1; if (SET.am === "plan") SET.am = "free"; saveSettings(); } if (!(SET.rtSpd > 0)) SET.rtSpd = 1; };
+G.rtPause = false; G.rtAcc = 0;
+function rtCan() {
+  var S = G.S;
+  return !!S && G.screen === "game" && rtActive() && !G.rtPause && !(G.modal && G.modal.length) && !G.cine && !G.cur && !G.busy && !S.queue.length && !document.hidden;
+}
+function rtBtnLabel() { return G.rtPause ? "▶" : "⏸"; }
+function rtCtl(big) {
+  return '<div class="rtw' + (big ? " big" : "") + '"><div class="rtc"><button class="rtb play' + (G.rtPause ? " off" : "") + '" data-act="rtpause" aria-label="一時停止/再開">' + rtBtnLabel() + '</button>' +
+    '<button class="rtb" data-act="rtspd" aria-label="速さ">×' + SET.rtSpd + '</button><button class="rtb" data-act="next" aria-label="すぐ1週進める">次週▶</button></div>' +
+    '<div class="rtbar"><i id="rtbar"></i></div>' + (big ? '<p class="small muted c">時間は自動で流れます。スペースキーで一時停止・再開</p>' : "") + '</div>';
+}
+var _vGame7 = vGame;
+vGame = function () {
+  var o = _vGame7();
+  o = o.replace(/<button class="ffm"[^>]*>[^<]*<\/button>/g, "").replace(/<button class="btn ffbig"[^>]*>[^<]*<\/button>/g, "");
+  if (!rtActive()) return o;
+  return o.replace('<button class="next2 big" data-act="next">週を進める ▶</button>', rtCtl(true)).replace('<button class="next2" data-act="next">週を進める ▶</button>', rtCtl(false)).replace(/<p class="small muted c">キー[^<]*<\/p>/, "");
+};
+var _planCard7 = planCard;
+planCard = function (S) { return _planCard7(S).replace(/<div class="ffrow">[\s\S]*?<\/div>/, ""); };
+XACT.ffmenu = function () { }; XACT.ffgo = function () { }; XACT.ffstop = function () { };
+XACT.rtpause = function () { G.rtPause = !G.rtPause; G.rtAcc = 0; se("tap"); render(); };
+XACT.rtspd = function () { SET.rtSpd = SET.rtSpd % 3 + 1; saveSettings(); se("tap"); render(); };
+window.addEventListener("keydown", function (e) {
+  if (e.key !== " " || !rtActive() || G.screen !== "game" || /INPUT|TEXTAREA|BUTTON/.test((e.target || {}).tagName || "")) return;
+  if (G.modal && G.modal.length) return;
+  e.preventDefault(); e.stopImmediatePropagation(); XACT.rtpause();
+}, true);
+
+var _se7 = se; se = function (k) { if (G.rtIn && k === "page") return; return _se7.apply(this, arguments); };
+function rtTick() {
+  var st = window.scrollTo; G.rtIn = true; window.scrollTo = function () { };
+  try { XACT.next({}); } catch (e) { console.error(e); } finally { window.scrollTo = st; G.rtIn = false; }
+}
+setInterval(function () {
+  var per = RT_MS[SET.rtSpd] || 6000;
+  if (rtCan()) { G.rtAcc += 100; if (G.rtAcc >= per) { G.rtAcc = 0; rtTick(); } }
+  var el = document.getElementById("rtbar"); if (el) el.style.width = Math.min(100, G.rtAcc / per * 100) + "%";
+}, 100);
 
 function boot() {
   loadSettings();
