@@ -223,6 +223,17 @@ body[data-lay=pc] #scrl{bottom:28px}
 .jsta{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin-bottom:6px}
 .card.chance{border-left:4px solid #e8a317}.chrow{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}.chrow:first-of-type{border-top:0}
 .chrow p{margin:2px 0}
+.sstrip{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.sc{display:inline-flex;gap:6px;align-items:baseline;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:600 13px "Zen Kaku Gothic New",sans-serif;background:var(--panel)}.sc b{font-weight:600;font-size:11px;color:var(--muted)}
+.arow{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;text-align:left;border:1.5px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:10px 12px;margin:0 0 8px;cursor:pointer;font-family:inherit}
+.arow.pri{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}.arow.lack{opacity:.55}
+.arow .ai{font-size:24px;width:34px;text-align:center;flex:none}.arow .am{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}.arow .am b{font-size:15px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.arow .cur{font-weight:500;font-size:11px;color:var(--muted)}.arow small{color:var(--muted);font-size:11.5px}.arow em{font-style:normal;color:#c0392b}
+.efs{display:flex;flex-wrap:wrap;gap:5px}.ef{font-style:normal;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(120,120,120,.14);color:var(--ink)}
+.ef.up{background:rgba(34,160,90,.16);color:#14804a}.ef.dn{background:rgba(214,70,60,.14);color:#c0392b}.ef.mo{background:rgba(224,160,20,.2);color:#9a6a00}
+.arow .ad{flex:none;font:700 12px "Zen Kaku Gothic New",sans-serif;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.skipev{margin-top:10px;width:100%;display:flex;flex-direction:column;gap:2px;opacity:.9}.skipev small{font-weight:500;font-size:11px;opacity:.8}
+.cineskip{position:absolute;right:14px;bottom:18px;background:rgba(0,0,0,.35);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:8px 14px;font:700 13px "Zen Kaku Gothic New",sans-serif;cursor:pointer;z-index:5}
+@media (prefers-color-scheme:dark){.ef.up{color:#5fd49a}.ef.dn{color:#ff8f85}.ef.mo{color:#f2c04d}}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -234,8 +245,13 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.7.0", SAVE_VER = 1;
+var GAME_VER = "0.8.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.8.0", date: "2026-11-02", notes: [
+    "行動の表示を見直し、何が変わるのかひと目でわかるようにしました。",
+    "新しい行動を追加しました。",
+    "イベントを大幅に追加し、スキップ機能も入れました。"
+  ] },
   { ver: "0.7.0", date: "2026-11-01", notes: [
     "行動のしくみを刷新しました。",
     "新しい要素を追加しました。",
@@ -3950,6 +3966,229 @@ vScout = function (S) {
       (can ? '<button class="chip" data-act="stfocus" data-id="' + s.id + '">担当: ' + (f ? '『' + esc(f.title) + '』' : 'おまかせ') + ' ▶</button>' : '') + '</section>';
   }).join("");
   return o.replace('<h3 class="h3">採用できる人材</h3>', h + '<h3 class="h3">採用できる人材</h3>');
+};
+
+/* ===== v0.8.0 新しい行動・イベント追加(ロジック) ===== */
+/* ---- 新しい行動 ---- */
+AP_ACTS.push("research", "inputs", "seminar", "sns", "signing", "freelance", "mentor", "vacation");
+function expG(S, k, base) { return base * (1 - S.player.sk[k] / 130); }
+function pay(S, c) { if (S.money < c) return false; S.money -= c; return true; }
+EXEC.research = function (S) { if (!pay(S, 15)) return no("取材費(15万円)が足りません"); gainSkill(S, "idea", 2.4); gainSkill(S, "prose", 1.0); gainSkill(S, "eye", 0.6); return yes("各地を巡って取材した。引き出しが増えた"); };
+EXEC.inputs = function (S) { if (!pay(S, 3)) return no("資金が足りません"); gainSkill(S, "idea", 1.8); gainSkill(S, "prose", 1.4); return yes("名作をたっぷり読み込んだ"); };
+EXEC.seminar = function (S) { if (!pay(S, 8)) return no("参加費(8万円)が足りません"); gainSkill(S, "biz", 2.6); gainSkill(S, "eye", 1.2); S.fame += 0.2; return yes("勉強会で、業界の話をたくさん聞けた"); };
+EXEC.sns = function (S) { var l = liveWorks(S); l.forEach(function (w) { w.fans *= 1.01; }); S.fame += 0.5 + (l.length ? 0.2 : 0); gainSkill(S, "biz", 0.6); return yes("SNSで発信した。少しずつ知られてきた"); };
+EXEC.signing = function (S) {
+  var ws = S.works.filter(function (w) { return w.pop >= 20 && w.state !== "canceled"; }); if (!ws.length) return no("人気の出た作品がまだありません");
+  ws.sort(function (a, b) { return b.pop - a.pop; }); var w = ws[0]; w.fans *= 1.025; w.boost += 2; S.fame += 1; S.money += Math.round(5 + w.pop / 8); gainSkill(S, "biz", 0.8);
+  return yes("『" + w.title + "』のサイン会を開いた。ファンと直接交流できた");
+};
+EXEC.freelance = function (S) {
+  if (!S.unlock.write && S.player.sk.prose < 20) return no("まだ文章の仕事は任せてもらえない");
+  var p = Math.round(18 + S.player.sk.prose / 6 + rnd() * 8); S.money += p; gainSkill(S, "prose", 1.0); return yes("ライティングの副業をした(" + p + "万円)");
+};
+EXEC.mentor = function (S) {
+  if (!pay(S, 12)) return no("謝礼(12万円)が足りません");
+  var ks = Object.keys(SKILLS).sort(function (a, b) { return S.player.sk[a] - S.player.sk[b]; }), k = ks[0];
+  gainSkill(S, k, 3.8); return yes("先輩に教えを乞い、" + SKILLS[k] + "のコツをつかんだ");
+};
+EXEC.vacation = function (S) { if (!pay(S, 20)) return no("旅費(20万円)が足りません"); S.player.sta = Math.min(100, S.player.sta + 60); gainSkill(S, "idea", 0.8); return yes("ゆっくり休暇を過ごし、気持ちも体もすっきりした");
+};
+var NEWACT = {
+  research: { dur: 2, sta: 8 }, inputs: { dur: 1, sta: 4 }, seminar: { dur: 1, sta: 3 }, sns: { dur: 1, sta: 3 }, signing: { dur: 2, sta: 6 }, freelance: { dur: 1, sta: 12 }, mentor: { dur: 2, sta: 5 }, vacation: { dur: 2, sta: 0 }
+};
+for (var _k in NEWACT) { JOBT.DUR[_k] = NEWACT[_k].dur; FREE_STA[_k] = NEWACT[_k].sta; }
+var _label10 = actLabel;
+actLabel = function (a, d, S) {
+  var m = { research: "取材旅行に出る", inputs: "名作を読み漁る", seminar: "勉強会に参加", sns: "SNSで発信", signing: "サイン会を開く", freelance: "ライティングの副業", mentor: "先輩に教えを乞う", vacation: "休暇をとる" };
+  return m[a] || _label10(a, d, S);
+};
+
+/* ---- 追加イベント ---- */
+function ev2(id, title, text, a, b) { mkEx(id, title, text, a, b); }
+ev2("ex2_cold", "風邪をひいた", function () { return "朝から喉が痛く、熱っぽい。今日はどうするか。"; },
+  { label: "無理して続ける", fn: function (S) { S.player.sta = Math.max(0, S.player.sta - 22); return "熱を押して作業したが、体力をごっそり持っていかれた。"; } },
+  { label: "休んで治す(3万円)", fn: function (S) { S.money -= 3; S.player.sta = Math.max(0, S.player.sta - 6); return "薬を飲んでぐっすり眠った。大事にならずに済んだ。"; } });
+ev2("ex2_idea", "ふとひらめいた", function () { return "散歩の途中、突然おもしろい場面が頭に浮かんだ。"; },
+  { label: "すぐメモして形にする", fn: function (S) { gainSkill(S, "idea", 2.6); S.player.sta = Math.max(0, S.player.sta - 4); return "書き留めたアイデアが、次の作品の種になりそうだ。(発想力アップ)"; } },
+  { label: "帰って寝る", fn: function (S) { S.player.sta = Math.min(100, S.player.sta + 10); return "ぐっすり眠れた。ひらめきは忘れてしまった。"; } });
+ev2("ex2_letter", "ファンレターが届いた", function (S, p) { var w = exW(S, p); return "『" + (w ? w.title : "あの作品") + "』の読者から、手書きの手紙が届いた。"; },
+  { label: "心を込めて返事を書く", fn: function (S, p) { var w = exW(S, p); S.fame += 0.5; S.player.sta = Math.max(0, S.player.sta - 3); if (w) w.fans += 400; return "返事を受け取った読者は大喜び。口コミでじわじわ広がった。"; } },
+  { label: "励みにして創作に戻る", fn: function (S) { gainSkill(S, "prose", 1.6); return "手紙を机に飾った。筆が進む。(文章力アップ)"; } });
+ev2("ex2_bookshop", "古本屋で掘り出し物", function () { return "街の古本屋で、絶版の名作が目に留まった。値は少し張る。"; },
+  { label: "買って読む(10万円)", fn: function (S) { if (!spend(S, 10)) return "手持ちが足りず、あきらめた。"; gainSkill(S, "eye", 2.2); gainSkill(S, "prose", 1.0); return "夢中で読みふけった。(目利き・文章力アップ)"; } },
+  { label: "見るだけにする", fn: function () { return "立ち読みで満足して店を出た。"; } });
+ev2("ex2_friend", "旧友からの誘い", function () { return "久しぶりに、昔の仲間から飲みの誘いが来た。"; },
+  { label: "行く(6万円)", fn: function (S) { if (!spend(S, 6)) return "財布が心許なくて断った。"; S.player.sta = Math.min(100, S.player.sta + 12); S.fame += 0.3; gainSkill(S, "biz", 0.8); return "話が弾み、気分転換になった。仕事の縁も広がった。"; } },
+  { label: "仕事があるので断る", fn: function (S) { gainSkill(S, "prose", 0.6); return "断って机に向かった。少しだけ作業が進んだ。"; } });
+ev2("ex2_cat", "迷い猫", function () { return "仕事場の前に、おなかをすかせた猫がいる。"; },
+  { label: "世話をする(5万円)", fn: function (S) { if (!spend(S, 5)) return "余裕がなく、そっと見送った。"; S.player.sta = Math.min(100, S.player.sta + 8); gainSkill(S, "idea", 1.2); return "猫は居ついて、仕事場のマスコットになった。"; } },
+  { label: "そっとしておく", fn: function () { return "猫はいつの間にかいなくなっていた。"; } });
+ev2("ex2_deadline", "締め切りが重なった", function () { return "複数の仕事の締め切りが同じ週に重なってしまった。"; },
+  { label: "徹夜で乗り切る", fn: function (S) { S.player.sta = Math.max(0, S.player.sta - 25); S.fame += 0.4; gainSkill(S, "prose", 1.2); return "何とか全部間に合わせた。体力は限界だ。"; } },
+  { label: "頭を下げて延ばしてもらう", fn: function (S) { S.fame = Math.max(0, S.fame - 0.4); return "締め切りは延びたが、信用は少し傷ついた。"; } });
+ev2("ex2_contest", "小さな公募の知らせ", function () { return "地方の文学賞が、新作の公募を始めた。賞金は小さいが歴史がある。"; },
+  { label: "応募する(3万円)", fn: function (S) { if (!spend(S, 3)) return "応募料が足りなかった。"; if (ch(0.35 + S.player.sk.prose / 250)) { S.money += 60; S.fame += 1.2; return "なんと入選した!賞金60万円。名前が少し知られた。"; } gainSkill(S, "prose", 1.2); return "選外だったが、講評が勉強になった。"; } },
+  { label: "見送る", fn: function () { return "今回は見送った。"; } });
+ev2("ex2_pop", "書店員が推してくれた", function (S, p) { var w = exW(S, p); return "書店員が『" + (w ? w.title : "あの作品") + "』を手書きPOPで大プッシュしてくれている。"; },
+  { label: "お礼に差し入れる(5万円)", fn: function (S, p) { var w = exW(S, p); if (!spend(S, 5)) return "お礼を用意できなかった。"; if (w) w.boost += 3.5; S.fame += 0.4; return "書店員との絆が深まり、平積みが増えた。"; } },
+  { label: "お礼だけ伝える", fn: function (S, p) { var w = exW(S, p); if (w) w.boost += 1.5; return "感謝を伝えた。PRは続いている。"; } });
+ev2("ex2_column", "コラム連載の依頼", function () { return "新聞社から、短いコラムを連載しないかと声がかかった。"; },
+  { label: "引き受ける", fn: function (S) { S.fame += 1; S.money += 25; S.player.sta = Math.max(0, S.player.sta - 7); gainSkill(S, "prose", 1.0); return "コラムは好評で、名前が広まった。(謝礼25万円)"; } },
+  { label: "断る", fn: function () { return "今は手一杯だと断った。"; } });
+ev2("ex2_school", "学校で講演", function () { return "母校から「創作について話してほしい」と頼まれた。"; },
+  { label: "引き受ける", fn: function (S) { S.money += 12; S.fame += 0.6; S.player.sta = Math.max(0, S.player.sta - 6); gainSkill(S, "biz", 1.2); return "生徒たちが目を輝かせて聞いてくれた。(謝礼12万円)"; } },
+  { label: "丁重に断る", fn: function () { return "別の機会に、と伝えた。"; } });
+ev2("ex2_translate", "翻訳出版の打診", function (S, p) { var w = exW(S, p); return "海外の小さな出版社が、『" + (w ? w.title : "あの作品") + "』の翻訳を提案してきた。"; },
+  { label: "受ける", fn: function (S, p) { var w = exW(S, p); S.money += 40; if (w) w.fans += 2500; S.fame += 0.8; return "翻訳版が出た。海外にも読者が生まれた。(契約金40万円)"; } },
+  { label: "いまは見送る", fn: function () { return "条件が整うまで待つことにした。"; } });
+ev2("ex2_sponsor", "企業からのスポンサー話", function () { return "ある企業が、作品とのタイアップ広告を持ちかけてきた。"; },
+  { label: "受ける", fn: function (S) { var c = Math.round(60 + S.fame * 0.6); S.money += c; S.fame = Math.max(0, S.fame - 0.3); return "広告収入 " + c + "万円を得た。「商業的」と言う声もあった。"; } },
+  { label: "作品の世界観を守って断る", fn: function (S) { S.fame += 0.8; return "筋を通した姿勢が、ファンに好意的に受け止められた。"; } });
+ev2("ex2_typo", "誤字・誤植の指摘", function () { return "読者から、作中の誤字や設定のズレを指摘された。"; },
+  { label: "素直に直して告知する", fn: function (S, p) { var w = exW(S, p); if (w) w.q.pol = cl(w.q.pol + 2.5, 5, 95); S.fame += 0.2; return "誠実な対応が好まれた。作品の完成度も上がった。"; } },
+  { label: "気にしない", fn: function (S, p) { var w = exW(S, p); if (w) w.boost -= 1; return "指摘は広まり、少し評判を落とした。"; } });
+ev2("ex2_review", "辛口のレビュー", function (S, p) { var w = exW(S, p); return "『" + (w ? w.title : "あの作品") + "』に、厳しいレビューが付いた。"; },
+  { label: "受け止めて学ぶ", fn: function (S) { gainSkill(S, "prose", 1.8); gainSkill(S, "eye", 1.0); return "耳の痛い指摘だが、的を射ていた。(文章力・目利きアップ)"; } },
+  { label: "反論を書く", fn: function (S) { if (ch(0.45)) { S.fame += 0.6; return "反論が共感を呼び、かえって注目された。"; } S.fame = Math.max(0, S.fame - 0.8); return "火に油を注ぎ、炎上気味になってしまった。"; } });
+ev2("ex2_bonus", "思わぬ臨時収入", function () { return "経費の精算を見直したら、思わぬ還付金があった。"; },
+  { label: "貯めておく", fn: function (S) { var c = scaleC(S, 30); S.money += c; return "還付金 " + fmtMoney(c) + " を手元に残した。"; } },
+  { label: "自分に投資する", fn: function (S) { gainSkill(S, "idea", 1.5); gainSkill(S, "eye", 1.5); return "本と講座に使い、見る目が養われた。(発想力・目利きアップ)"; } });
+ev2("ex2_intern", "インターン希望", function () { return "若い書き手が「編集部で学ばせてほしい」と訪ねてきた。"; },
+  { label: "受け入れる(5万円)", fn: function (S) { if (!spend(S, 5)) return "受け入れる余裕がなかった。"; gainSkill(S, "eye", 1.8); if (S.pool.length < 8) S.pool.push(genCand(S, "bring")); return "教えるうちに自分も学ぶ。有望な書き手の候補も増えた。"; } },
+  { label: "断る", fn: function () { return "今はその余裕がないと断った。"; } });
+ev2("ex2_festival", "地元のお祭り", function () { return "パークの近くで祭りが開かれる。出店しないかと誘われた。"; },
+  { label: "出店する(10万円)", fn: function (S) { if (!spend(S, 10)) return "出店費が足りなかった。"; S.park.sat = Math.min(100, S.park.sat + 3); S.fame += 0.5; return "祭りの客がパークにも流れてきた。"; } },
+  { label: "見送る", fn: function () { return "今回は見送った。"; } });
+ev2("ex2_critic", "批評家の注目", function (S, p) { var w = exW(S, p); return "著名な批評家が『" + (w ? w.title : "あの作品") + "』を取り上げたいと言っている。"; },
+  { label: "対談に応じる", fn: function (S, p) { var w = exW(S, p); if (w) { w.critic = cl(w.critic + 4, 0, 100); w.boost += 2; } S.fame += 0.8; S.player.sta = Math.max(0, S.player.sta - 5); return "対談は知的な刺激に満ちていた。作品の評価が上がった。"; } },
+  { label: "作品に語らせる", fn: function (S, p) { var w = exW(S, p); if (w) w.critic = cl(w.critic + 1.5, 0, 100); return "批評家は自分の言葉で作品を論じた。"; } });
+ev2("ex2_studio", "制作会社の見学", function () { return "アニメ制作会社から、スタジオ見学の招待が届いた。"; },
+  { label: "見学に行く", fn: function (S) { gainSkill(S, "biz", 2.0); gainSkill(S, "idea", 1.2); S.fame += 0.4; return "現場の熱気に触れ、展開のイメージが膨らんだ。"; } },
+  { label: "行かない", fn: function () { return "スケジュールの都合で見送った。"; } });
+ev2("ex2_gift", "読者からの差し入れ", function () { return "ファンから、手作りのお菓子と応援メッセージが届いた。"; },
+  { label: "みんなで味わう", fn: function (S) { S.player.sta = Math.min(100, S.player.sta + 15); S.fame += 0.2; return "甘いものでほっと一息。みんなの士気も上がった。"; } },
+  { label: "お返しを送る(4万円)", fn: function (S) { if (!spend(S, 4)) return "お返しを用意できなかった。"; S.fame += 0.7; return "お返しが話題になり、ファンの絆が強まった。"; } });
+ev2("ex2_award", "賞の候補に", function (S, p) { var w = exW(S, p); return "『" + (w ? w.title : "あの作品") + "』が、ある賞の候補に挙がった。授賞式の案内が届いている。"; },
+  { label: "式に出席する(10万円)", fn: function (S, p) { var w = exW(S, p); if (!spend(S, 10)) return "旅費が足りず欠席した。"; S.player.sta = Math.max(0, S.player.sta - 8); if (ch(0.4)) { S.fame += 3; if (w) w.boost += 4; return "受賞!会場は拍手に包まれた。"; } S.fame += 1; return "受賞は逃したが、多くの人と知り合えた。"; } },
+  { label: "欠席する", fn: function (S) { S.fame += 0.3; return "結果は後日知らされた。"; } });
+ev2("ex2_slumpfriend", "落ち込んでいる作家", function () { return "担当の書き手が、筆が進まず落ち込んでいるようだ。"; },
+  { label: "食事に誘って励ます(5万円)", fn: function (S) { if (!spend(S, 5)) return "誘う余裕がなかった。"; var a = S.authors[0]; if (a) a.skill = Math.min(a.pot, a.skill + 2); gainSkill(S, "eye", 0.8); return "気持ちが軽くなったようだ。次の原稿は期待できそうだ。"; } },
+  { label: "そっと見守る", fn: function () { return "自分で乗り越えるのを待つことにした。"; } });
+var EV2 = {
+  always: ["ex2_cold", "ex2_idea", "ex2_bookshop", "ex2_friend", "ex2_cat", "ex2_bonus"],
+  write: ["ex2_contest", "ex2_deadline", "ex2_column", "ex2_school"],
+  live: ["ex2_letter", "ex2_pop", "ex2_typo", "ex2_review", "ex2_gift"],
+  hot: ["ex2_translate", "ex2_critic", "ex2_award"],
+  edit: ["ex2_intern", "ex2_studio", "ex2_slumpfriend"],
+  park: ["ex2_festival"], fame: ["ex2_sponsor"]
+};
+function rollEv2(S) {
+  if (S.queue.length > 2) return;
+  var live = liveWorks(S), ids = EV2.always.slice();
+  if (S.unlock.write) ids = ids.concat(EV2.write, EV2.write.slice(0, 2));
+  if (live.length) ids = ids.concat(EV2.live, EV2.live);
+  if (S.works.some(function (w) { return w.pop >= 35; })) ids = ids.concat(EV2.hot);
+  if (S.unlock.edit) ids = ids.concat(EV2.edit);
+  if (S.park.areas.length) ids = ids.concat(EV2.park);
+  if (S.fame >= 25) ids = ids.concat(EV2.fame);
+  var id = pick(ids), p = {};
+  if (EV2.live.indexOf(id) > -1 || id === "ex2_typo" || id === "ex2_review") { var pl = live.filter(function (w) { return w.author.type === "player"; }); var w0 = pick(pl.length ? pl : live); if (w0) p.wid = w0.id; }
+  if (EV2.hot.indexOf(id) > -1) p.wid = pick(S.works.filter(function (w) { return w.pop >= 35; })).id;
+  if ((id === "ex2_typo" || id === "ex2_review" || id === "ex2_pop" || id === "ex2_letter") && !p.wid) return;
+  queue(S, { k: "ev", id: id, p: p });
+}
+var EV2_RATE = 0.06;
+var _tick10 = tick;
+tick = function (S) { var r = _tick10(S); try { if (ch(EV2_RATE)) rollEv2(S); } catch (e) { console.error(e); } return r; };
+
+/* ---- イベントの自動決定(スキップ)---- */
+var NOAUTO = ["openoffice", "takepen", "apprentice", "crisis", "cancel"];
+function autoChoice(S, it) {
+  var def = EVDEF[it.id], cs = def.choices(S, it.p), pick0 = 0;
+  for (var i = 0; i < cs.length; i++) { var m = /([\d,]+)万円/.exec(cs[i].label); if (!m || S.money >= +m[1].replace(/,/g, "")) { pick0 = i; break; } }
+  return pick0;
+}
+function canSkipEv(it) { return it && it.k === "ev" && NOAUTO.indexOf(it.id) < 0; }
+function skipEv(S, it) {
+  var def = EVDEF[it.id], i = autoChoice(S, it), res = resolveEv(S, it, i) || "";
+  addLog(S, def.title + ":" + res);
+  S.news = [def.title + "…" + res].concat(S.news).slice(0, 10);
+  return res;
+}
+
+/* ===== v0.8.0 行動の見やすさ・イベントのスキップ(画面) ===== */
+function ef(t, cls) { return '<i class="ef ' + cls + '">' + t + '</i>'; }
+function skEf(S, k, base) { return ef(SKILLS[k] + ' +' + expG(S, k, base).toFixed(1), "up"); }
+function staEf(n) { return n ? ef('体力 -' + n, "dn") : ""; }
+function monEf(n) { return n < 0 ? ef('資金 ' + n + '万', "dn") : ef('資金 +' + n + '万', "mo"); }
+function arow(S, a, d, icon, name, efs, o) {
+  o = o || {}; var dur = jobDur(a), lack = "", note = "";
+  if (o.sta && S.player.sta < o.sta) { lack = " lack"; note = "体力が足りない"; }
+  else if (o.money && S.money < o.money) { lack = " lack"; note = "資金が足りない"; }
+  else if (a === "rest" && S.player.sta >= 90) { lack = " lack"; note = "体力は十分"; }
+  var da = ""; for (var k in (d || {})) da += ' data-' + k + '="' + esc(d[k]) + '"';
+  return '<button class="arow' + lack + (o.pri ? " pri" : "") + '" data-act="' + (o.act || a) + '"' + da + '><span class="ai">' + icon + '</span><span class="am"><b>' + name + '</b>' + (o.sub ? '<small>' + o.sub + '</small>' : "") + '<span class="efs">' + efs.join("") + '</span>' + (note ? '<em class="small">' + note + '</em>' : "") + '</span>' + (o.noDur ? "" : '<span class="ad">' + dur + '週</span>') + '</button>';
+}
+function statStrip(S) {
+  var me = S.player, h = '<div class="sstrip">' + '<span class="sc"><b>体力</b>' + Math.round(me.sta) + '</span><span class="sc"><b>資金</b>' + fmtMoney(S.money) + '</span><span class="sc"><b>名声</b>' + Math.round(S.fame) + '</span>';
+  Object.keys(SKILLS).forEach(function (k) { h += '<span class="sc sk"><b>' + SKILLS[k] + '</b>' + Math.round(me.sk[k]) + '</span>'; });
+  return h + '</div>';
+}
+var _actionsCard11 = actionsCard;
+actionsCard = function (S) {
+  if (!jobMode()) return _actionsCard11(S);
+  var me = S.player, sk = me.sk, h = '<section class="card acts2"><h2 class="h2">行動を選ぶ <small class="muted">作業枠を1つ使います</small></h2>' + statStrip(S) +
+    '<p class="small muted">各行動の下に、終わったときに変わる数値が出ます。(▲上がる ▼減る。能力は伸びるほど上がりにくくなります)</p>';
+  h += '<h4 class="h3">体とお金</h4>' + arow(S, "rest", {}, "🛌", "休む", [ef("体力 +45", "up")]) +
+    arow(S, "vacation", {}, "🏖️", "休暇をとる", [ef("体力 +60", "up"), monEf(-20), skEf(S, "idea", 0.8)], { money: 20 }) +
+    arow(S, "job", {}, "💼", "アルバイト", [monEf(Math.round(14 + sk.biz / 8 + 4)), staEf(10), skEf(S, "biz", 1.0)], { sta: 10 });
+  if (S.unlock.write || sk.prose >= 20) h += arow(S, "freelance", {}, "⌨️", "ライティングの副業", [monEf(Math.round(18 + sk.prose / 6 + 4)), staEf(12), skEf(S, "prose", 1.0)], { sta: 12 });
+  h += '<h4 class="h3">腕を磨く</h4>' + Object.keys(SKILLS).map(function (k) { return arow(S, "study", { k: k }, "📚", SKILLS[k] + '<span class="cur">いま ' + Math.round(sk[k]) + '(' + skWord(sk[k]) + ')</span>', [skEf(S, k, 3.2), staEf(6)], { sta: 6 }); }).join("");
+  h += '<h4 class="h3">インプット・学び</h4>' +
+    arow(S, "inputs", {}, "📖", "名作を読み漁る", [skEf(S, "idea", 1.8), skEf(S, "prose", 1.4), monEf(-3), staEf(4)], { money: 3, sta: 4 }) +
+    arow(S, "research", {}, "🧳", "取材旅行に出る", [skEf(S, "idea", 2.4), skEf(S, "prose", 1.0), skEf(S, "eye", 0.6), monEf(-15), staEf(8)], { money: 15, sta: 8 }) +
+    arow(S, "seminar", {}, "🎓", "勉強会に参加", [skEf(S, "biz", 2.6), skEf(S, "eye", 1.2), ef("名声 +0.2", "up"), monEf(-8), staEf(3)], { money: 8, sta: 3 }) +
+    arow(S, "mentor", {}, "🧑‍🏫", "先輩に教えを乞う", [ef("いちばん低い力 +3.8", "up"), monEf(-12), staEf(5)], { money: 12, sta: 5 });
+  h += '<h4 class="h3">発信・交流</h4>' +
+    arow(S, "network", {}, "🤝", "人脈づくり", [ef("名声 +" + (0.8 + sk.biz / 100).toFixed(1), "up"), skEf(S, "biz", 1.6), monEf(-5), staEf(5)], { money: 5, sta: 5 }) +
+    arow(S, "sns", {}, "📱", "SNSで発信", [ef("名声 +" + (0.5 + (liveWorks(S).length ? 0.2 : 0)).toFixed(1), "up"), skEf(S, "biz", 0.6), staEf(3)], { sta: 3 });
+  if (S.works.some(function (w) { return w.pop >= 20 && w.state !== "canceled"; })) h += arow(S, "signing", {}, "✒️", "サイン会を開く", [ef("名声 +1.0", "up"), ef("ファン増加", "up"), ef("資金 +少し", "mo"), staEf(6)], { sta: 6 });
+  var g = "";
+  if (!S.unlock.write) g += arow(S, "practice", {}, "✍️", "習作を書く", [skEf(S, "prose", 3.0), skEf(S, "idea", 2.0), staEf(15)], { sta: 15, pri: 1, sub: "進み具合 " + me.wrote + "/4(4回で書き手の道が開く)" });
+  else g += arow(S, "plan", {}, "📝", "新連載を企画", [ef("企画フォームを開く", "")], { pri: 1, noDur: 1, act: "plan" });
+  if (!S.unlock.edit) g += arow(S, "slush", {}, "📖", "投稿作を読む", [skEf(S, "eye", 3.0), skEf(S, "biz", 0.6), staEf(5)], { sta: 5, pri: 1, sub: "進み具合 " + me.read + "/4(4回で見つける道が開く)" });
+  if (me.apprentice) g += arow(S, "train", {}, "🥋", "弟子に稽古", [ef("弟子の成長", "up"), staEf(6)], { sta: 6 });
+  if (!S.unlock.edit && (me.read >= 4 || S.fame >= UNLOCK_FAME)) g += arow(S, "openoffice", {}, "🏢", "編集部を開く", [monEf(-officeCost(S))], { noDur: 1, pri: 1, act: "openoffice" });
+  if (!S.unlock.write && (me.wrote >= 4 || S.fame >= UNLOCK_FAME)) g += arow(S, "takepen", {}, "🖋️", "筆を執る", [ef("自分の連載を書く道へ", "")], { noDur: 1, pri: 1, act: "takepen" });
+  if (g) h += '<h4 class="h3">道を拓く</h4>' + g;
+  return h + '</section>';
+};
+
+/* ---- イベントのスキップ ---- */
+var _vCur11 = vCur;
+vCur = function () {
+  var o = _vCur11(), it = G.cur;
+  if (it && it.k === "ev" && G.curRes == null && canSkipEv(it)) o += '<button class="btn sm skipev" data-act="evskip">おまかせで決める(スキップ)<small>先に選べる選択肢から自動で選びます</small></button>';
+  return o;
+};
+XACT.evskip = function () {
+  var S = G.S, it = G.cur; if (!S || !canSkipEv(it)) return;
+  var res = skipEv(S, it); S.queue.shift(); G.cur = null; G.curRes = null; se("ok"); toast(res, true); pump();
+};
+var _pump11 = pump;
+pump = function () {
+  var S = G.S, n = 0;
+  if (S && SET.evAuto && G.screen === "game" && !G.cine && !G.cur) {
+    while (S.queue.length && canSkipEv(S.queue[0]) && n < 20) { skipEv(S, S.queue[0]); S.queue.shift(); n++; }
+    if (n) toast("イベント" + n + "件をおまかせで処理しました(記録で確認できます)", true);
+  }
+  return _pump11();
+};
+var _vCine11 = vCine;
+vCine = function (c) { return _vCine11(c).replace(/<\/div>$/, '<button class="cineskip" data-act="cinenext">スキップ ▶▶</button></div>'); };
+var _amBlock11 = amBlock;
+amBlock = function () {
+  return _amBlock11() + '<div class="fld"><span>イベントの選択</span><div class="chips">' + chip("自分で選ぶ", "setflag", { k: "evAuto", v: 0 }, !SET.evAuto) + chip("おまかせで自動決定", "setflag", { k: "evAuto", v: 1 }, !!SET.evAuto) + '</div><p class="muted small">「おまかせ」では、重要なもの(編集部を開く・打ち切り・資金繰りなど)以外のイベントを自動で決め、結果は「できごとの記録」に残ります。個別のイベントでは「スキップ」も使えます。</p></div>';
 };
 
 function boot() {
