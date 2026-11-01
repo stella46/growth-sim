@@ -194,6 +194,20 @@ body[data-lay=pc] #toast{bottom:28px}
 .next2.stop{background:#ff8c8c;box-shadow:0 4px 0 #c24a4a;color:#2b0d0d}
 .ffbig{width:100%;margin:2px 0 8px}
 .t2a{gap:6px}
+
+/* v0.5.2 戻る・スクロール・サイズ統一 */
+.sheet.fixed{height:min(86vh,760px);max-height:none;padding-top:0}
+.sbar{position:sticky;top:0;z-index:3;background:var(--paper);display:flex;justify-content:space-between;gap:8px;padding:10px 0 8px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.sb{min-height:44px;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:6px 14px;font:700 14px "Zen Kaku Gothic New",sans-serif;cursor:pointer}
+.backbar{display:inline-flex;align-items:center;min-height:44px;border:1.5px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:6px 14px;font:700 14px "Zen Kaku Gothic New",sans-serif;cursor:pointer;margin:0 0 10px}
+#scrl{position:fixed;right:12px;bottom:84px;z-index:25;display:none;flex-direction:column;gap:8px}#scrl.on{display:flex}
+#scrl button{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);font-size:16px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;box-shadow:0 6px 16px -6px rgba(0,0,0,.5);cursor:pointer;opacity:.94}
+#scrl button small{font-size:9.5px;font-weight:700}#scrl button:disabled{opacity:.35}
+body[data-lay=pc] #scrl{bottom:28px}
+.grid2 .btn,.grid3 .btn,.row2 .btn,.stack .btn{min-height:56px}.btn.sm{min-height:44px}.chip{min-height:40px}.rowbtn{min-height:52px}.mcard{min-height:64px}
+.btn,.chip,.rowbtn,.mcard,.wcard,.sb,.backbar,.sh,.tabs2 button,.ps-nav button,.menub,.ffm,.next2{transition:transform .08s ease,box-shadow .08s ease}
+.btn:active,.chip:active,.rowbtn:active,.mcard:active,.wcard:active,.sb:active,.backbar:active,.sh:active{transform:scale(.97)}
+@media (min-width:900px){.sheet.fixed{height:min(80vh,720px)}}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -205,8 +219,13 @@ body[data-lay=pc] #toast{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.5.1", SAVE_VER = 1;
+var GAME_VER = "0.5.2", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.5.2", date: "2026-11-01", notes: [
+    "画面の「戻る」を追加しました。ポップアップの上部バー、各タブの「← 戻る」、スマホの戻るスワイプ・ブラウザの戻るキーに対応しています。",
+    "画面の右下に、一番上へ・一番下へ移動するボタンを追加しました(長い画面でだけ出ます)。",
+    "ポップアップの大きさを統一し、ボタンの高さや押したときの動きもそろえました。"
+  ] },
   { ver: "0.5.1", date: "2026-11-01", notes: [
     "「まとめて進める」を追加しました(4週・12週・1年・3年)。体力・お金・連載の状況を見て、おまかせで行動しながらいっきに進みます。終わると、期間のまとめが出ます。",
     "予定モードに「おまかせで埋める」「前回と同じ」を追加しました。1タップで今週の予定がそろいます。"
@@ -3482,6 +3501,100 @@ vGame = function () {
   return o.replace('<button class="next2" data-act="next">週を進める ▶</button>', '<button class="ffm" data-act="ffmenu" aria-label="まとめて進める">⏩</button><button class="next2" data-act="next">週を進める ▶</button>')
     .replace('<button class="next2 big" data-act="next">週を進める ▶</button>', '<button class="next2 big" data-act="next">週を進める ▶</button><button class="btn ffbig" data-act="ffmenu">⏩ まとめて進める(4週・12週・1年…)</button>');
 };
+
+/* ===== v0.5.2 戻る・スクロール・サイズ統一 ===== */
+function goBack() {
+  var p = (G.hist || []).pop();
+  if (p) { G.tab = p.tab; if (p.wsub) G.wsub = p.wsub; } else G.tab = "home";
+  G.fx = true; se("page"); window.scrollTo(0, 0); render();
+}
+var _tab5 = XACT.tab;
+XACT.tab = function (d) {
+  var prev = { tab: G.tab, wsub: G.wsub };
+  _tab5(d);
+  if (prev.tab !== G.tab || prev.wsub !== G.wsub) { G.hist = G.hist || []; G.hist.push(prev); if (G.hist.length > 20) G.hist.shift(); }
+};
+XACT.back = function () { goBack(); };
+XACT.closeall = function () { G.modal = []; render(); };
+XACT.scrlTop = function () { scrlTo(true); };
+XACT.scrlBot = function () { scrlTo(false); };
+
+/* ----- モーダルの上部バー(戻る/閉じる)と固定サイズ ----- */
+var _vModal5 = vModal;
+vModal = function (m) {
+  var o = _vModal5(m), x = '<button class="x" data-act="close" aria-label="閉じる">×</button>';
+  if (o.indexOf(x) !== 0) return o;
+  var depth = G.modal.length;
+  var bar = '<div class="sbar"><button class="sb" data-act="close">← ' + (depth > 1 ? "前の画面へ戻る" : "戻る") + '</button>' + (depth > 1 ? '<button class="sb" data-act="closeall">すべて閉じる</button>' : '<button class="sb" data-act="close" aria-label="閉じる">✕ 閉じる</button>') + '</div>';
+  return bar + o.slice(x.length);
+};
+var _renderOverlay5 = renderOverlay;
+renderOverlay = function () {
+  _renderOverlay5();
+  var sh = document.querySelector("#modal .sheet");
+  if (sh && sh.querySelector(".sbar")) sh.classList.add("fixed");
+};
+
+/* ----- 画面の戻る(戻るキー/スワイプ対応) ----- */
+var HD = 0, popIgnore = 0;
+function wantDepth() { return (G.modal ? G.modal.length : 0) + ((G.screen === "game" && G.tab !== "home") ? 1 : 0) + (G.screen === "new" ? 1 : 0); }
+function syncHistory() {
+  try {
+    var w = wantDepth();
+    if (w > HD) { for (var i = HD; i < w; i++) history.pushState({ gs: i + 1 }, ""); HD = w; }
+    else if (w < HD) { popIgnore++; var n = HD - w; HD = w; history.go(-n); }
+  } catch (e) { }
+}
+window.addEventListener("popstate", function () {
+  if (popIgnore > 0) { popIgnore--; return; }
+  if (HD > 0) HD--;
+  if (G.cine || G.cur) { try { history.pushState({ gs: HD + 1 }, ""); HD++; } catch (e) { } return; }
+  if (G.modal && G.modal.length) { G.modal.pop(); render(); }
+  else if (G.screen === "game" && G.tab !== "home") goBack();
+  else if (G.screen === "new") { G.screen = "title"; render(); }
+});
+
+/* ----- 画面内の戻るボタン ----- */
+var _vGame5 = vGame;
+vGame = function () {
+  var o = _vGame5();
+  if (G.tab === "home") return o;
+  return o.replace(/(<main class="wrap[^"]*">)/, '$1<button class="backbar" data-act="back">← 戻る</button>');
+};
+var _vNew5 = vNew;
+vNew = function () { return _vNew5().replace('<button class="back" data-act="totitle">← タイトルへ</button>', '<button class="backbar" data-act="totitle">← タイトルへ戻る</button>'); };
+
+/* ----- 一番上/一番下へ ----- */
+function scrlTarget() { return document.querySelector("#modal .sheet"); }
+function scrlTo(top) {
+  var sh = scrlTarget();
+  try {
+    if (sh) sh.scrollTo({ top: top ? 0 : sh.scrollHeight, behavior: "smooth" });
+    else window.scrollTo({ top: top ? 0 : document.documentElement.scrollHeight, behavior: "smooth" });
+  } catch (e) { if (sh) sh.scrollTop = top ? 0 : sh.scrollHeight; else window.scrollTo(0, top ? 0 : 99999); }
+}
+function scrlUpd() {
+  var el = document.getElementById("scrl"); if (!el) return;
+  var sh = scrlTarget(), can, atTop, atBot;
+  if (sh) { can = sh.scrollHeight > sh.clientHeight + 80; atTop = sh.scrollTop < 40; atBot = sh.scrollTop + sh.clientHeight > sh.scrollHeight - 40; }
+  else { var de = document.documentElement; can = de.scrollHeight > window.innerHeight + 140; atTop = window.scrollY < 40; atBot = window.scrollY + window.innerHeight > de.scrollHeight - 40; }
+  el.className = can && !G.cine ? "on" : "";
+  var b = el.querySelectorAll("button"); if (b.length === 2) { b[0].disabled = atTop; b[1].disabled = atBot; }
+}
+function scrlSoon() { setTimeout(scrlUpd, 60); }
+(function () {
+  function mk() {
+    if (document.getElementById("scrl")) return;
+    var d = document.createElement("div"); d.id = "scrl";
+    d.innerHTML = '<button data-act="scrlTop" aria-label="一番上へ">▲<small>上</small></button><button data-act="scrlBot" aria-label="一番下へ">▼<small>下</small></button>';
+    document.body.appendChild(d);
+  }
+  if (document.body) mk(); else document.addEventListener("DOMContentLoaded", mk);
+  window.addEventListener("scroll", scrlUpd, { passive: true }); window.addEventListener("resize", scrlUpd);
+  document.addEventListener("scroll", scrlUpd, true);
+})();
+var _render5 = render;
+render = function () { _render5(); syncHistory(); scrlSoon(); };
 
 function boot() {
   loadSettings();
