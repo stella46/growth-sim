@@ -14,7 +14,7 @@
 <title>成長シミュレーター</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;900&display=swap" rel="stylesheet">
 <style>
 :root{--paper:#F1F2EF;--panel:#FBFBF9;--ink:#191C25;--mute:#6A6F7C;--line:#D9DBD5;--accent:#2446C8;--accent-ink:#fff;--mark:#FFE25A;--ok:#1E8E5A;--ng:#C23B3B;--gold:#B8860B;--bright:1;--gx:max(16px,env(safe-area-inset-left));--gr:max(16px,env(safe-area-inset-right))}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#14161C;--panel:#1D2029;--ink:#ECEDF1;--mute:#9AA0AE;--line:#2D313D;--accent:#7F9BFF;--accent-ink:#10131C;--mark:#E8C93A;--ok:#4FCB8E;--ng:#F07B7B;--gold:#E3B341;color-scheme:dark}}
@@ -259,6 +259,45 @@ body[data-lay=pc] #scrl{bottom:28px}
 .where{margin:0 0 8px}.held,.first{border-left:4px solid var(--mark)}
 .slotmode{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}.slotmode .chips{margin:4px 0}
 .places{display:grid;gap:6px;margin-top:8px}.chron li{margin:3px 0}.tags{display:flex;gap:4px;flex-wrap:wrap}.btn.dis{opacity:.5}.hseg.sseg{position:static}
+
+/* ===== v1.2 デザインの底上げ: 上質な出版社風 ===== */
+:root{--paper:#F4F0E7;--panel:#FFFEFA;--ink:#1A1D2B;--mute:#6C6A72;--line:#E3DBCB;--accent:#2B3F8F;--gold:#A9782A;--mark:#F0C94A;--serif:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#14151B;--panel:#1C1E27;--line:#2C2F3B;--accent:#93A8FF;--gold:#DDB257}}
+:root[data-theme="dark"]{--paper:#14151B;--panel:#1C1E27;--line:#2C2F3B;--accent:#93A8FF;--gold:#DDB257}
+body{background:radial-gradient(1200px 500px at 15% -10%,rgba(255,255,255,.55),transparent 60%),var(--paper);letter-spacing:.01em}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:var(--paper)}}
+.h1,.h2{font-family:var(--serif);font-weight:900;letter-spacing:.03em}
+.h1{font-size:26px;display:flex;align-items:center;gap:10px}
+.h1::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.h2::before{background:linear-gradient(var(--gold),#D9A441)!important;width:4px!important}
+.h3{font-family:"IBM Plex Mono","Zen Kaku Gothic New";letter-spacing:.1em;border-bottom:1px solid var(--line)}
+.cine-t{font-family:var(--serif);font-weight:900}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 10px 24px -16px rgba(40,34,20,.35)}
+.card.note{border-left:4px solid var(--gold)}
+.card.lock{background:repeating-linear-gradient(135deg,var(--panel),var(--panel) 10px,color-mix(in srgb,var(--line) 35%,var(--panel)) 10px,color-mix(in srgb,var(--line) 35%,var(--panel)) 20px)}
+.btn{border-radius:11px;border:1.5px solid color-mix(in srgb,var(--ink) 80%,transparent);box-shadow:0 2px 0 color-mix(in srgb,var(--ink) 18%,transparent)}
+.btn:active{transform:translateY(1px);box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 18%,transparent)}
+.btn.pri{background:linear-gradient(160deg,#2B3F8F,#1F2E6E);border-color:#1B2760;color:#fff;box-shadow:0 8px 16px -10px #1B2760}
+.btn.dis{opacity:.5}
+.chip{border-radius:999px;border:1.5px solid var(--line);background:var(--panel)}
+.chip.on{background:var(--ink);color:var(--paper)}
+.rowbtn{border-radius:12px;border:1px solid var(--line);background:var(--panel);box-shadow:0 6px 14px -12px rgba(40,34,20,.4)}
+.rowbtn.dis{opacity:.55}
+.tag{border-radius:999px;padding:1px 9px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.top2{background:linear-gradient(150deg,#1B2552,#2B3F8F 70%,#3A4FA0)!important;box-shadow:0 10px 20px -14px rgba(14,20,60,.8)!important}
+.pc-side{background:linear-gradient(165deg,#1B2552,#2B3F8F 75%,#3A4FA0)!important;box-shadow:0 18px 36px -24px rgba(14,20,60,.8)}
+.tabs2 button.on{background:var(--paper);color:var(--ink);box-shadow:0 -3px 0 var(--gold) inset}
+.tabs2 button i{display:flex;align-items:center;justify-content:center;height:22px}
+.ps-nav button i{display:inline-flex;align-items:center;width:24px}
+.ic{display:block}
+.hseg{border-radius:14px;background:color-mix(in srgb,var(--line) 70%,transparent)}
+.hseg.sseg{position:static;grid-template-columns:repeat(4,1fr)}
+.hseg button.on{box-shadow:0 1px 4px rgba(40,34,20,.2),0 0 0 1px var(--line) inset}
+.places{display:grid;gap:6px;margin-top:8px}
+.chron li{margin:3px 0}.tags{display:flex;gap:4px;flex-wrap:wrap}
+.lvd{display:inline-flex;gap:4px}.lvd i{width:16px;height:6px;border-radius:3px;background:var(--line)}.lvd i.on{background:linear-gradient(90deg,var(--gold),#D9A441)}
+.inv .btn{margin-top:4px}
+.bar,.bar i{border-radius:999px}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -270,8 +309,13 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.1.0", SAVE_VER = 1;
+var GAME_VER = "1.2.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.2.0", date: "2026-11-02", notes: [
+    "パークを、小さく始めて大きく育てられるようになりました。",
+    "お金の使い道が広がり、会社そのものを強くできます。",
+    "画面の見た目を整え、落ち着いた雰囲気に仕上げました。"
+  ] },
   { ver: "1.1.0", date: "2026-11-02", notes: [
     "編集部の画面を整理し、人との関わりを深められるようになりました。",
     "作品の展開の種類が増え、制作にも関われるようになりました。",
@@ -4292,6 +4336,8 @@ function buildGuide() {
   pages.push({ h: "殿堂入りと競争", b: ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。"] });
   pages.push({ h: "編集部と人材の育て方", b: ["「編集部」タブは「採用・発掘 / 人材 / 業界」の3つに分かれています。「採用・発掘」では、発掘先(投稿サイト・同人即売会・大学のサークルなど)を選べます。行き先で、見つかる人の傾向が変わります。", "「人材」には、作家とスタッフが1枚のカードにまとまっています。食事や相談で信頼を深められます。「育成プラン」に入れると、作業や執筆を控えるかわりに腕が伸びやすくなります。", "編集者・宣伝担当は、条件を満たすと副編集長・編集長に任命できます。編集長がいると作業枠が増え、全員の成長や新人の発掘にも良い影響があります。", "ときどき開かれる編集会議では、作家から新しい連載の企画が持ち込まれます。"] });
   pages.push({ h: "展開の広げ方と作品の年表", b: ["展開の種類が増えました。コミカライズ・ノベライズ・スピンオフ・劇場版・ミュージカル・原画展・ラジオドラマ・ライセンス展開などです。それぞれ、必要な条件(実績など)が企画画面に表示されます。", "企画画面では、キャスト・主題歌・公開の時期を選べます。作品に合う時期だと出来が良くなり、これまでの展開が多いほど相乗効果もあります。制作の途中で、判断を迫られる出来事が起きることがあります。", "公開すると、反響や評価が演出で届きます。ときには賞を受けることもあります。作品の画面では、版権を他社に貸して収入を得られます。", "作品ごとの出来事は「作品の年表」に記録されます。「殿堂」タブの「作品図鑑」から、これまでの全作品を見返せます。ファンの数や初の第1位などの節目には、特別な演出が出ます。"] });
+  pages.push({ h: "パークの育て方", b: ["パークは段階的に育てます。①期間限定ショップ(150万円・6週間。条件がゆるく、盛況だと次に進みやすい)→ ②屋台 → ③常設コーナー → ④本格エリア。進むほど、収益も満足度も伸びます。", "段階ごとに必要なファン数・人気・実績が違います。足りないものは、パークの画面や「パークを広げる」に表示されます。", "パークが動き出すと、来場者の声・雨の日・行列・コラボの打診といった出来事が、ときどき起きます。"] });
+  pages.push({ h: "会社への投資", b: ["「編集部」タブの「投資」で、お金を使って会社を強くできます。", "拠点(地方支社・海外支社・制作スタジオ)と設備(資料室・福利厚生・広報室・試写室)は、毎週の維持費がかかるかわりに、作品や展開を後押しします。名声が高いほど、拡張できます。", "編集部署はジャンル特化の部署です。他社の編集者の引き抜き、スタッフの研修、新人賞の主催もできます。", "出版社への出資は、毎週の配当と関係が得られます。持ち分が30%を超えると、買収も選べます。維持費はお金の出入りの内訳で確認できます。"] });
   pages.push({ h: "業界の仲間と争奪戦", b: ["世の中には、約100人の作家と編集者がいます。「編集部」タブの「業界」で、各社の社長・得意分野・方針を確認でき、挨拶や贈り物で関係を深め、条件がそろえば提携できます。「業界名簿」では顔ぶれや腕前も見られます。毎年、成長・引退・世代交代があります。", "有望な新人は、ライバル社と取り合いになります(編集部タブの「作家の争奪戦」)。契約金の「控えめ・標準・奮発」から選ぶか、「直接会って口説く」で挑みます。勝てそうかどうかの目安が出ます。期限までに決めないと、ライバル社が契約します。", "事務所が大きくなるほど、雇えるスタッフの人数が増えます(10人から最大40人)。"] });
   pages.push({ h: "会社の方針と目標", b: ["毎年のはじめに、会社の方針を選びます(新人発掘/ヒット集中/多角展開/安定経営)。一年間、会社の動きに影響します。", "約3か月ごとに「四半期目標」が届きます。達成すると報酬が出ます。ホームの「経営の目標」で進み具合を見られます。", "連載中の作品は、数か月ごとに「連載会議」で路線(王道・挑戦・ファンサービス)を決めます。長く続いた作品は人気の鮮度が落ちやすいので、路線の変更が助けになります。", "年に数回、新人賞・夏の大型イベント・年間ランキングの発表といった行事があります。"] });
   pages.push({ h: "イベントと設定", b: ["イベントには重要度があります(軽・中・重)。重いものほど、会社や人間関係に大きく関わります。", "「ゲーム設定」(⚙ボタン。パソコンは左上、スマホは画面上部)で、時間の速さ・作業枠が空いたときの扱い・イベントのスキップ(全部見る/軽をスキップ/中以下をスキップ)・難易度を、いつでも切り替えられます。「重」のイベントは、スキップの設定にかかわらず自分で選びます。", "ランキングには、ときどき「話題の大型連載」が現れます。連載が長くなると人気の鮮度が落ちるので、新しい連載や路線の変更で入れ替えていきましょう。"] });
@@ -6271,6 +6317,376 @@ var _vModal26 = vModal;
 vModal = function (m) { if (m.t === "zukan") return '<button class="x" data-act="close" aria-label="閉じる">×</button>' + vZukan(G.S); return _vModal26(m); };
 var _vHall26 = vHall;
 vHall = function (S) { return _vHall26(S) + '<div class="grid2">' + btn("📚 作品図鑑・年表<small>これまでの全作品</small>", "zukan", null, "sm") + '<span></span></div>'; };
+
+/* ===== v1.2 パークの段階開園・期間限定出店・パークの出来事 / 支社・設備・編集部署・引き抜き・出資と買収(ロジック) ===== */
+
+/* ---------- パーク: 段階開園 ---------- */
+var PSTG = [null,
+  { n: "ポップアップ屋台", cost: 300, fans: 15000, pop: 22, cul: 0, tier: 0, note: "小さな屋台や展示から。作品の世界を、街の一角に。" },
+  { n: "常設コーナー", cost: 1500, fans: 80000, pop: 35, cul: 5, tier: 3, note: "施設の一角に、作品の常設コーナーを構える。" },
+  { n: "本格エリア", cost: 3000, fans: 500000, pop: 0, cul: 15, tier: 3, note: "アトラクションを備えた、作品の世界そのもののエリア。" }];
+function stageOf(a) { return a.stage || 3; }
+function parkStep(S, w) {
+  var a = S.park.areas.find(function (x) { return x.wid === w.id; }), st = a ? stageOf(a) + 1 : 1, r = { st: st, a: a, ok: true, why: [], cost: 0 };
+  if (st > 3) { r.ok = false; r.done = true; return r; }
+  var d = PSTG[st]; r.cost = d.cost;
+  var needF = (st === 1 && w.popOK) ? 8000 : d.fans;
+  if (w.state === "canceled") { r.ok = false; r.why.push("打ち切り済み"); }
+  if (w.fans < needF) { r.ok = false; r.why.push("ファン " + fmtFans(needF) + "が必要(いま " + fmtFans(w.fans) + ")"); }
+  if (d.pop && w.pop < d.pop) { r.ok = false; r.why.push("人気 " + d.pop + "以上が必要(いま " + Math.round(w.pop) + ")"); }
+  if (d.cul && w.culture < d.cul) { r.ok = false; r.why.push("世の中への浸透 " + d.cul + "以上が必要(いま " + Math.round(w.culture) + ")"); }
+  if (d.tier && bestTier(w) < d.tier) { r.ok = false; r.why.push("展開で「まずまず」以上の実績が必要"); }
+  if (!a && S.park.areas.length >= 9) { r.ok = false; r.why.push("区画は9つまでです"); }
+  return r;
+}
+XACT.parkgo2 = function (d) {
+  var S = G.S, w = W(S, d.id); if (!w) return; var r = parkStep(S, w), dd = PSTG[r.st];
+  if (!r.ok) { toast(r.why[0] || "いまは進められません", false); return se("ng"); }
+  if (S.money < r.cost) { toast("資金が足りません(必要 " + fmtMoney(r.cost) + ")", false); return se("ng"); }
+  S.money -= r.cost;
+  if (!r.a) S.park.areas.push({ id: uid("pa"), wid: w.id, lv: 0, rev: 0, tot: 0, stage: 1 });
+  else { r.a.stage = r.st; if (r.st >= 2) r.a.lv = Math.max(r.a.lv, 1); }
+  S.fame += [0, 0.5, 1.5, 3][r.st]; w.culture += [0, 1, 3, 5][r.st]; w.boost += [0, 1, 2, 3][r.st];
+  addLog(S, "『" + w.title + "』の" + dd.n + "が" + (r.st === 1 ? "オープンした" : "完成した") + "。"); chron(S, w, dd.n + "がオープンした");
+  if (r.st === 3) queue(S, { k: "info", title: "パーク開園", text: "『" + w.title + "』のエリアが開園した。街のはずれに、作品の世界がそのまま立ち上がっている。" });
+  toast("『" + w.title + "』の" + dd.n + "をオープンしました", true); se("ok"); G.modal = []; autosave(); render();
+};
+XACT.parkbuild = function () { se("tap"); G.modal.push({ t: "parkpick2" }); render(); };
+var _actParkUp27 = actParkUp;
+actParkUp = function (S, id, fac) {
+  var a = S.park.areas.find(function (x) { return x.id === id; });
+  if (a && stageOf(a) === 1) return no("屋台の段階では拡張できません。常設コーナーに進めましょう");
+  if (a && stageOf(a) === 2) { var cur = (fac || "ride") === "ride" ? a.lv : (a[fac] || 0); if (cur >= 2) return no("常設コーナーの拡張はここまで。本格エリアに進めましょう"); }
+  return _actParkUp27(S, id, fac);
+};
+var _simPark27 = simPark;
+simPark = function (S) {
+  var r = _simPark27(S), ex = 0;
+  S.park.areas.forEach(function (a) { var st = stageOf(a); if (st >= 3) return; var w = W(S, a.wid); if (!w) return; var e = (w.fans / 10000) * (w.pop / 60) * (st === 1 ? 1.8 : 1.0); a.rev = (a.rev || 0) + e; a.tot = (a.tot || 0) + e; ex += e; });
+  return r + ex;
+};
+
+/* ---------- 期間限定の出店(条件がゆるい) ---------- */
+function popList(S) { S.park.pops = S.park.pops || []; return S.park.pops; }
+function popWhy(S, w) {
+  if (w.state === "canceled") return "打ち切られた作品です";
+  if (w.fans < 5000) return "ファンが5,000人に届いていません";
+  if (w.pop < 15) return "人気がまだ足りません(15以上)";
+  if (popList(S).some(function (p) { return p.wid === w.id; })) return "すでに出店中です";
+  if (popList(S).length >= 2) return "同時に出店できるのは2つまでです";
+  if (w.popAt != null && S.t - w.popAt < 12) return "次の出店まで あと" + (12 - (S.t - w.popAt)) + "週";
+  if (S.money < 150) return "資金が足りません(150万円)";
+  return "";
+}
+XACT.popup = function (d) {
+  var S = G.S, w = W(S, d.id); if (!w) return; var why = popWhy(S, w); if (why) { toast(why, false); return se("ng"); }
+  S.money -= 150; popList(S).push({ wid: w.id, start: S.t, end: S.t + 6, rev: 0 }); w.popAt = S.t;
+  addLog(S, "『" + w.title + "』の期間限定ショップを出店した。"); chron(S, w, "期間限定ショップを出店した");
+  toast("『" + w.title + "』の期間限定ショップを6週間、出店します", true); se("ok"); render();
+};
+function popTick(S, news) {
+  var P = S.park, keep = [];
+  popList(S).forEach(function (p) {
+    var w = W(S, p.wid); if (!w) return;
+    var e = (w.fans / 10000) * (w.pop / 60) * 1.4 + 0.6; p.rev += e; var o = INC.lab; INC.lab = "期間限定ショップ"; S.money += e; INC.lab = o;
+    if (S.t < p.end) return keep.push(p);
+    var good = ch(0.4 + w.pop / 220);
+    w.boost += good ? 5 : 2; w.fans += Math.round(w.fans * (good ? 0.04 : 0.015)); S.fame += good ? 0.5 : 0.1; if (good) w.popOK = true;
+    var t = "『" + w.title + "』の期間限定ショップが幕を閉じた。" + (good ? "行列ができる盛況で、常設を望む声も届いた。" : "ひっそりとした催しだったが、足を運んだ人の熱は本物だった。") + "(売上 " + fmtMoney(Math.round(p.rev)) + ")";
+    news.push(t); addLog(S, t); chron(S, w, "期間限定ショップが" + (good ? "盛況のうちに" : "") + "終了した");
+  });
+  P.pops = keep;
+}
+
+/* ---------- パークの出来事(日常化) ---------- */
+E("pk_voice", 1, "chain", "来場者の声", "『{W}』のエリアに、来場者から感想や要望がたくさん寄せられた。",
+  ["改善に取り組む(30万円)", { m: -30, pk: 6, f: 0.1 }, "寄せられた声をもとに、導線や案内を見直した。"], ["そっとしておく", {}, "今回は様子を見ることにした。"]);
+E("pk_rain", 1, "chain", "雨の週末", "『{W}』のエリアは、あいにくの雨模様の週末になった。",
+  ["雨の日限定の企画を打つ(40万円)", { m: -40, pk: 4, fa: 600 }, "傘とレインコートの貸し出しが話題になった。"], ["静かに休園にする", { pk: -3 }, "客足は遠のいたが、安全を優先した。"]);
+E("pk_crowd", 1, "chain", "行列がのびている", "『{W}』のエリアに、入場待ちの長い行列ができている。",
+  ["整理スタッフを増やす(25万円)", { m: -25, pk: 5 }, "案内が行き届き、行列にも笑顔が戻った。"], ["並ぶのも楽しみのうちと見守る", { pk: -4, b: 1 }, "行列は話題になったが、不満の声も混じった。"]);
+E("pk_collab", 2, "chain", "コラボ企画の打診", "『{W}』のエリアで、人気ブランドとのコラボ企画を持ちかけられた。",
+  ["受ける(60万円)", { m: -60, fa: 1500, b: 2, f: 0.2 }, "限定メニューと限定グッズが飛ぶように売れた。"], ["断る", {}, "今回は見送ることにした。"]);
+E("pk_photo", 1, "chain", "撮影スポットが話題に", "『{W}』のエリアの一角が、写真映えすると評判になっている。",
+  ["公式に宣伝する(20万円)", { m: -20, fa: 1200, b: 2, pk: 2 }, "公式の発信で、人気に拍車がかかった。"], ["自然に任せる", { b: 1 }, "口コミで、少しずつ広がっていった。"]);
+E("pk_mascot", 1, "chain", "着ぐるみ登場の提案", "『{W}』のエリアに、キャラクターの着ぐるみを登場させてはどうかと現場から提案があった。",
+  ["やってみる(35万円)", { m: -35, pk: 5, fa: 800 }, "子どもたちに大人気になった。"], ["見送る", {}, "予算の都合で見送ることにした。"]);
+E("pk_short", 2, "chain", "人手不足", "『{W}』のエリアが忙しく、現場の人手が足りなくなっている。",
+  ["臨時で人を雇う(30万円)", { m: -30, pk: 3 }, "短期のスタッフが入り、現場が落ち着いた。"], ["現場に頑張ってもらう", { pk: -5 }, "現場は踏ん張ったが、疲れの色が見える。"]);
+E("pk_vip", 2, "chain", "著名人のお忍び来場", "『{W}』のエリアに、ある著名人がお忍びで訪れたらしい。",
+  ["公式に歓迎の意を表す(20万円)", { m: -20, f: 0.5, fa: 2000, b: 3 }, "ニュースにも取り上げられ、来場者が増えた。"], ["そっとしておく", { f: 0.1 }, "静かに楽しんで帰られたという。"]);
+var PKEV = ["pk_voice", "pk_rain", "pk_crowd", "pk_collab", "pk_photo", "pk_mascot", "pk_short", "pk_vip"];
+function parkEventTick(S) {
+  if (!S.park.areas.length || S.queue.length > 1 || S.t - (S.flags.lastParkEv == null ? -99 : S.flags.lastParkEv) < 6 || !ch(0.12)) return;
+  var a = pick(S.park.areas), w = W(S, a.wid); if (!w) return; S.flags.lastParkEv = S.t;
+  queue(S, { k: "ev", id: pick(PKEV), p: { wid: w.id, W: w.title } });
+}
+function parkNews(S, news) {
+  if (!S.park.areas.length || S.t % 12 !== 3) return;
+  var s = S.park.sat; news.push("パークの来場者アンケート: " + (s < 35 ? "「待ち時間が長い」「設備が足りない」という声が目立つ。" : s < 60 ? "「また来たい」と「もう少し」が半々。" : s < 80 ? "「楽しかった」という声が多く寄せられた。" : "「最高の一日だった」と口々に語られている。"));
+}
+
+/* ---------- 経営への投資 ---------- */
+function bizOf(S) { if (!S.biz) S.biz = { br: { local: 0, overseas: 0, studio: 0 }, fac: { archive: 0, welfare: 0, pr: 0, screening: 0 }, dept: {}, stake: {}, own: {}, prizeAt: -99, poachAt: -99 }; return S.biz; }
+var BRD = {
+  local: { n: "地方支社", cost: [800, 2000, 5000], upk: [4, 10, 20], note: "各地で書き手を探し、作品の読者を広げる。(新人の発掘が増え、連載作品が少しずつ伸びる)" },
+  overseas: { n: "海外支社", cost: [1500, 4000, 9000], upk: [6, 16, 32], note: "海外で作品を売り込む。(名声が少しずつ上がり、海外展開が成功しやすく、海外の読者が増える)" },
+  studio: { n: "制作スタジオ", cost: [1200, 3000, 7000], upk: [5, 12, 24], note: "映像・舞台を自社で作れる。(自社制作の腕前が上がり、費用も安くなる)" }
+};
+var FACD = {
+  archive: { n: "資料室", cost: [600, 1500, 3500], upk: [2, 5, 10], note: "資料と蔵書で、目利きと作品の物語が磨かれる。" },
+  welfare: { n: "福利厚生", cost: [500, 1300, 3000], upk: [2, 4, 9], note: "スタッフとの信頼が深まり、自分の体力も戻りやすい。" },
+  pr: { n: "広報室", cost: [700, 1800, 4000], upk: [3, 6, 12], note: "連載中の作品が、日常的に宣伝される。" },
+  screening: { n: "試写室", cost: [900, 2200, 5000], upk: [3, 7, 14], note: "展開の仕上がりを事前に磨き、出来が良くなる。" }
+};
+var DEPTD = { cost: [700, 1800, 4000], upk: [3, 7, 14] };
+var BIZ_FAME = [15, 40, 80];
+function brLv(S, k) { return bizOf(S).br[k] || 0; }
+function facLv(S, k) { return bizOf(S).fac[k] || 0; }
+function deptKeys(S) { return Object.keys(bizOf(S).dept).filter(function (g) { return bizOf(S).dept[g] > 0; }); }
+function bizUpkeep(S) {
+  var b = bizOf(S), u = 0;
+  Object.keys(BRD).forEach(function (k) { if (b.br[k]) u += BRD[k].upk[b.br[k] - 1]; });
+  Object.keys(FACD).forEach(function (k) { if (b.fac[k]) u += FACD[k].upk[b.fac[k] - 1]; });
+  Object.keys(b.dept).forEach(function (g) { if (b.dept[g]) u += DEPTD.upk[b.dept[g] - 1]; });
+  Object.keys(b.own).forEach(function (n) { var c = coOf(S, n); if (c && b.own[n]) u += c.power * 0.03; });
+  return Math.round(u * 10) / 10;
+}
+function buildWhy(S, lv, cost) {
+  if (!S.unlock.edit) return "編集部を開いてから";
+  if (lv >= 3) return "最大です";
+  if (S.fame < BIZ_FAME[lv]) return "名声 " + BIZ_FAME[lv] + "以上が必要(いま " + Math.round(S.fame) + ")";
+  if (S.money < cost) return "資金が足りません(必要 " + fmtMoney(cost) + ")";
+  return "";
+}
+XACT.build = function (d) {
+  var S = G.S, b = bizOf(S), tbl = d.t === "br" ? BRD : FACD, def = tbl[d.k]; if (!def) return;
+  var lv = b[d.t][d.k] || 0, why = buildWhy(S, lv, def.cost[lv]); if (why) { toast(why, false); return se("ng"); }
+  S.money -= def.cost[lv]; b[d.t][d.k] = lv + 1; S.fame += 0.3 * (lv + 1);
+  addLog(S, def.n + (lv ? "をレベル" + (lv + 1) + "に拡張した。" : "を設けた。")); toast(def.n + (lv ? "を拡張しました(Lv" + (lv + 1) + ")" : "を設けました"), true); se("ok"); autosave(); render();
+};
+XACT.dept = function (d) {
+  var S = G.S, b = bizOf(S), lv = b.dept[d.g] || 0, why = buildWhy(S, lv, DEPTD.cost[lv]);
+  if (!lv && deptKeys(S).length >= 3) why = "編集部署は3つまでです";
+  if (!why && !S.staff.some(function (s) { return s.role === "editor"; })) why = "編集者のスタッフが必要です";
+  if (why) { toast(why, false); return se("ng"); }
+  S.money -= DEPTD.cost[lv]; b.dept[d.g] = lv + 1; S.fame += 0.2 * (lv + 1);
+  addLog(S, gname(d.g, GENRES) + "編集部を" + (lv ? "拡充した。" : "新設した。")); toast(gname(d.g, GENRES) + "編集部を" + (lv ? "拡充しました" : "新設しました"), true); se("ok"); autosave(); render();
+};
+/* 引き抜き・研修・新人賞 */
+function poachCost(p) { return Math.round(p.skill * 6 + p.pot * 2); }
+function poachChance(S, p) { var c = coOf(S, p.co); return cl(0.32 + S.fame / 320 + S.player.sk.biz / 300 + (c ? c.rel / 400 : 0), 0.1, 0.8); }
+XACT.poach = function (d) {
+  var S = G.S, b = bizOf(S), p = S.world.people.find(function (x) { return x.id === d.id && x.role === "e"; }); if (!p) { toast("その人はもういません", false); return se("ng"); }
+  var c = coOf(S, p.co), cost = poachCost(p), why = "";
+  if (S.fame < 15) why = "名声 15以上が必要です"; else if (S.staff.length >= staffCap(S)) why = "スタッフがいっぱいです";
+  else if (S.t - b.poachAt < 8) why = "次の引き抜きまで あと" + (8 - (S.t - b.poachAt)) + "週"; else if (c && (c.ally || b.own[c.name])) why = "提携・子会社の社員は引き抜けません"; else if (S.money < cost) why = "資金が足りません(必要 " + fmtMoney(cost) + ")";
+  if (why) { toast(why, false); return se("ng"); }
+  b.poachAt = S.t;
+  if (ch(poachChance(S, p))) {
+    S.money -= cost; S.world.people = S.world.people.filter(function (x) { return x.id !== p.id; }); S.world.people.push(newPerson(S, "e", true));
+    S.staff.push({ id: uid("s"), name: p.name, role: "editor", skill: p.skill, pot: p.pot, weeks: 0, hits: 0, classics: 0, mentees: 0, trait: p.trait, hall: false, bond: 20 });
+    if (c) c.rel = cl(c.rel - 10, -100, 100); S.fame += 0.3; addLog(S, p.name + "(" + p.co + ")を引き抜いた。");
+    toast(p.name + "が、あなたの編集部に加わりました" + (c ? "(" + c.name + "との関係は悪化)" : ""), true); se("ok");
+  } else {
+    var lost = Math.round(cost * 0.4); S.money -= lost; if (c) c.rel = cl(c.rel - 4, -100, 100);
+    toast(p.name + "は、条件を断ってきました。(交渉費用 " + fmtMoney(lost) + ")", false); se("ng");
+  }
+  autosave(); render();
+};
+function trainCost(s) { return Math.round(80 + s.skill * 2); }
+XACT.train2 = function (d) {
+  var S = G.S, s = findPerson(S, d.id); if (!s || !S.staff.includes(s)) return; var cost = trainCost(s);
+  if (s.trAt != null && S.t - s.trAt < 24) { toast("次の研修まで あと" + (24 - (S.t - s.trAt)) + "週", false); return se("ng"); }
+  if (s.skill >= s.pot) { toast(s.name + "はこれ以上伸びません", false); return se("ng"); }
+  if (S.money < cost) { toast("資金が足りません(必要 " + fmtMoney(cost) + ")", false); return se("ng"); }
+  S.money -= cost; s.trAt = S.t; var g = ri(3, 6); s.skill = Math.min(s.pot, s.skill + g); s.bond = cl(bondOf(s) + 4, 0, 100);
+  toast(s.name + "が研修を終えました(腕+" + g + "・信頼+4)", true); se("ok"); render();
+};
+XACT.prize2 = function () {
+  var S = G.S, b = bizOf(S), why = "";
+  if (!S.unlock.edit) why = "編集部を開いてから"; else if (S.fame < 20) why = "名声 20以上が必要です"; else if (S.t - b.prizeAt < 48) why = "次の開催まで あと" + (48 - (S.t - b.prizeAt)) + "週"; else if (S.money < 400) why = "資金が足りません(400万円)"; else if (S.pool.length >= 8) why = "候補が多すぎます。先に整理しましょう";
+  if (why) { toast(why, false); return se("ng"); }
+  S.money -= 400; b.prizeAt = S.t; var n = 0;
+  for (var i = 0; i < 3 && S.pool.length < 10; i++) { var c = genCand(S, "sub"); c.author.skill = Math.min(c.author.pot, c.author.skill + 10); c.kind = "sub"; c.note = "自社の新人賞"; S.pool.push(c); n++; }
+  S.fame += 0.8; addLog(S, "新人賞を主催し、" + n + "人の有望な応募者が集まった。"); toast("新人賞を開催しました。" + n + "人の候補が集まりました(名声+0.8)", true); se("ok"); autosave(); render();
+};
+/* 出資・買収 */
+function stakeOf(S, n) { return bizOf(S).stake[n] || 0; }
+function ownedList(S) { return Object.keys(bizOf(S).own).filter(function (n) { return bizOf(S).own[n]; }); }
+function stakeCost(c) { return Math.round(c.power * 12); }
+function buyCost(S, c) { return Math.round(c.power * 45 * (1 - stakeOf(S, c.name))); }
+XACT.invest = function (d) {
+  var S = G.S, c = coOf(S, d.n); if (!c) return; var b = bizOf(S), s = stakeOf(S, c.name), cost = stakeCost(c), why = "";
+  if (b.own[c.name]) why = "すでに子会社です"; else if (S.fame < 25) why = "名声 25以上が必要です"; else if (s >= 0.49) why = "これ以上は出資できません(49%まで)"; else if (S.money < cost) why = "資金が足りません(必要 " + fmtMoney(cost) + ")";
+  if (why) { toast(why, false); return se("ng"); }
+  S.money -= cost; b.stake[c.name] = Math.round((s + 0.1) * 100) / 100; c.rel = cl(c.rel + 6, -100, 100);
+  addLog(S, c.name + "に出資し、持ち分は" + Math.round(b.stake[c.name] * 100) + "%になった。"); toast(c.name + "への出資が " + Math.round(b.stake[c.name] * 100) + "% になりました", true); se("ok"); autosave(); render();
+};
+XACT.buyout = function (d) {
+  var S = G.S, c = coOf(S, d.n); if (!c) return; var b = bizOf(S), cost = buyCost(S, c), why = "";
+  if (stakeOf(S, c.name) < 0.3) why = "持ち分 30%以上が必要です"; else if (S.fame < 60) why = "名声 60以上が必要です"; else if (ownedList(S).length >= 2) why = "買収できるのは2社までです"; else if (S.money < cost) why = "資金が足りません(必要 " + fmtMoney(cost) + ")";
+  if (why) { toast(why, false); return se("ng"); }
+  S.money -= cost; b.own[c.name] = true; delete b.stake[c.name]; c.rel = 100; c.ally = false; S.fame += 4;
+  addLog(S, c.name + "を買収し、子会社とした。"); queue(S, { k: "info", title: "買収", text: c.name + "を傘下に収めた。社長の" + c.boss + "は、新しい体制での再出発を誓った。" });
+  toast(c.name + "を買収しました", true); se("ok"); autosave(); render();
+};
+var _spawnBid27 = spawnBid;
+spawnBid = function (S, news) {
+  var n0 = bidsOf(S).length; _spawnBid27(S, news);
+  if (bidsOf(S).length > n0) { var b = bidsOf(S)[bidsOf(S).length - 1], own = ownedList(S); if (own.indexOf(b.rival) > -1) { var al = cosOf(S).filter(function (c) { return own.indexOf(c.name) < 0; }); if (al.length) b.rival = pick(al).name; } }
+};
+/* 設備の効果を、展開に反映 */
+var _inhouseSkill27 = inhouseSkill;
+inhouseSkill = function (S, type) {
+  var o = _inhouseSkill27(S, type), l = brLv(S, "studio");
+  if (l && ["anime", "drama", "movie", "theater", "stage", "musical"].indexOf(type) > -1) return Math.max(o, 38 + l * 13 + o * 0.3);
+  return o;
+};
+["drama", "stage", "musical"].forEach(function (t) { if (!MEDIA[t].ih) MEDIA[t].ih = "producer"; });
+var _mediaCost27 = mediaCost;
+mediaCost = function (type, budget, partner, inhouse) { var c = _mediaCost27(type, budget, partner, inhouse), l = typeof G !== "undefined" && G.S ? brLv(G.S, "studio") : 0; return inhouse && l ? Math.round(c * (1 - 0.1 * l)) : c; };
+var _finishProject27 = finishProject;
+finishProject = function (S, p) { p.skill += facLv(S, "screening") * 3 + (p.type === "overseas" ? brLv(S, "overseas") * 6 : 0); return _finishProject27(S, p); };
+
+/* ---------- 毎週の処理 ---------- */
+function bizTick(S, news) {
+  var b = bizOf(S), live = liveWorks(S), upk = bizUpkeep(S);
+  if (upk) { S.money -= upk; if (S.fin) { S.fin.upk = upk; S.fin.extra = Math.round((S.fin.extra + upk) * 10) / 10; S.fin.net = Math.round((S.fin.net - upk) * 10) / 10; } }
+  var l = b.br.local, o = b.br.overseas;
+  if (l) { live.forEach(function (w) { w.boost += 0.03 * l; }); if (S.unlock.edit && S.pool.length < 10 && ch(0.02 * l)) { var c = genCand(S, "scout"); c.note = "地方支社の紹介"; S.pool.push(c); } }
+  if (o) { S.fame += 0.01 * o; S.works.forEach(function (w) { if (w.media.overseas && w.state !== "canceled") w.fans *= 1 + 0.0006 * o; }); }
+  var a = b.fac.archive; if (a) { gainSkill(S, "eye", 0.012 * a); live.forEach(function (w) { w.q.story = cl(w.q.story + 0.012 * a, 5, 98); }); }
+  var wf = b.fac.welfare; if (wf) { S.player.sta = cl(S.player.sta + 1.5 * wf, 0, 100); S.staff.forEach(function (s) { s.bond = cl(bondOf(s) + 0.05 * wf, 0, 100); }); }
+  var pr = b.fac.pr; if (pr) live.forEach(function (w) { w.promo += 0.35 * pr; });
+  Object.keys(b.dept).forEach(function (g) { var lv = b.dept[g]; if (!lv) return; live.forEach(function (w) { if (w.genre === g) { w.q.pol = cl(w.q.pol + 0.03 * lv, 5, 95); w.q.hook = cl(w.q.hook + 0.02 * lv, 5, 98); } }); if (S.unlock.edit && S.pool.length < 10 && ch(0.015 * lv)) { var c2 = genCand(S, "net"); c2.seed.genre = g; c2.note = gname(g, GENRES) + "編集部の発掘"; S.pool.push(c2); } });
+  var inc = 0, o2 = INC.lab; INC.lab = "出資・子会社の収益";
+  Object.keys(b.stake).forEach(function (n) { var c = coOf(S, n); if (!c) return; var dv = c.power * b.stake[n] * 0.3; inc += dv; S.money += dv; c.rel = cl(c.rel + 0.02, -100, 100); });
+  ownedList(S).forEach(function (n) { var c = coOf(S, n); if (!c) return; var dv = c.power * 0.12; inc += dv; S.money += dv; S.fame += 0.004; c.rel = 100; });
+  INC.lab = o2;
+}
+var _tick27 = tick;
+tick = function (S) {
+  var news = _tick27(S);
+  try { var ex = []; popTick(S, ex); bizTick(S, ex); parkEventTick(S); parkNews(S, ex); if (ex.length) { S.news = ex.concat(S.news || []).slice(0, 10); } if (S.fin && S.park.areas.length) { var rf = 0; S.park.areas.forEach(function (a) { var st = stageOf(a); rf += st === 1 ? 3.2 : st === 2 ? 1.5 : 0; }); if (rf) { var m = INC.mute; INC.mute = 1; S.money += rf; INC.mute = m; S.fin.park = Math.max(0, Math.round((S.fin.park - rf) * 10) / 10); S.fin.extra = Math.max(0, Math.round((S.fin.extra - rf) * 10) / 10); } } }
+  catch (e) { if (typeof console !== "undefined") console.error("v12", e); }
+  return news;
+};
+
+/* ===== v1.2 画面: パーク(段階開園・出店)・編集部の「投資」・アイコン・お金の出入り ===== */
+
+/* ---- アイコン(線画のSVG。絵文字はやめました) ---- */
+function ico(p) { return '<svg class="ic" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; }
+var ICONS = {
+  home: ico('<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/>'),
+  works: ico('<path d="M5 4h4v16H5zM10 4h4v16h-4z"/><path d="M15.6 5.6l3.8-1 3 14.6-3.8 1z" transform="translate(-1.4 0)"/>'),
+  scout: ico('<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/>'),
+  media: ico('<rect x="3.5" y="5" width="17" height="11.5" rx="1.6"/><path d="M10 8.6l4.2 2.6-4.2 2.6zM8 20h8"/>'),
+  park: ico('<circle cx="12" cy="10.5" r="6.5"/><circle cx="12" cy="10.5" r="1.4"/><path d="M12 4v13M5.5 10.5h13M7.4 5.9l9.2 9.2M16.6 5.9l-9.2 9.2M8 21l4-10.5L16 21"/>'),
+  hall: ico('<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v2a3 3 0 0 0 3 3M16 6h3v2a3 3 0 0 1-3 3M12 13v4M9 20h6M10 17h4"/>'),
+  menu: ico('<path d="M5 7h14M5 12h14M5 17h14"/>')
+};
+Object.keys(ICONS).forEach(function (k) { NAVI[k] = ICONS[k]; });
+TABS5.forEach(function (t) { if (ICONS[t[0]]) t[2] = ICONS[t[0]]; });
+
+/* ---- パーク ---- */
+function stageTag(a) { var st = stageOf(a); return '<span class="tag ' + (st === 3 ? "gold" : "") + '">' + ["", "屋台", "常設コーナー", "本格エリア"][st] + '</span>'; }
+function stepBtn(S, w, full) {
+  var r = parkStep(S, w); if (r.done) return '<span class="tag gold">これ以上はありません</span>';
+  var d = PSTG[r.st], lab = (r.a ? d.n + "に進む" : d.n + "を出す") + '<small>' + fmtMoney(d.cost) + (r.ok ? "" : " ・ " + esc(r.why[0])) + '</small>';
+  return '<button class="btn' + (full ? " pri" : "") + ' sm' + (r.ok ? "" : " dis") + '" data-act="parkgo2" data-id="' + w.id + '"' + (r.ok ? "" : ' data-no="' + esc(r.why.join(" / ")) + '"') + '>' + lab + '</button>';
+}
+XACT.parkgo2 = (function (f) { return function (d, el) { if (el && el.dataset && el.dataset.no) { toast(el.dataset.no, false); return se("ng"); } return f(d, el); }; })(XACT.parkgo2);
+var _vPark28 = vPark;
+vPark = function (S) {
+  var o = _vPark28(S), P = S.park, d = dinfo(S.t);
+  var svg = (/<section class="card"><svg class="map"[\s\S]*?<\/svg><\/section>/.exec(o) || [""])[0];
+  var ops = (/<section class="card"><h2 class="h2">今月の運営<\/h2>[\s\S]*?<\/section>/.exec(o) || [""])[0];
+  var sat = (/<section class="card"><h2 class="h2">来場者の満足度<\/h2>[\s\S]*?<\/section>/.exec(o) || [""])[0];
+  var h = '<h2 class="h1">パーク</h2>';
+  h += '<section class="card note"><b>パークは、小さく始めて大きく育てます</b><p class="small">①期間限定ショップ → ②屋台 → ③常設コーナー → ④本格エリア。段階が進むほど、収益も満足度も伸びます。</p></section>';
+  h += svg + ops + sat;
+  /* 出店 */
+  h += '<h3 class="h3">期間限定ショップ</h3><p class="small muted">条件がゆるく、気軽に出せます。盛況だと常設への近道になります。(150万円・6週間・同時に2つまで)</p>';
+  var pops = popList(S);
+  pops.forEach(function (p) { var w = W(S, p.wid); h += '<section class="card"><b>『' + esc(w ? w.title : "?") + '』ショップ</b><span class="tag up">開催中</span><p class="small muted">あと' + Math.max(0, p.end - S.t) + '週 ・ ここまでの売上 ' + fmtMoney(Math.round(p.rev)) + '</p></section>'; });
+  var cand = S.works.filter(function (w) { return w.state !== "canceled" && !pops.some(function (p) { return p.wid === w.id; }); }).sort(function (a, b) { return b.fans - a.fans; }).slice(0, 6);
+  if (!cand.length && !pops.length) h += '<p class="muted small">出店できる作品がまだありません。</p>';
+  cand.forEach(function (w) { var why = popWhy(S, w); h += '<button class="rowbtn' + (why ? " dis" : "") + '" data-act="popup" data-id="' + w.id + '"><b>『' + esc(w.title) + '』のショップを出す</b><span class="small muted">' + (why ? esc(why) : "ファン " + fmtFans(w.fans) + " ・ 見込める売上 週" + fmtMoney(Math.round((w.fans / 10000) * (w.pop / 60) * 1.4 + 0.6))) + '</span></button>'; });
+  /* 区画 */
+  h += '<h3 class="h3">区画 (' + P.areas.length + '/9)</h3>';
+  if (!P.areas.length) h += '<p class="muted small">区画はまだありません。下の「パークを広げる」から、作品の屋台を出せます。</p>';
+  P.areas.forEach(function (a) {
+    var w = W(S, a.wid), st = stageOf(a), cap = st === 2 ? 2 : 5;
+    var fs = st === 1 ? "" : ["ride", "food", "shop"].map(function (f) { var cur = f === "ride" ? a.lv : (a[f] || 0); return cur >= cap ? '<span class="tag gold">' + PARK_FAC[f].name + ' ' + (cap === 5 ? "最大" : "上限") + '</span>' : btn(PARK_FAC[f].name + ' Lv' + cur + ' → ' + fmtMoney(parkFacCost(a, f)), "parkup", { id: a.id, fac: f }, "sm"); }).join("");
+    h += '<section class="card"><div class="cand-h"><b>『' + esc(w ? w.title : "?") + '』</b>' + stageTag(a) + '</div><p class="small muted mono">週 ' + fmtMoney(Math.round((a.rev || 0) * 10) / 10) + ' ・ 累計 ' + fmtMoney(Math.round(a.tot || 0)) + '</p>' + (st === 1 ? '<p class="small muted">屋台の段階です。常設コーナーに進めると、設備を増やせます。</p>' : '') + (fs ? '<div class="grid2">' + fs + '</div>' : '') + (w ? '<div class="cand-f">' + stepBtn(S, w, false) + '</div>' : '') + '</section>';
+  });
+  h += btn("パークを広げる<small>屋台・常設コーナー・本格エリア</small>", "parkbuild", null, "pri");
+  return h;
+};
+var _vModal28 = vModal;
+vModal = function (m) {
+  if (m.t === "parkpick2") {
+    var S = G.S, h = '<button class="x" data-act="close" aria-label="閉じる">×</button><div class="mono small muted">PARK</div><h3 class="h2">どの作品を、パークに広げる?</h3><p class="small muted">段階: 屋台(300万)→ 常設コーナー(1,500万)→ 本格エリア(3,000万)</p>';
+    var ws = S.works.filter(function (w) { return w.state !== "canceled"; }).sort(function (a, b) { return b.fans - a.fans; });
+    if (!ws.length) h += '<p class="muted">作品がありません。</p>';
+    ws.forEach(function (w) {
+      var r = parkStep(S, w); if (r.done) return;
+      h += '<button class="rowbtn' + (r.ok ? "" : " dis") + '" data-act="parkgo2" data-id="' + w.id + '"' + (r.ok ? "" : ' data-no="' + esc(r.why.join(" / ")) + '"') + '><b>『' + esc(w.title) + '』 → ' + PSTG[r.st].n + '</b><span class="small muted">' + fmtMoney(r.cost) + ' ・ ' + (r.ok ? esc(PSTG[r.st].note) : esc(r.why.join(" / "))) + '</span></button>';
+    });
+    return h;
+  }
+  return _vModal28(m);
+};
+/* 開園の案内(ホームなど)を、段階開園に合わせる */
+parkReady = function (S) { return S.works.some(function (w) { var r = parkStep(S, w); return r.ok && !r.done; }); };
+parkWhy = function (S) { return ""; };
+
+/* ---- 編集部: 投資 ---- */
+SSEGS.push(["invest", "投資"]);
+var _vScout28 = vScout;
+function lvDots(n) { return '<span class="lvd">' + [1, 2, 3].map(function (i) { return '<i class="' + (i <= n ? "on" : "") + '"></i>'; }).join("") + '</span>'; }
+function invCard(name, note, lv, costs, upks, act, data, S) {
+  var why = buildWhy(S, lv, costs[Math.min(lv, 2)]), nxt = lv >= 3 ? "" : '<small>' + fmtMoney(costs[lv]) + ' ・ 維持費 週' + upks[lv] + '万円' + (why && lv < 3 ? " ・ " + esc(why) : "") + '</small>';
+  return '<section class="card inv"><div class="cand-h"><b>' + name + '</b>' + lvDots(lv) + '</div><p class="small muted">' + note + '</p>' +
+    (lv >= 3 ? '<span class="tag gold">最大</span>' : '<button class="btn sm' + (why ? " dis" : "") + '" data-act="' + act + '"' + Object.keys(data).map(function (k) { return ' data-' + k + '="' + data[k] + '"'; }).join("") + (why ? ' data-no="' + esc(why) + '"' : "") + '>' + (lv ? "拡張する" : "設ける") + nxt + '</button>') + '</section>';
+}
+["build", "dept", "poach", "train2", "prize2", "invest", "buyout"].forEach(function (k) {
+  XACT[k] = (function (f) { return function (d, el) { if (el && el.dataset && el.dataset.no) { toast(el.dataset.no, false); return se("ng"); } return f(d, el); }; })(XACT[k]);
+});
+function segInvest(S) {
+  var b = bizOf(S), h = '<section class="card note"><b>会社への投資</b><p class="small">お金を使って、会社そのものを強くします。拠点や設備には毎週の維持費がかかります。(いまの維持費: 週 ' + fmtMoney(bizUpkeep(S)) + ')</p></section>';
+  h += '<h3 class="h3">拠点</h3>' + Object.keys(BRD).map(function (k) { var d = BRD[k]; return invCard(d.n, d.note, b.br[k] || 0, d.cost, d.upk, "build", { t: "br", k: k }, S); }).join("");
+  h += '<h3 class="h3">設備</h3>' + Object.keys(FACD).map(function (k) { var d = FACD[k]; return invCard(d.n, d.note, b.fac[k] || 0, d.cost, d.upk, "build", { t: "fac", k: k }, S); }).join("");
+  h += '<h3 class="h3">編集部署 <small class="muted">(ジャンル特化・3つまで)</small></h3><p class="small muted">得意ジャンルの連載が磨かれ、そのジャンルの候補が見つかりやすくなります。</p><div class="chips">' +
+    GENRES.map(function (g) { var lv = b.dept[g.id] || 0; return chip(g.name + (lv ? " Lv" + lv : ""), "dept", { g: g.id }, lv > 0); }).join("") + '</div><p class="small muted">開設・拡充: ' + fmtMoney(DEPTD.cost[0]) + '〜 ・ 維持費 週' + DEPTD.upk[0] + '万円〜</p>';
+  h += '<h3 class="h3">人材への投資</h3><p class="small muted">他社の編集者を引き抜けます。成功率は名声・交渉力・相手との関係次第。失敗すると費用の一部を失います。</p>';
+  S.world.people.filter(function (p) { return p.role === "e"; }).sort(function (a, c) { return c.skill - a.skill; }).slice(0, 6).forEach(function (p) {
+    h += '<button class="rowbtn" data-act="poach" data-id="' + p.id + '"><b>' + esc(p.name) + '(' + esc(p.co) + ')</b><span class="small muted">腕 ' + Math.round(p.skill) + ' ・ 伸びしろ ' + potWord(p) + ' ・ ' + esc(p.trait) + ' ・ ' + fmtMoney(poachCost(p)) + ' ・ 成功率の目安 ' + Math.round(poachChance(S, p) * 100) + '%</span></button>';
+  });
+  if (S.staff.length) { h += '<p class="small muted" style="margin-top:10px">研修に出す(腕が伸びる・24週に1度)</p><div class="chips">' + S.staff.map(function (s) { return chip(s.name + " " + fmtMoney(trainCost(s)), "train2", { id: s.id }, false); }).join("") + '</div>'; }
+  h += '<div class="grid2" style="margin-top:10px">' + btn("新人賞を主催する<small>400万円 ・ 有望な応募者3人</small>", "prize2", null, "sm") + '<span></span></div>';
+  h += '<h3 class="h3">出資・買収</h3><p class="small muted">出版社に出資すると、毎週の配当と良好な関係が得られます。持ち分が30%を超えると、買収も選べます。(名声60以上・2社まで)</p>';
+  cosOf(S).forEach(function (c) {
+    var s = stakeOf(S, c.name), own = !!b.own[c.name];
+    h += '<section class="card co"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags">' + (own ? '<span class="tag gold">子会社</span>' : s ? '<span class="tag up">持ち分 ' + Math.round(s * 100) + '%</span>' : "") + '<span class="tag">' + powerWord(c.power) + '</span></span></div>' +
+      '<p class="small muted">' + (own ? "毎週の収益 約" + fmtMoney(Math.round(c.power * 12) / 100) : s ? "毎週の配当 約" + fmtMoney(Math.round(c.power * s * 30) / 100) : "出資すると配当が入ります") + '</p>' +
+      (own ? "" : '<div class="grid2">' + btn("10%出資する<small>" + fmtMoney(stakeCost(c)) + "</small>", "invest", { n: c.name }, "sm" + (s >= 0.49 ? " dis" : "")) + btn("買収する<small>" + fmtMoney(buyCost(S, c)) + (s < 0.3 ? " ・ 持ち分30%〜" : "") + "</small>", "buyout", { n: c.name }, "sm" + (s < 0.3 ? " dis" : "")) + '</div>') + '</section>';
+  });
+  return h;
+}
+vScout = function (S) {
+  if (!S.unlock.edit || G.sseg !== "invest") return _vScout28(S);
+  var bar0 = '<div class="hseg sseg">' + SSEGS.map(function (s) { return '<button class="' + (G.sseg === s[0] ? "on" : "") + '" data-act="sseg" data-v="' + s[0] + '">' + s[1] + '</button>'; }).join("") + '</div>';
+  return (typeof tipHtml === "function" ? tipHtml("scout") : "") + '<h2 class="h1">編集部</h2>' + bar0 + segInvest(S);
+};
+
+/* ---- お金の出入りに、維持費を表示 ---- */
+var _finCard28 = finCard;
+finCard = function (S) {
+  var o = _finCard28(S), f = S.fin; if (!f || !f.upk) return o;
+  return o.replace('</details>', '<div class="fin-row small"><span>拠点・設備の維持費</span><span>' + mny(f.upk) + '</span></div></details>');
+};
 
 function boot() {
   loadSettings();
