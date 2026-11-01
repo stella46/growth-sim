@@ -245,8 +245,13 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.8.1", SAVE_VER = 1;
+var GAME_VER = "0.8.2", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.8.2", date: "2026-11-02", notes: [
+    "遊び方を、最新の内容に書き直しました。",
+    "イベントの出る頻度とタイミングを調整しました。",
+    "バランスを調整しました。"
+  ] },
   { ver: "0.8.1", date: "2026-11-02", notes: [
     "収入まわりの金額を、現実に近い水準へ調整しました。"
   ] },
@@ -661,7 +666,7 @@ function simWork(S, w, news) {
   w.rev += rev; w.yrev += rev;
   if (!w.hit && w.pop >= 65) { w.hit = true; creditHit(S, w, au, ed, news); }
   if (w.state === "serial") {
-    if (w.pop < 14) w.low++; else w.low = Math.max(0, w.low - 1);
+    if (w.pop < 14 && w.weeks >= 20) w.low++; else if (w.pop >= 14) w.low = Math.max(0, w.low - 1);
     if (w.low >= 10 && !w.askCancel) { w.askCancel = true; queue(S, { k: "ev", id: "cancel", p: { wid: w.id } }); }
     if (w.low < 4) w.askCancel = false;
   }
@@ -726,7 +731,7 @@ function tick(S) {
   rollEvent(S, news);
   S.pool = S.pool.filter(function (c) { return c.exp > S.t; });
   S.offers = S.offers.filter(function (o) { return o.exp > S.t; });
-  if (S.money < -500 && !S.queue.some(function (q) { return q.id === "crisis"; })) queue(S, { k: "ev", id: "crisis", p: {} });
+  if (S.money < -500 && S.t >= (S.flags.crisisNext || 0) && !S.queue.some(function (q) { return q.id === "crisis"; })) { S.flags.crisisNext = S.t + 26; queue(S, { k: "ev", id: "crisis", p: {} }); }
   S.news = news.slice(0, 8);
   return news;
 }
@@ -1416,7 +1421,7 @@ function rollEvent(S, news) {
   }
   if (S.flags.askOfficeLater && S.t >= S.flags.askOfficeLater) { S.flags.askOffice = false; S.flags.askOfficeLater = 0; }
   if (S.flags.askPenLater && S.t >= S.flags.askPenLater) { S.flags.askPen = false; S.flags.askPenLater = 0; }
-  if (!ch(0.075)) return;
+  if (!ch(0.045)) return;
   var mine = live.filter(function (w) { return w.author.type === "player"; }), opts = [];
   if (live.length) opts.push("fan", "fan", "scandal", "rivalhit", "bookfair");
   if (mine.length) opts.push("tv", "interview", "doujin", "similar");
@@ -1555,9 +1560,15 @@ function extTick(S, news) {
   }
   /* 季節のイベント */
   var key = SEASON_EV.find(function (s) { return s.mo === d.mo && s.wk === d.wk; });
-  if (key && S.flags.seasonDone !== key.id + y && S.queue.length < 4) { S.flags.seasonDone = key.id + y; queue(S, { k: "ev", id: "season_" + key.id, p: {} }); }
+  if (key && S.flags.seasonDone !== key.id + y && S.queue.length < 4) {
+    S.flags.seasonDone = key.id + y;
+    if (S.t >= 6) {
+      if (SEASON_AUTO.indexOf(key.id) > -1) { var sr = seasonFn(S, key.id); S.news.unshift(SEASON_NAME[key.id] + "…" + sr); }
+      else queue(S, { k: "ev", id: "season_" + key.id, p: {} });
+    }
+  }
   /* 人生・弟子・新人のドラマ */
-  if (S.queue.length < 3 && ch(0.055)) rollDrama(S);
+  if (S.queue.length < 3 && ch(0.03)) rollDrama(S);
   achCheck(S);
 }
 
@@ -1580,6 +1591,7 @@ SEASON_EV.forEach(function (s) {
     }
   };
 });
+var SEASON_AUTO = ["tanabata", "newyear", "valentine", "sotsu"], SEASON_NAME = { tanabata: "七夕", newyear: "初詣", valentine: "バレンタイン", sotsu: "年度末" };
 function seasonFn(S, id) {
   var live = liveWorks(S), w = live.length ? pick(live) : null;
   if (id === "hanami") { if (S.money < 10) return "資金が足りず、お弁当だけで済ませた。"; S.money -= 10; S.player.sta = Math.min(100, S.player.sta + 25); S.fame += 0.4; return "満開の桜の下で笑い合った。体力がすっかり戻り、思わぬ人脈もできた。"; }
@@ -3130,7 +3142,7 @@ function shelfCard(S) {
 function mny(n) { return Math.abs(n) >= 100 ? fmtMoney(n) : (Math.round(n * 10) / 10) + "万円"; }
 function finCard(S) {
   var f = S.fin, h = '<section class="card fin"><h2 class="h2">お金の出入り</h2>';
-  if (!f) h += '<p class="small muted">週を進めると、収入と支出の内訳がここに出ます。家賃・生活費・給与・印刷費・納税などがかかります。</p>';
+  if (!f) h += '<p class="small muted">時間が進むと、収入と支出の内訳がここに出ます。家賃・生活費・給与・印刷費・納税などがかかります。</p>';
   else {
     var out = f.base + f.extra + (f.tax || 0) + (f.bonus || 0), items = [["給与・基本費", f.base], ["家賃・光熱", f.rent], ["生活費", f.living], ["印刷・流通", f.print], ["運営経費", f.ops], ["パーク維持", f.park], ["納税", f.tax], ["賞与", f.bonus]].filter(function (x) { return x[1]; });
     h += '<div class="fin-row"><span>収入</span><b class="up">+' + mny(f.inc) + '</b></div><div class="fin-row"><span>支出</span><b class="dn">−' + mny(out) + '</b></div>' +
@@ -4102,7 +4114,7 @@ function rollEv2(S) {
   if ((id === "ex2_typo" || id === "ex2_review" || id === "ex2_pop" || id === "ex2_letter") && !p.wid) return;
   queue(S, { k: "ev", id: id, p: p });
 }
-var EV2_RATE = 0.06;
+var EV2_RATE = 0.035;
 var _tick10 = tick;
 tick = function (S) { var r = _tick10(S); try { if (ch(EV2_RATE)) rollEv2(S); } catch (e) { console.error(e); } return r; };
 
@@ -4194,6 +4206,69 @@ vCine = function (c) { return _vCine11(c).replace(/<\/div>$/, '<button class="ci
 var _amBlock11 = amBlock;
 amBlock = function () {
   return _amBlock11() + '<div class="fld"><span>イベントの選択</span><div class="chips">' + chip("自分で選ぶ", "setflag", { k: "evAuto", v: 0 }, !SET.evAuto) + chip("おまかせで自動決定", "setflag", { k: "evAuto", v: 1 }, !!SET.evAuto) + '</div><p class="muted small">「おまかせ」では、重要なもの(編集部を開く・打ち切り・資金繰りなど)以外のイベントを自動で決め、結果は「できごとの記録」に残ります。個別のイベントでは「スキップ」も使えます。</p></div>';
+};
+
+/* ===== 遊び方ガイド(機能を変えたら、ここを必ず更新する) ===== */
+function buildGuide() {
+  var m = SET.am, pages = [];
+  pages.push({ h: "このゲームは？", b: ["小説や漫画の「原作」を世に出し、育てていくゲームです。人気が出れば、アニメ・映画・舞台・ゲームへ。やがてテーマパークまで広がります。", "終わりはありません。好きなだけ、自分のペースで遊べます。目標は、作品や人が「殿堂入り」すること。"] });
+  if (m === "free") pages.push({ h: "時間と作業枠", b: ["時間は自動で流れます。右上の ⏸ で一時停止、×1・×2・×3 で速さを変えられます。「次週▶」で、待たずに1週進めることもできます。", "行動は「作業枠」を使い、1〜3週間かけて進みます。枠は最初3つ(名声が上がると増えます)。終わると結果が届きます。×で中止もできます。", "体力が減ったら「休む」。お金が足りないと始められない行動もあります。"] });
+  else if (m === "plan") pages.push({ h: "一週間のくり返し", b: ["画面の「今週の予定」に、やりたいことを3つまで入れておきます。", "右上の「週を進める ▶」を押すと、予定が順番に実行され、1週間が過ぎます。", "体力(バー)が減ったら「休む」を予定に入れましょう。"] });
+  else pages.push({ h: "一週間のくり返し", b: ["画面上部の●が「行動点」です。1週間に" + (m === "ap6" ? 6 : 3) + "つ使えます。", "使い切ったら「週を進める ▶」。時間が進み、結果が出ます。", "体力(バー)が減ったら「休む」で回復しましょう。"] });
+  pages.push({ h: "最初の一歩", b: ["最初は、ただの一般人です。肩書きはありません。", "「習作を書く」を4回重ねると、自分の連載を企画できる「書き手の道」が開きます。", "「投稿作を読む」を4回重ねると、自分の編集部を開ける「見つける道」が開きます。両方進んでもかまいません。"] });
+  pages.push({ h: "行動の選び方", b: ["各行動のカードには、終わったときに変わる数値が出ます。緑は上がるもの、赤は減るもの、黄色はお金です。", "能力は5つ。文章力・画力は作品の出来、発想力は企画の強さ、目利きは才能を見つける力、交渉力はお金や人づきあいに効きます。能力は伸びるほど、上がりにくくなります。", "体力・資金・名声は、画面上部と行動カードの上で確認できます。"] });
+  pages.push({ h: "作品を育てる", b: ["「作品」タブで作品をタップ。細かい数字は見えませんが、「読みどころ」の文章にヒントがあります。", "連載は、執筆するたびに更新した扱いになり、しばらく続きます。途切れさせると人気が落ちやすくなります。打ち合わせ・宣伝・増刷なども大切です。", "ジャンルと題材の相性や、世の中の風向きも結果を左右します。"] });
+  pages.push({ h: "チャンス・スタッフ・イベント", b: ["期限つきの「チャンス」が届くことがあります。引き受けると作業枠を使い、取材や講演、書店フェアなどで名声やお金が得られます。", "スタッフは自動で働きます。編集者と宣伝担当は、担当する作品を指定できます。", "イベントは「おまかせで決める(スキップ)」で飛ばせます。設定で、重要なもの以外を自動にすることもできます。"] });
+  pages.push({ h: "展開とパーク", b: ["人気とファンが増えたら、「展開」でアニメ化などを企画できます。条件が足りないときは、足りないものが表示されます。", "さらに大きな作品は「パーク」をつくれます。満足度を保ちながら育てましょう。"] });
+  pages.push({ h: "殿堂入りと競争", b: ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。"] });
+  pages.push({ h: "困ったときは", b: ["ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
+  GUIDE.length = 0; pages.forEach(function (p) { GUIDE.push(p); });
+}
+guideModal = function (i) {
+  buildGuide(); i = Math.max(0, Math.min(GUIDE.length - 1, i | 0));
+  return '<div class="gd"><div class="gd-n mono">' + (i + 1) + ' / ' + GUIDE.length + '</div><h3 class="h2">' + esc(GUIDE[i].h) + '</h3>' + GUIDE[i].b.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join("") +
+    '<div class="gd-dots">' + GUIDE.map(function (g, k) { return '<i class="' + (k === i ? "on" : "") + '"></i>'; }).join("") + '</div>' +
+    '<div class="grid2">' + (i > 0 ? btn("◀ 前へ", "gdir", { d: -1 }) : btn("あとで読む", "close")) + (i < GUIDE.length - 1 ? btn("次へ ▶", "gdir", { d: 1 }, "pri") : btn("はじめる", "close", null, "pri")) + '</div></div>';
+};
+buildGuide();
+
+/* ===== v0.8.2 イベントの出るタイミングの調整 =====
+   ・序盤(12週まで)はランダムイベントを出さない
+   ・ランダムイベントは前回から3週間は空ける / キューが空のときだけ
+   ・同じイベントは26週は繰り返さない */
+var RANDEV = { MIN_WEEK: 12, GAP: 3, NOREPEAT: 26 };
+function gateRand(fn) {
+  return function (S) {
+    if (S.t < RANDEV.MIN_WEEK || S.queue.length) return;
+    var f = S.flags; f.lastRand = f.lastRand == null ? -99 : f.lastRand;
+    if (S.t - f.lastRand < RANDEV.GAP) return;
+    var n = S.queue.length; fn.apply(this, arguments);
+    if (S.queue.length > n) {
+      f.evSeen = f.evSeen || {};
+      var it = S.queue[n];
+      if (it && it.k === "ev" && f.evSeen[it.id] != null && S.t - f.evSeen[it.id] < RANDEV.NOREPEAT && it.id !== "apprentice") { S.queue.splice(n); return; }
+      if (it && it.k === "ev") f.evSeen[it.id] = S.t;
+      f.lastRand = S.t;
+    }
+  };
+}
+rollEvent = gateRand(rollEvent);
+rollDrama = gateRand(rollDrama);
+rollEv2 = gateRand(rollEv2);
+
+/* ===== 作業枠モードの「次のおすすめ」 ===== */
+var _nextAdvice13 = nextAdvice;
+nextAdvice = function (S) {
+  if (!jobMode()) return _nextAdvice13(S);
+  var jobs = jobsOf(S), free = jobs.length < slotMax(S);
+  if (S.player.sta < 25) return { t: "体力が少なくなっている。「休む」か「休暇をとる」で回復しよう。", tab: "home" };
+  var cv = S.flags.cover || {};
+  var due = S.works.filter(function (w) { return w.author.type === "player" && w.state === "serial" && (cv[w.id] || 0) <= S.t + 1 && !jobs.some(function (j) { return j.a === "write" && j.d.id === w.id; }); })[0];
+  if (due) return { t: "『" + due.title + "』の更新が近い。「作品」タブから執筆しよう。", tab: "works" };
+  if (chancesOf(S).length && free) return { t: "チャンスが届いている。ホームから引き受けてみよう。", tab: "home" };
+  var a = _nextAdvice13(S);
+  if (/週を進める|今週の行動|今週分/.test(a.t)) return { t: free ? "作業枠が空いている。腕を磨く・取材に出るなど、気になる行動を選ぼう。" : "作業枠がいっぱい。終わるのを待ちながら、画面を見て回ろう。", tab: "home" };
+  return a;
 };
 
 function boot() {
