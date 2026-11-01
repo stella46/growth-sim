@@ -216,6 +216,13 @@ body[data-lay=pc] #scrl{bottom:28px}
 .rtbar{height:5px;border-radius:3px;background:rgba(255,255,255,.28);overflow:hidden}.rtbar i{display:block;height:100%;width:0;background:#ffe15a}
 .rtw.big{width:100%}.rtw.big .rtc{display:grid;grid-template-columns:56px 56px 1fr}.rtw.big .rtb{min-height:56px;border-color:var(--line);background:var(--panel);color:var(--ink)}
 .rtw.big .rtb.play{background:#ffe15a;color:#2a2200}.rtw.big .rtbar{background:var(--line);height:7px}.rtw.big .rtbar i{background:var(--accent)}
+.jobs{display:grid;gap:8px;margin-bottom:10px}
+.job{position:relative;min-height:56px;border:1.5px dashed var(--line);border-radius:12px;padding:8px 40px 8px 12px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.job.on{border-style:solid;background:var(--panel)}.jl{display:flex;justify-content:space-between;gap:8px}.jl b{font-size:14px}
+.jx{position:absolute;right:4px;top:4px;width:36px;height:36px;border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}
+.jsta{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin-bottom:6px}
+.card.chance{border-left:4px solid #e8a317}.chrow{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}.chrow:first-of-type{border-top:0}
+.chrow p{margin:2px 0}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -227,8 +234,13 @@ body[data-lay=pc] #scrl{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.6.0", SAVE_VER = 1;
+var GAME_VER = "0.7.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.7.0", date: "2026-11-01", notes: [
+    "行動のしくみを刷新しました。",
+    "新しい要素を追加しました。",
+    "細かな調整と不具合の修正を行いました。"
+  ] },
   { ver: "0.6.0", date: "2026-11-01", notes: [
     "時間の流れ方を一新しました。",
     "遊びやすさを中心に、細かな調整を行いました。"
@@ -3139,7 +3151,7 @@ loadSettings = function () { _loadSettings3(); SET.nav = "top"; if (["plan", "fr
 /* ----- 行動のしくみ ----- */
 var AMS = [
   ["plan", "予定を組む", "今週やることを最大3つ選んでおき、「週を進める」で順番に実行します。結果はまとめて届きます。"],
-  ["free", "自由(行動値なし)", "回数の制限はありません。行動すると体力を使い、体力とお金が足りるかぎり何でもできます。「休む」は週に1回です。"],
+  ["free", "作業枠(時間が流れる)", "行動は「作業枠」を使い、数週間かけて進みます。枠は同時に3つ(成長で増えます)。スタッフは自動で作業し、期限つきのチャンスも届きます。"],
   ["ap", "行動値(週3回)", "従来の方式。1週に3回まで、選んだその場で実行されます。"],
   ["ap6", "行動値(週6回・ゆったり)", "従来の方式で、1週に6回までできます。"]
 ];
@@ -3728,6 +3740,217 @@ setInterval(function () {
   if (rtCan()) { G.rtAcc += 100; if (G.rtAcc >= per) { G.rtAcc = 0; rtTick(); } }
   var el = document.getElementById("rtbar"); if (el) el.style.width = Math.min(100, G.rtAcc / per * 100) + "%";
 }, 100);
+
+/* ===== v0.7.0 作業枠・スタッフの自動作業・チャンス(ロジック) ===== */
+/* ---- 調整用の数値(ここを変えるだけで調整できます) ---- */
+var JOBT = {
+  DUR: { rest: 1, job: 1, practice: 1, slush: 1, network: 1, study: 1, train: 2, write: 2, meet: 1, promo: 1, reprint: 1, contest: 2, reroute: 2, sequel: 3, scout: 1, survey: 2, poll: 2, prize: 3, parkevent: 2, doplan: 2, "offer-neg": 1 },
+  SLOT_BASE: 3, SLOT_FAME: [60, 200],     // 作業枠の数: 最初3つ。名声60と200で+1ずつ
+  COVER: 3,                                // 1話書き上げると、そこから何週ぶん「更新している」扱いにするか
+  CH_RATE: 0.13, CH_MAX: 3, CH_LIFE: [4, 8]  // チャンスの出やすさ・同時数・期限(週)
+};
+function jobMode() { return typeof SET !== "undefined" && SET.am === "free"; }
+function slotMax(S) { var n = JOBT.SLOT_BASE; JOBT.SLOT_FAME.forEach(function (f) { if (S.fame >= f) n++; }); return n; }
+function jobsOf(S) { if (!S.jobs) S.jobs = []; return S.jobs; }
+function chancesOf(S) { if (!S.chances) S.chances = []; return S.chances; }
+function jobDur(a) { return JOBT.DUR[a] || 1; }
+function jobKey(j) { return j.a + ":" + ((j.d && (j.d.id || j.d.k || j.d.kind)) || ""); }
+
+function startJob(S, a, d, opt) {
+  opt = opt || {}; var jobs = jobsOf(S);
+  if (jobs.length >= slotMax(S)) return { ok: false, msg: "作業枠がいっぱいです。どれかが終わるのを待ちましょう" };
+  var j = { id: uid("j"), a: a, d: d || {}, start: S.t, dur: opt.dur || jobDur(a), sta: opt.sta != null ? opt.sta : (FREE_STA[a] || 0), res: 0 };
+  j.end = S.t + j.dur;
+  if (jobs.some(function (x) { return jobKey(x) === jobKey(j); }) && a !== "job" && a !== "network") return { ok: false, msg: "同じ作業がすでに進んでいます" };
+  if (a === "rest" && S.player.sta >= 90) return { ok: false, msg: "体力は十分あります" };
+  if (a === "write") {
+    var st = STYLES.find(function (x) { return x.id === j.d.s; }), w = W(S, j.d.id);
+    if (!w || !st) return { ok: false, msg: "作品が見つかりません" };
+    if (w.state !== "serial") return { ok: false, msg: "連載中ではありません" };
+    var cv = (S.flags.cover || {})[w.id] || 0;
+    if (cv > S.t + 3) return { ok: false, msg: "いまは更新が間に合っています。次の話はもう少し先で大丈夫です" };
+    if (S.player.sta < st.st) return { ok: false, msg: "体力が足りない。休みましょう" };
+    j.res = st.st; S.player.sta -= st.st;
+  }
+  if (j.sta && S.player.sta < j.sta) return { ok: false, msg: "体力が足りない。休みましょう" };
+  if (opt.money && S.money < opt.money) return { ok: false, msg: "資金が足りません" };
+  if (j.sta) S.player.sta = Math.max(0, S.player.sta - j.sta);
+  if (opt.money) { S.money -= opt.money; j.money = opt.money; }
+  j.label = opt.label || actLabel(a, j.d, S);
+  jobs.push(j);
+  return { ok: true, msg: j.label + "を始めた(" + j.dur + "週)", job: j };
+}
+function cancelJob(S, id) {
+  var jobs = jobsOf(S), i = jobs.findIndex(function (x) { return x.id === id; }); if (i < 0) return false;
+  var j = jobs[i]; S.player.sta = Math.min(100, S.player.sta + (j.res || 0) + (j.sta || 0)); if (j.money) S.money += j.money;
+  jobs.splice(i, 1); return true;
+}
+function finishJob(S, j, msgs) {
+  var r;
+  S.ap = 50;
+  if (j.res) S.player.sta = Math.min(100, S.player.sta + j.res);
+  if (j.a === "write") delete S.written[j.d.id];
+  try { r = j.a === "chance" ? applyChance(S, j.d.c) : EXEC[j.a](S, j.d); } catch (e) { r = { ok: false, msg: "うまくいかなかった" }; }
+  S.ap = 50;
+  if (r.ok) {
+    if (j.a === "write") { S.flags.cover = S.flags.cover || {}; S.flags.cover[j.d.id] = S.t + 1 + JOBT.COVER; }
+    msgs.push("✔ " + j.label + "…" + r.msg);
+  } else {
+    if (j.sta) S.player.sta = Math.min(100, S.player.sta + j.sta); if (j.money) S.money += j.money;
+    msgs.push("✖ " + j.label + "…" + r.msg);
+  }
+}
+function jobsPre(S, msgs) {
+  var jobs = jobsOf(S), done = jobs.filter(function (j) { return j.end <= S.t + 1; });
+  S.jobs = jobs.filter(function (j) { return j.end > S.t + 1; });
+  done.forEach(function (j) { finishJob(S, j, msgs); });
+  var cv = S.flags.cover || {};
+  S.works.forEach(function (w) { if (w.author.type === "player" && w.state === "serial" && (cv[w.id] || 0) > S.t) S.written[w.id] = true; });
+}
+
+/* ---- チャンス(期限つきの依頼) ---- */
+var CH_KINDS = {
+  press: { name: "雑誌の取材依頼", dur: 1, sta: 3, need: function (S) { return S.works.filter(function (w) { return w.pop > 8 && w.state !== "canceled"; }); }, text: function (w) { return "『" + w.title + "』について話を聞きたいという依頼が届いた。"; } },
+  talk: { name: "講演・イベント出演", dur: 2, sta: 8, need: function (S) { return S.fame >= 12 ? [null] : []; }, text: function () { return "トークイベントへの出演依頼が届いた。謝礼が出る。"; } },
+  fair: { name: "書店フェアの企画", dur: 2, sta: 4, money: 10, need: function (S) { return S.works.filter(function (w) { return w.pop >= 20 && w.state !== "canceled"; }); }, text: function (w) { return "『" + w.title + "』の特設コーナーを作りたいと、書店から相談が来た。(準備に10万円)"; } },
+  collab: { name: "異業種コラボの相談", dur: 3, sta: 10, need: function (S) { return S.fame >= 30 ? [null] : []; }, text: function () { return "他業種の企業から、コラボ企画の相談が来た。"; } },
+  bring: { name: "持ち込み原稿", dur: 1, sta: 2, need: function (S) { return S.unlock.edit && S.pool.length < 6 ? [null] : []; }, text: function () { return "書き手が原稿を持ち込んできた。まず目を通してみよう。"; } },
+  fanmeet: { name: "ファンイベント", dur: 1, sta: 5, need: function (S) { return S.works.filter(function (w) { return w.fans > 3000; }); }, text: function (w) { return "『" + w.title + "』のファンから、交流イベントを開いてほしいと声が上がっている。"; } }
+};
+function spawnChance(S) {
+  var cs = chancesOf(S); if (cs.length >= JOBT.CH_MAX || !ch(JOBT.CH_RATE)) return;
+  var kinds = Object.keys(CH_KINDS), k = pick(kinds), K = CH_KINDS[k], pool = K.need(S); if (!pool.length) return;
+  var w = pick(pool);
+  if (cs.some(function (c) { return c.kind === k && c.wid === (w ? w.id : null); })) return;
+  cs.push({ id: uid("c"), kind: k, wid: w ? w.id : null, title: K.name + (w ? "『" + w.title.slice(0, 8) + "』" : ""), text: K.text(w), dur: K.dur, sta: K.sta, money: K.money || 0, exp: S.t + ri(JOBT.CH_LIFE[0], JOBT.CH_LIFE[1]) });
+}
+function applyChance(S, c) {
+  var w = c.wid ? W(S, c.wid) : null, f = S.fame;
+  switch (c.kind) {
+    case "press": if (!w) return { ok: false, msg: "作品が見つかりません" }; w.promo += 8 + f / 30; S.fame += 1.2; gainSkill(S, "biz", 0.8); return { ok: true, msg: "取材が記事になり、『" + w.title + "』の知名度が上がった" };
+    case "talk": var pay = Math.round(25 + f * 0.3); S.money += pay; S.fame += 1; gainSkill(S, "biz", 1); return { ok: true, msg: "イベントは盛況。謝礼 " + pay + "万円" };
+    case "fair": if (!w) return { ok: false, msg: "作品が見つかりません" }; w.boost += 6; w.fans *= 1.03; S.fame += 0.6; return { ok: true, msg: "特設コーナーが好評で、『" + w.title + "』の動きが良くなった" };
+    case "collab": var pay2 = Math.round(60 + f * 0.5); S.money += pay2; S.fame += 2; gainSkill(S, "biz", 1.4); return { ok: true, msg: "コラボが実現。協力金 " + pay2 + "万円" };
+    case "bring": S.pool.push(genCand(S, "bring")); gainSkill(S, "eye", 1); return { ok: true, msg: "持ち込みを受けた。編集部の候補に加わった" };
+    case "fanmeet": if (!w) return { ok: false, msg: "作品が見つかりません" }; w.fans *= 1.05; S.fame += 0.8; return { ok: true, msg: "ファンの熱気に包まれた" };
+  }
+  return { ok: false, msg: "うまくいかなかった" };
+}
+function takeChance(S, cid) {
+  var cs = chancesOf(S), i = cs.findIndex(function (c) { return c.id === cid; }); if (i < 0) return { ok: false, msg: "このチャンスはもうありません" };
+  var c = cs[i], r = startJob(S, "chance", { c: c }, { dur: c.dur, sta: c.sta, money: c.money, label: c.title });
+  if (r.ok) cs.splice(i, 1); return r;
+}
+
+/* ---- スタッフの自動作業(おまかせ。担当作品だけ指定できる) ---- */
+function staffTarget(S, s) {
+  var live = S.works.filter(function (w) { return w.state === "serial" || w.state === "finished"; });
+  if (s.focus) { var f = W(S, s.focus); if (f) return f; }
+  if (!live.length) return null;
+  var mine = live.filter(function (w) { return w.author.type === "player" || (w.editor && w.editor === s.id); });
+  return pick(mine.length ? mine : live);
+}
+function staffStart(S, s) {
+  var t = null;
+  if (s.role === "editor") { t = staffTarget(S, s); if (t) s.job = { a: "edit", wid: t.id, end: S.t + 2 }; }
+  else if (s.role === "pr") { t = staffTarget(S, s); if (t && S.money > 40) s.job = { a: "pr", wid: t.id, end: S.t + 2 }; }
+  else if (s.role === "parkmgr") { if (S.park.areas.length) s.job = { a: "park", end: S.t + 3 }; }
+}
+function staffFinish(S, s) {
+  var j = s.job; s.job = null; var w = j.wid ? W(S, j.wid) : null;
+  if (j.a === "edit" && w) { var pow = 2 + s.skill / 30; w.q.pol = cl(w.q.pol + pow * 0.6, 5, 95); w.q.story = cl(w.q.story + pow * 0.3 * (0.6 + rnd() * 0.8), 5, 98); w.q.hook = cl(w.q.hook + pow * 0.3 * (0.6 + rnd() * 0.8), 5, 98); s.hits += 0; }
+  if (j.a === "pr" && w) { S.money -= 3; w.promo += 4 + s.skill / 12; }
+  if (j.a === "park") S.park.sat = cl(S.park.sat + 1.5, 0, 100);
+}
+function staffWork(S) {
+  (S.staff || []).forEach(function (s) { if (s.job && S.t + 1 >= s.job.end) staffFinish(S, s); if (!s.job) staffStart(S, s); });
+}
+function staffJobText(S, s) {
+  if (!s.job) return s.role === "animator" || s.role === "producer" ? "自社制作の出番を待っている" : "次の作業を探している";
+  var w = s.job.wid ? W(S, s.job.wid) : null, left = Math.max(1, s.job.end - S.t);
+  return ({ edit: "『" + (w ? w.title : "") + "』の編集作業", pr: "『" + (w ? w.title : "") + "』の宣伝", park: "パークの整備" })[s.job.a] + "(あと" + left + "週)";
+}
+
+function jobsPost(S, msgs) {
+  chancesOf(S); S.chances = S.chances.filter(function (c) { return c.exp >= S.t; });
+  spawnChance(S); staffWork(S);
+  if (msgs.length) S.news = msgs.concat(S.news).slice(0, 10);
+}
+var _tick8 = tick;
+tick = function (S) {
+  if (!jobMode()) return _tick8(S);
+  var msgs = []; jobsPre(S, msgs);
+  var r = _tick8(S);
+  jobsPost(S, msgs);
+  return r;
+};
+
+/* ===== v0.7.0 作業枠・チャンス・スタッフ(画面) ===== */
+var _enter9 = enterGame;
+enterGame = function (S, slot) { S.jobs = S.jobs || []; S.chances = S.chances || []; _enter9(S, slot); };
+
+function slotCard(S) {
+  var jobs = jobsOf(S), mx = slotMax(S), h = '<section class="card plan-card"><h2 class="h2">作業枠 <span class="mono small muted">' + jobs.length + ' / ' + mx + '</span></h2><div class="jobs">';
+  for (var i = 0; i < mx; i++) {
+    var j = jobs[i];
+    if (j) {
+      var pr = (S.t - j.start) / j.dur, left = Math.max(1, j.end - S.t);
+      h += '<div class="job on"><div class="jl"><b>' + esc(j.label) + '</b><span class="mono small muted">あと' + left + '週</span></div>' + bar(Math.max(4, pr * 100), 100, "") + '<button class="jx" data-act="jobcancel" data-id="' + j.id + '" aria-label="中止">×</button></div>';
+    } else h += '<div class="job"><span class="muted small">空き ─ 下の行動から選ぶ</span></div>';
+  }
+  h += '</div><div class="jsta"><span class="small muted">体力</span>' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</div>' +
+    '<p class="small muted">行動は数週間かけて進み、終わると結果が届きます。時間は自動で流れます。' + ((S.staff || []).length ? 'スタッフは自動で作業中です。' : '') + '</p></section>';
+  return h;
+}
+function chancesCard(S) {
+  var cs = chancesOf(S); if (!cs.length) return "";
+  var full = jobsOf(S).length >= slotMax(S);
+  return '<section class="card chance"><h2 class="h2">チャンス <span class="mono small muted">' + cs.length + '</span></h2>' + cs.map(function (c) {
+    return '<div class="chrow"><div><b>' + esc(c.title) + '</b><p class="small muted">' + esc(c.text) + '</p><span class="mono small">期限 あと' + Math.max(0, c.exp - S.t) + '週 ・ 作業' + c.dur + '週' + (c.sta ? ' ・ 体力-' + c.sta : '') + '</span></div>' + btn("引き受ける", "chance", { id: c.id }, "sm pri" + (full ? " dis" : "")) + '</div>';
+  }).join("") + '</section>';
+}
+var _planCard9 = planCard;
+planCard = function (S) { return jobMode() ? slotCard(S) + chancesCard(S) : _planCard9(S); };
+
+var _freeDo9 = freeDo;
+freeDo = function (a, d) {
+  var S = G.S; if (!jobMode()) return _freeDo9(a, d);
+  var dd = {}; for (var k in d) dd[k] = d[k]; delete dd.act;
+  if (a === "doplan") { if (!G.form.plan.title) { toast("題名を決めてください", false); return se("ng"); } dd = { form: JSON.parse(JSON.stringify(G.form.plan)) }; }
+  var r = startJob(S, a, dd); if (!r.ok) { toast(r.msg, false); return se("ng"); }
+  if (a === "doplan") { G.modal = []; G.form.plan.title = ""; G.form.plan.illusId = ""; G.tab = "home"; }
+  se("tap"); toast(r.msg, true); render();
+};
+XACT.jobcancel = function (d) { if (cancelJob(G.S, d.id)) { se("tap"); toast("作業を中止しました", true); render(); } };
+XACT.chance = function (d) { var r = takeChance(G.S, d.id); if (!r.ok) { toast(r.msg, false); return se("ng"); } se("ok"); toast(r.msg, true); render(); };
+XACT.stfocus = function (d) {
+  var S = G.S, s = S.staff.find(function (x) { return x.id === d.id; }); if (!s) return;
+  var ws = S.works.filter(function (w) { return w.state === "serial" || w.state === "finished"; }), ids = [null].concat(ws.map(function (w) { return w.id; }));
+  var i = ids.indexOf(s.focus || null); s.focus = ids[(i + 1) % ids.length]; s.job = null; se("tap"); render();
+};
+
+var _costTag9 = costTag;
+costTag = function (a) {
+  if (!jobMode()) return _costTag9(a);
+  var c = FREE_STA[a]; return jobDur(a) + "週" + (c ? "・体力-" + c : "") + (a === "rest" ? "・体力+45" : "");
+};
+var _actionsCard9 = actionsCard;
+actionsCard = function (S) {
+  var o = _actionsCard9(S); if (!jobMode()) return o;
+  return o.replace("今週の行動", "行動を選ぶ <small class='muted'>(作業枠を1つ使います)</small>").replace("約+20万円 ・ 体力-10", "約+20万円 ・ " + jobDur("job") + "週・体力-10").replace(/体力-15/g, jobDur("practice") + "週")
+    .replace(/(\d)\/4 ・ 体力-15/g, "$1/4 ・ " + jobDur("practice") + "週");
+};
+
+var _vScout9 = vScout;
+vScout = function (S) {
+  var o = _vScout9(S); if (!jobMode() || !(S.staff || []).length) return o;
+  var h = '<h3 class="h3">スタッフの作業 <small class="muted">(おまかせで動きます)</small></h3>' + S.staff.map(function (s) {
+    var f = s.focus ? W(S, s.focus) : null, can = s.role === "editor" || s.role === "pr";
+    return '<section class="card"><div class="cand-h"><b>' + esc(s.name) + '</b><span class="tag">' + STAFF_ROLES[s.role].name + '</span></div><p class="small">' + esc(staffJobText(S, s)) + '</p>' +
+      (can ? '<button class="chip" data-act="stfocus" data-id="' + s.id + '">担当: ' + (f ? '『' + esc(f.title) + '』' : 'おまかせ') + ' ▶</button>' : '') + '</section>';
+  }).join("");
+  return o.replace('<h3 class="h3">採用できる人材</h3>', h + '<h3 class="h3">採用できる人材</h3>');
+};
 
 function boot() {
   loadSettings();
