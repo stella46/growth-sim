@@ -161,6 +161,33 @@ body[data-nav=top] #toast{bottom:28px}
 .sh{flex:none;width:92px;display:flex;flex-direction:column;gap:4px;text-align:left;background:none;border:0;cursor:pointer;scroll-snap-align:start;color:inherit}.sh .cover{width:92px;height:auto;border-radius:6px;box-shadow:0 8px 14px -8px rgba(0,0,0,.5)}.sh b{font-size:12px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fin-row{display:flex;justify-content:space-between;padding:3px 0}.fin-row.tot{border-top:1px dashed var(--line);margin-top:4px;padding-top:6px}.fin-row .up{color:var(--ok)}.fin-row .dn{color:var(--ng)}.fin details{margin:2px 0 4px}
 @media (prefers-reduced-motion:reduce){.cloud{animation:none!important}}
+
+/* v0.5.0 行動のしくみ・整理・PCレイアウト */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}.grid3 .btn{min-height:58px;padding:6px 4px;font-size:13.5px}.grid3 .btn small{font-size:10.5px;text-align:center}
+.acts .h3{margin:12px 0 6px}.chip small{color:var(--mute);margin-left:2px}.chip.on small{color:inherit}
+.slots{display:flex;flex-direction:column;gap:6px;margin:6px 0}.slot{display:flex;align-items:center;gap:10px;border:1.5px dashed var(--line);border-radius:10px;padding:8px 10px;min-height:44px;font-size:13px}.slot b{width:22px;height:22px;border-radius:50%;background:var(--line);display:inline-flex;align-items:center;justify-content:center;font:500 12px "IBM Plex Mono";flex:none}.slot.on{border:1.5px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--panel))}.slot.on b{background:var(--accent);color:#fff}.slot span{flex:1}.slot button{border:0;background:none;font-size:20px;color:var(--mute);cursor:pointer;min-width:32px;min-height:32px}
+.pips-l{display:flex;gap:8px;margin:6px 0}.pip.big{width:22px;height:22px}
+.t2r{margin-left:auto;display:flex;align-items:center;gap:6px}.t2lab{font-size:11px;opacity:.85}.t2r .t2p{margin-left:0}
+.t2plan{border:0;border-radius:999px;background:rgba(255,255,255,.22);color:#fff;font:700 12px "Zen Kaku Gothic New";padding:4px 10px;cursor:pointer;min-height:30px}
+.menub{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:10px;font-size:20px;min-width:44px;min-height:44px;cursor:pointer}
+.tabs2.t5{grid-template-columns:repeat(5,1fr)}
+.more>summary{cursor:pointer;list-style:none;margin:0}.more[open]>summary{margin-bottom:6px}
+.c{text-align:center}
+.pcw{display:grid;grid-template-columns:230px minmax(0,1fr) 340px;gap:18px;max-width:1360px;margin:0 auto;padding:18px 20px}
+.pc-side,.pc-right{position:sticky;top:18px;align-self:start;max-height:calc(100vh - 36px);overflow:auto}
+.pc-side{background:linear-gradient(160deg,#2446C8,#5b3fd0);color:#fff;border-radius:18px;padding:16px 14px;display:flex;flex-direction:column;gap:12px}
+.ps-co{display:flex;flex-direction:column}.ps-co .co{font:400 18px "Dela Gothic One"}.ps-co .small{opacity:.85}.ps-money{display:flex;flex-direction:column;gap:4px}.ps-sta{display:flex;align-items:center;gap:8px}
+.ps-nav{display:flex;flex-direction:column;gap:4px}.ps-nav button{display:flex;align-items:center;gap:10px;border:0;background:none;color:rgba(255,255,255,.85);font:700 14px "Zen Kaku Gothic New";padding:10px 12px;border-radius:12px;cursor:pointer;text-align:left}.ps-nav button i{font-style:normal;font-size:18px;width:24px}.ps-nav button.on{background:#fff;color:var(--ink)}.ps-nav button:hover:not(.on){background:rgba(255,255,255,.16)}
+.ps-nav kbd{margin-left:auto;font:500 10px "IBM Plex Mono";opacity:.6;border:1px solid currentColor;border-radius:4px;padding:0 5px}
+.pc-right{display:flex;flex-direction:column;gap:0}.pc-right .next2.big{width:100%;font-size:18px;padding:14px;margin:6px 0 4px}.wk-h{display:flex;justify-content:space-between}
+.pc-side .bar{background:rgba(255,255,255,.28)}.pc-side .bar i{background:#fff}.pc-side .bar.warn i{background:#ff8c8c}.ps-sta .bar{width:120px;flex:none}
+.wrap.pcm{max-width:none;padding:0 0 60px}
+body[data-lay=pc] #toast{bottom:28px}
+@media (min-width:900px){
+  .veil{background:rgba(10,12,18,.5)}
+  .sheet{left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);width:min(680px,92vw);max-height:86vh;border-radius:18px;border:2px solid var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+  .title{padding-top:60px}
+}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -172,8 +199,14 @@ body[data-nav=top] #toast{bottom:28px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "0.4.1", SAVE_VER = 1;
+var GAME_VER = "0.5.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "0.5.0", date: "2026-11-01", notes: [
+    "「行動のしくみ」を選べるようにしました。予定を組む(既定)／自由(行動値なし・体力とお金が制限)／行動値(週3回)／行動値(週6回・ゆったり)。設定からいつでも変えられます。",
+    "画面を整理しました。タブは「ホーム・作品・編集部・パーク・殿堂」の5つ。展開(アニメ化など)は作品の中に、メニューは右上の☰に移しました。",
+    "ホームは、予定・次のおすすめ・今週の行動を一番上に。風向きや力・ランキングは折りたたみにしました。",
+    "PC(横幅の広い画面)では、左にメニュー・中央に内容・右に「今週」の3列レイアウトになりました。スペースキーで週を進められます。"
+  ] },
   { ver: "0.4.1", date: "2026-11-01", notes: [
     "お金の出入りを追加しました。家賃・生活費・給与・印刷費・パーク維持費・納税・賞与がかかります。ホームの「お金の出入り」で内訳が見られ、融資と返済もできます。",
     "出費に関わるイベント(機材の故障、税務調査、訴訟、台風、取引先の倒産など)や、SNSで話題・電子書籍ブーム・国際ブックフェアなどのイベントを13個追加しました。",
@@ -2542,7 +2575,7 @@ var GUIDE = [
   { h: "困ったときは", b: ["ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "遊び方のヒントや「次のおすすめ」は、「設定」でいつでもON/OFFできます。この説明も、タイトルやメニューの「遊び方」から読み返せます。"] }
 ];
 var TIPS = {
-  home: "ここが拠点です。行動点(●)は1週に3つ。使い切ったら右上の「週を進める」を押しましょう。",
+  home: "ここが拠点です。今週やることを選んで、右上の「週を進める」を押すと時間が進みます。",
   works: "作品をタップすると、読みどころのヒントと、執筆・宣伝などの操作が出ます。",
   scout: "編集部では、才能のある作者を探して契約したり、スタッフを雇ったりできます。",
   media: "人気とファンが育った作品を、アニメ・映画・舞台などにできます。成功すれば大きな収益に。",
@@ -3069,6 +3102,242 @@ vSettings = function () {
   }
   return o;
 };
+
+/* ===== v0.5.0 行動のしくみ(予定/自由/行動値)・画面の整理・PCとスマホの別レイアウト ===== */
+SET.am = "plan"; SET.nav = "top";
+var _loadSettings3 = loadSettings;
+loadSettings = function () { _loadSettings3(); SET.nav = "top"; if (["plan", "free", "ap", "ap6"].indexOf(SET.am) < 0) SET.am = "plan"; };
+
+/* ----- 行動のしくみ ----- */
+var AMS = [
+  ["plan", "予定を組む", "今週やることを最大3つ選んでおき、「週を進める」で順番に実行します。結果はまとめて届きます。"],
+  ["free", "自由(行動値なし)", "回数の制限はありません。行動すると体力を使い、体力とお金が足りるかぎり何でもできます。「休む」は週に1回です。"],
+  ["ap", "行動値(週3回)", "従来の方式。1週に3回まで、選んだその場で実行されます。"],
+  ["ap6", "行動値(週6回・ゆったり)", "従来の方式で、1週に6回までできます。"]
+];
+function amInfo() { return AMS.find(function (a) { return a[0] === SET.am; }) || AMS[0]; }
+function amBlock() {
+  return '<div class="fld"><span>行動のしくみ</span><div class="chips">' + AMS.map(function (a) { return chip(a[1], "setam", { v: a[0] }, SET.am === a[0]); }).join("") + '</div><p class="muted small">' + esc(amInfo()[2]) + 'いつでも切り替えられます。</p></div>';
+}
+function applyAM(S) {
+  var m = SET.am || "plan", nm = m === "ap6" ? 6 : m === "free" ? 50 : 3, old = S.apMax || 3;
+  S.flags = S.flags || {}; S.apMax = nm;
+  if (m === "free") S.ap = 50; else S.ap = Math.max(0, Math.min(nm, old >= 50 ? nm : (S.ap == null ? nm : S.ap) + Math.max(0, nm - old)));
+  if (m !== "plan") S.flags.plan = []; else { planOf(S); S.flags.plan.length = Math.min(S.flags.plan.length, S.ap); }
+}
+var _enterGame3 = enterGame;
+enterGame = function (S, slot) { applyAM(S); _enterGame3(S, slot); };
+
+var AP_ACTS = ["rest", "job", "practice", "slush", "network", "study", "train", "write", "meet", "promo", "reprint", "contest", "reroute", "sequel", "scout", "survey", "poll", "prize", "parkevent", "doplan", "offer-neg"];
+var EXEC = {
+  rest: function (S) { return actRest(S); }, job: function (S) { return actJob(S); }, practice: function (S) { return actPractice(S); }, slush: function (S) { return actSlush(S); },
+  network: function (S) { return actNetwork(S); }, study: function (S, d) { return actStudy(S, d.k); }, train: function (S) { return actTrain(S); },
+  write: function (S, d) { return actWrite(S, d.id, d.s); }, meet: function (S, d) { return actMeet(S, d.id, d.d); }, promo: function (S, d) { return actPromo(S, d.id, +d.l); },
+  reprint: function (S, d) { return actReprint(S, d.id, +d.l); }, contest: function (S, d) { return actContest(S, d.id); }, reroute: function (S, d) { return actReroute(S, d.id); },
+  sequel: function (S, d) { return actSequel(S, d.id); }, scout: function (S, d) { return actScout(S, d.kind); }, survey: function (S, d) { return actSurvey(S, d.id); },
+  poll: function (S, d) { return actPoll(S, d.id); }, prize: function (S) { return actPrize(S); }, parkevent: function (S) { return actParkEvent(S); },
+  doplan: function (S, d) { return actPlan(S, d.form); }, "offer-neg": function (S, d) { return actOfferNeg(S, d.id); }
+};
+var FREE_STA = { rest: 0, job: 0, practice: 0, write: 0, study: 6, network: 5, slush: 5, train: 6, meet: 6, promo: 4, reprint: 3, contest: 4, reroute: 5, sequel: 5, scout: 6, survey: 5, poll: 5, prize: 6, parkevent: 4, doplan: 8, "offer-neg": 4 };
+function actLabel(a, d, S) {
+  var w = d.id ? W(S, d.id) : null, t = w ? "『" + w.title + "』" : "";
+  switch (a) {
+    case "rest": return "休む"; case "job": return "アルバイト"; case "practice": return "習作を書く"; case "slush": return "投稿作を読む"; case "network": return "人脈づくり";
+    case "study": return "腕を磨く(" + (SKILLS[d.k] || "") + ")"; case "train": return "弟子に稽古"; case "write": return t + "を執筆"; case "meet": return t + "の打ち合わせ";
+    case "promo": return t + "の宣伝"; case "reprint": return t + "の増刷"; case "contest": return t + "を賞に応募"; case "reroute": return t + "の路線変更"; case "sequel": return t + "の続編";
+    case "scout": return d.kind === "scout" ? "スカウトに出る" : "投稿サイトを巡る"; case "survey": return t + "のアンケート"; case "poll": return t + "の人気投票";
+    case "prize": return "新人賞を開催"; case "parkevent": return "パークのイベント"; case "doplan": return "新連載『" + (d.form && d.form.title || "") + "』を企画"; case "offer-neg": return "条件の交渉";
+  }
+  return a;
+}
+function planOf(S) { S.flags = S.flags || {}; if (!S.flags.plan) S.flags.plan = []; return S.flags.plan; }
+function planAdd(a, d) {
+  var S = G.S, pl = planOf(S), dd = {}; for (var k in d) dd[k] = d[k];
+  if (a === "doplan") { if (!G.form.plan.title) { toast("題名を決めてください", false); return se("ng"); } dd = { form: JSON.parse(JSON.stringify(G.form.plan)) }; }
+  if (pl.length >= S.ap) { toast("今週の予定は" + S.ap + "つまで。ホームの「今週の予定」から外せます", false); return se("ng"); }
+  var lab = actLabel(a, dd, S);
+  if (a === "write" && pl.some(function (x) { return x.a === "write" && x.d.id === dd.id; })) { toast("この作品の執筆は、もう予定に入っています", false); return se("ng"); }
+  if (a === "rest" && pl.some(function (x) { return x.a === "rest"; }) && S.player.sta > 40) { toast("休むのは、予定に1つで十分です", false); return se("ng"); }
+  pl.push({ a: a, d: dd, label: lab }); se("tap");
+  if (a === "doplan") { G.modal = []; G.form.plan.title = ""; G.form.plan.illusId = ""; G.tab = "home"; }
+  toast("予定に追加(" + pl.length + "/" + S.ap + "):" + lab, true); render();
+}
+function runPlan(S) {
+  var pl = planOf(S).slice(), msgs = []; S.flags.plan = [];
+  pl.forEach(function (it) { var fn = EXEC[it.a], r; if (!fn) return; try { r = fn(S, it.d); } catch (e) { r = { ok: false, msg: "うまくいかなかった" }; } msgs.push((r.ok ? "✔ " : "✖ ") + it.label + "…" + r.msg); });
+  return msgs;
+}
+function freeDo(a, d) {
+  var S = G.S, cost = FREE_STA[a] || 0;
+  if (a === "rest" && S.flags.restT === S.t) { toast("今週はもう休んだ。体力は週が進むと少し戻る", false); return se("ng"); }
+  if (cost && S.player.sta < cost) { toast("体力が足りない。「休む」で回復しよう", false); return se("ng"); }
+  S.ap = 50;
+  var r = a === "doplan" ? actPlan(S, G.form.plan) : EXEC[a](S, d);
+  S.ap = 50;
+  if (r.ok) {
+    if (cost) S.player.sta = Math.max(0, S.player.sta - cost);
+    if (a === "rest") S.flags.restT = S.t;
+    if (a === "doplan") { G.modal = []; G.form.plan.title = ""; G.form.plan.illusId = ""; G.tab = "works"; G.wsub = "works"; }
+    if (a === "job" || a === "practice") se(a === "job" ? "coin" : "write");
+  }
+  applyRes(r); pump();
+}
+var _act3 = act;
+act = function (a, el) {
+  var S = G.S;
+  if (S && AP_ACTS.indexOf(a) > -1) {
+    auResume();
+    var d = {}; if (el && el.dataset) for (var k in el.dataset) d[k] = el.dataset[k];
+    if (SET.am === "plan") return planAdd(a, d);
+    if (SET.am === "free") return freeDo(a, d);
+  }
+  return _act3(a, el);
+};
+function costTag(a) {
+  if (SET.am === "plan") return "＋予定";
+  if (SET.am === "free") { var c = FREE_STA[a]; return a === "rest" ? "体力+45・週1回" : c ? "体力-" + c : ""; }
+  return "行動-1";
+}
+
+/* ----- 前進・各種操作 ----- */
+XACT.next = function () {
+  var S = G.S; if (G.busy) return; var msgs = [];
+  if (SET.am === "plan") msgs = runPlan(S);
+  se("page"); tick(S);
+  if (msgs.length) S.news = msgs.concat(S.news).slice(0, 10);
+  autosave(); toast(dinfo(S.t).label, true); window.scrollTo(0, 0); G.cur = null; pump();
+};
+XACT.unplan = function (d) { var pl = planOf(G.S); pl.splice(+d.i, 1); se("tap"); render(); };
+XACT.setam = function (d) { SET.am = d.v; saveSettings(); if (G.S) applyAM(G.S); se("ok"); render(); };
+XACT.wsub = function (d) { G.wsub = d.v; G.fx = true; se("page"); render(); };
+XACT.tab = function (d) {
+  var t = d.t; if (t === "media") { G.tab = "works"; G.wsub = "media"; } else { G.tab = t; if (t === "works" && !G.wsub) G.wsub = "works"; }
+  G.fx = true; se("page"); window.scrollTo(0, 0); render();
+};
+var _nextAdvice3 = nextAdvice;
+nextAdvice = function (S) {
+  if (SET.am === "plan" && planOf(S).length >= S.ap && S.ap > 0) return { t: "今週の予定がそろった。「週を進める」で、順番に実行されます。", tab: null };
+  if (SET.am === "free" && S.player.sta < 15) return { t: "体力が少なくなっている。「休む」で回復しよう(週に1回)。", tab: "home" };
+  return _nextAdvice3(S);
+};
+var _guideModal3 = guideModal;
+guideModal = function (i) {
+  GUIDE[1].b = SET.am === "plan" ? ["画面の「今週の予定」に、やりたいことを3つまで入れておきます。", "右上の「週を進める ▶」を押すと、予定が順番に実行され、1週間が過ぎます。結果はホームの「今週のできごと」に届きます。", "体力(バー)が減ったら「休む」を予定に入れましょう。"]
+    : SET.am === "free" ? ["回数の制限はなく、いつでも何でも行動できます。そのかわり、行動すると体力を使います。", "体力が足りなくなったら「休む」(週に1回)。お金も大事な制限です。", "区切りがついたら、右上の「週を進める ▶」で時間を進めましょう。"]
+      : ["画面上部の●が「行動点」です。1週間に" + (SET.am === "ap6" ? 6 : 3) + "つ使えます。", "使い切ったら「週を進める ▶」。時間が進み、結果が出ます。", "体力(バー)が減ったら「休む」で回復しましょう。"];
+  GUIDE[5].b = ["長く愛された作品や、実績を重ねた人は「殿堂」に刻まれます。", "毎年の年間ランキングや、ライバル出版社との対決もあります。「実績」を集めて称号も飾れます。", "行動のしくみは、設定の「表示・遊び方」でいつでも変えられます。"];
+  return _guideModal3(i);
+};
+
+/* ----- 設定・新規作成 ----- */
+var _vSet3 = vSettings;
+vSettings = function () {
+  var o = _vSet3().replace(/<div class="fld"><span>操作ボタンの位置<\/span>[\s\S]*?<\/p><\/div>/, "");
+  if ((G.setTab || "sound") === "play") o = o.replace('<div class="fld"><span>遊び方のヒント', amBlock() + '<div class="fld"><span>遊び方のヒント');
+  return o;
+};
+var _vNew3 = vNew;
+vNew = function () { return _vNew3().replace('<div class="fld"><span>難しさ</span>', amBlock() + '<div class="fld"><span>難しさ</span>'); };
+var _vWorkModal3 = vWorkModal;
+vWorkModal = function (S, m) {
+  var o = _vWorkModal3(S, m);
+  if (SET.am === "plan") o = o.replace('<h4 class="h3">登場人物</h4>', '<p class="note small">ここで選んだ行動は「今週の予定」に追加され、「週を進める」で実行されます。</p><h4 class="h3">登場人物</h4>');
+  return o;
+};
+
+/* ----- ホームの部品 ----- */
+function abtn(label, act, data, sub, cls) { return btn(label + '<small>' + sub + '</small>', act, data, cls || ""); }
+function planCard(S) {
+  var m = SET.am;
+  if (m === "plan") {
+    var pl = planOf(S), cap = S.ap, h = '<section class="card plan-card"><h2 class="h2">今週の予定 <span class="mono small muted">' + pl.length + ' / ' + cap + '</span></h2><div class="slots">';
+    for (var i = 0; i < cap; i++) h += pl[i] ? '<div class="slot on"><b>' + (i + 1) + '</b><span>' + esc(pl[i].label) + '</span><button data-act="unplan" data-i="' + i + '" aria-label="外す">×</button></div>' : '<div class="slot"><b>' + (i + 1) + '</b><span class="muted">空き ─ 下の行動から選ぶ</span></div>';
+    return h + '</div><p class="small muted">予定は「週を進める」を押したときに、1から順に実行されます。</p></section>';
+  }
+  if (m === "free") return '<section class="card plan-card"><h2 class="h2">体力</h2>' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '<p class="small muted">行動すると体力を使います。回数の制限はありません。「休む」は週に1回(+45)。</p></section>';
+  var pips = ""; for (var j = 0; j < S.apMax; j++) pips += '<i class="pip big' + (j < S.ap ? " on" : "") + '"></i>';
+  return '<section class="card plan-card"><h2 class="h2">今週の行動値 <span class="mono small muted">あと ' + S.ap + ' 回</span></h2><div class="pips-l">' + pips + '</div><p class="small muted">ボタンを押すと、その場で実行して行動値を1つ使います。0になったら「週を進める」。</p></section>';
+}
+function actionsCard(S) {
+  var me = S.player, h = '<section class="card acts"><h2 class="h2">' + (SET.am === "plan" ? "予定に追加する" : "今週の行動") + '</h2>';
+  h += '<h4 class="h3">体とお金</h4><div class="grid3">' + abtn("🛌 休む", "rest", null, costTag("rest")) + abtn("💼 アルバイト", "job", null, "約+20万円 ・ " + (SET.am === "free" ? "体力-10" : costTag("job"))) + abtn("🤝 人脈づくり", "network", null, "-5万円 ・ " + costTag("network")) + '</div>';
+  h += '<h4 class="h3">腕を磨く</h4><div class="chips">' + Object.keys(SKILLS).map(function (k) { return '<button class="chip" data-act="study" data-k="' + k + '">' + SKILLS[k] + ' <small>' + skWord(me.sk[k]) + '</small></button>'; }).join("") + '</div><p class="muted small">' + costTag("study") + '。選んだ力が伸びます。</p>';
+  var g = "";
+  if (!S.unlock.write) g += abtn("✍️ 習作を書く", "practice", null, me.wrote + "/4 ・ " + (SET.am === "free" ? "体力-15" : costTag("practice")), "pri");
+  else g += abtn("📝 新連載を企画", "plan", null, "企画フォームを開く", "pri");
+  if (!S.unlock.edit) g += abtn("📖 投稿作を読む", "slush", null, me.read + "/4 ・ " + costTag("slush"), "pri");
+  if (me.apprentice) g += abtn("🥋 弟子に稽古", "train", null, costTag("train"));
+  if (!S.unlock.edit && (me.read >= 4 || S.fame >= UNLOCK_FAME)) g += abtn("🏢 編集部を開く", "openoffice", null, officeCost(S) + "万円", "pri");
+  if (!S.unlock.write && (me.wrote >= 4 || S.fame >= UNLOCK_FAME)) g += abtn("🖋️ 筆を執る", "takepen", null, "自分の連載を書く道へ", "pri");
+  if (g) h += '<h4 class="h3">道を拓く</h4><div class="grid3">' + g + '</div>';
+  if (!S.unlock.write || !S.unlock.edit) h += '<p class="small muted">習作を4回で「書き手の道」、投稿作を4回で「見つける道」が開きます。どちらも進めてかまいません。</p>';
+  return h + '</section>';
+}
+function newsCard(S) {
+  var news = S.news.length ? '<ul class="news">' + S.news.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + '</ul>' : '<p class="muted">静かな週だった。</p>';
+  return '<section class="card"><h2 class="h2">今週のできごと</h2>' + news + '</section>';
+}
+function moreCard(S) {
+  var tr = S.trend, me = S.player, r = S.rank.year[0];
+  var h = '<details class="card more"' + (G.pc ? " open" : "") + '><summary class="h2">風向き・自分の力・ランキング</summary><h4 class="h3">世の中の風向き</h4><div class="chips static">' +
+    tr.hot.map(function (g) { return '<span class="tag up">追い風 ' + esc(gname(g, GENRES)) + '</span>'; }).join("") + tr.cold.map(function (g) { return '<span class="tag dn">向かい風 ' + esc(gname(g, GENRES)) + '</span>'; }).join("") + '<span class="tag">注目の題材 ' + esc(gname(tr.th, THEMES)) + '</span></div>' +
+    '<h4 class="h3">あなたの力</h4>' + Object.keys(SKILLS).map(function (k) { return '<div class="skl"><span>' + SKILLS[k] + '</span>' + bar(me.sk[k], 100) + '<em class="small muted">' + skWord(me.sk[k]) + '</em></div>'; }).join("");
+  if (r) h += '<h4 class="h3">昨年のランキング</h4>' + rankList(r.rows.slice(0, 3));
+  return h + '</details>';
+}
+vHome = function (S) {
+  if (G.pc) return tipHtml("home") + heroCard(S) + actionsCard(S) + shelfCard(S) + moreCard(S);
+  return planCard(S) + tipHtml("home") + nextCard(S) + actionsCard(S) + newsCard(S) + shelfCard(S) + finCard(S) + heroCard(S) + moreCard(S);
+};
+function weekPanel(S) {
+  var d = dinfo(S.t);
+  return '<div class="wk-h"><span class="mono small muted">' + d.label + '</span></div><button class="next2 big" data-act="next">週を進める ▶</button><p class="small muted c">キーボード: スペースキーでも進められます</p>' + planCard(S) + nextCard(S) + newsCard(S) + finCard(S);
+}
+
+/* ----- 作品+展開のまとめ ----- */
+var _vWorks3 = vWorks;
+function worksCombo(S) {
+  var sub = G.wsub || "works";
+  return '<div class="chips tabs-s">' + chip("作品", "wsub", { v: "works" }, sub === "works") + chip("展開(アニメ化など)", "wsub", { v: "media" }, sub === "media") + '</div>' + (sub === "media" ? vMedia(S) : vWorks(S));
+}
+function tabBody(S) { return G.tab === "works" ? worksCombo(S) : { home: vHome, scout: vScout, media: vMedia, park: vPark, hall: vHall, menu: vMenu }[G.tab](S); }
+
+/* ----- 画面(スマホ/PC) ----- */
+var TABS5 = [["home", "ホーム", "🏠"], ["works", "作品", "📚"], ["scout", "編集部", "✏️"], ["park", "パーク", "🎡"], ["hall", "殿堂", "🏆"]];
+function staBar(S) { return '<span class="t2lab">体力</span><span class="t2s">' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</span>'; }
+function modeChip(S) {
+  if (SET.am === "plan") return '<button class="t2plan" data-act="tab" data-t="home">予定 ' + planOf(S).length + '/' + S.ap + '</button>';
+  if (SET.am === "free") return "";
+  var ap = ""; for (var i = 0; i < S.apMax; i++) ap += '<i class="pip' + (i < S.ap ? " on" : "") + '"></i>';
+  return '<span class="t2lab">行動</span><span class="t2p">' + ap + '</span>';
+}
+vGame = function () {
+  var S = G.S, d = dinfo(S.t), fin = S.fin, net = fin ? fin.net : 0, dl = fin ? '<span class="dl ' + (net >= 0 ? "up" : "dn") + '">' + (net >= 0 ? "▲" : "▼") + fmtMoney(Math.abs(net)) + '/週</span>' : "";
+  var body = tabBody(S), cur = G.tab === "media" ? "works" : G.tab;
+  if (G.pc) {
+    return '<div class="pcw"><aside class="pc-side"><div class="ps-co"><b class="co">' + esc(S.company) + '</b><span class="small">' + esc(playerTitle(S)) + ' ・ ' + esc(companyRank(S)) + '</span></div>' +
+      '<div class="ps-money"><span class="money2 mono">' + fmtMoney(S.money) + '</span>' + dl + '</div><div class="ps-sta">' + staBar(S) + '</div>' +
+      '<nav class="ps-nav">' + TABS5.map(function (t, i) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (cur === t[0] ? "on" : "") + '"><i>' + t[2] + '</i>' + t[1] + '<kbd>' + (i + 1) + '</kbd></button>'; }).join("") + '<button data-act="tab" data-t="menu" class="' + (cur === "menu" ? "on" : "") + '"><i>☰</i>メニュー<kbd>0</kbd></button></nav></aside>' +
+      '<main class="wrap pcm' + (G.fx ? " rise" : "") + '">' + body + '</main><aside class="pc-right">' + weekPanel(S) + '</aside></div>';
+  }
+  return '<header class="top2"><div class="t2a"><div class="t2n"><b class="co">' + esc(S.company) + '</b><span class="mono small">' + d.label + '</span></div><button class="menub" data-act="tab" data-t="menu" aria-label="メニュー">☰</button><button class="next2" data-act="next">週を進める ▶</button></div>' +
+    '<div class="t2b"><span class="money2 mono">' + fmtMoney(S.money) + '</span>' + dl + '<span class="t2r">' + modeChip(S) + staBar(S) + '</span></div>' +
+    '<nav class="tabs2 t5">' + TABS5.map(function (t) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (cur === t[0] ? "on" : "") + '"><i>' + t[2] + '</i>' + t[1] + '</button>'; }).join("") + '</nav></header>' +
+    '<main class="wrap navtop' + (G.fx ? " rise" : "") + '">' + body + '</main>';
+};
+var PCMQ = window.matchMedia ? window.matchMedia("(min-width: 900px)") : null;
+var _render4 = render;
+render = function () { G.pc = !!(PCMQ && PCMQ.matches) && G.screen === "game"; try { document.body.dataset.lay = G.pc ? "pc" : "m"; } catch (e) { } _render4(); };
+if (PCMQ) { var onMQ = function () { if (typeof render === "function" && G.screen) render(); }; if (PCMQ.addEventListener) PCMQ.addEventListener("change", onMQ); else if (PCMQ.addListener) PCMQ.addListener(onMQ); }
+document.addEventListener("keydown", function (e) {
+  if (!G.S || G.screen !== "game") return; var t = e.target, tag = t && t.tagName; if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "Escape" && G.modal.length && !G.cur && !G.cine) { act("close", null); return; }
+  if (G.modal.length || G.cur || G.cine) return;
+  if (e.key === " " || e.key === "Enter") { if (tag === "BUTTON") return; e.preventDefault(); act("next", null); return; }
+  var map = { "1": "home", "2": "works", "3": "scout", "4": "park", "5": "hall", "0": "menu" };
+  if (map[e.key]) { act("tab", { dataset: { t: map[e.key] } }); }
+});
 
 function boot() {
   loadSettings();
