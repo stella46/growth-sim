@@ -264,6 +264,13 @@ body[data-lay=pc] #scrl{bottom:28px}
 .lvd{display:inline-flex;gap:4px}.lvd i{width:16px;height:6px;border-radius:3px;background:var(--line)}.lvd i.on{background:var(--accent)}
 .inv .btn{margin-top:4px}.tags{display:flex;gap:4px;flex-wrap:wrap}.chron li{margin:3px 0}.places{display:grid;gap:6px;margin-top:8px}
 svg.map{border-radius:12px}
+
+.gd{display:flex;flex-direction:column;height:min(74vh,560px)}.gd .h2{margin:6px 0 4px}.gd-b{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}.gd .gd-dots{margin:10px 0}.gd .grid2{margin-top:0}
+.arow .ah{display:block;font-size:12px;line-height:1.5;color:var(--mute);margin:2px 0 4px}
+.arow.hl{outline:3px solid #ffb800;outline-offset:2px;animation:hlp 1.2s ease-in-out 5}@keyframes hlp{50%{box-shadow:0 0 0 6px rgba(255,184,0,.35)}}
+.card.goal{border:2px solid var(--ink);background:linear-gradient(180deg,#fff8e1,var(--panel))}.goalh{display:flex;justify-content:space-between;align-items:center}.goalt{font:400 17px "Dela Gothic One";margin:6px 0 4px}
+.mlist{display:flex;flex-direction:column;gap:8px;margin:10px 0}.mrow{display:flex;gap:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.mrow.cur{border:2px solid var(--ink);background:#fff8e1}.mrow.dn{opacity:.6}.mk{font-weight:700;width:18px;text-align:center}.mt{flex:1;min-width:0}.mt p{margin:3px 0 6px}
+.credit p{margin:10px 0;line-height:1.7}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -275,8 +282,16 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.4.2", SAVE_VER = 1;
+var GAME_VER = "1.5.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.5.0", date: "2026-11-02", notes: [
+    "「いまの目標」を追加しました。次にやることを示し、ボタンひとつで該当の画面へ案内します。",
+    "「行動」の各項目に、何のための行動かの説明を添えました。",
+    "ボタンを押しても、画面の位置が先頭に戻らないようにしました。",
+    "おまかせ中でも、自分で選んだ行動を優先して始められるようになりました。",
+    "作品の題名の種類を大きく増やし、同じ題名が重ならないようにしました。",
+    "「出典」ボタンを追加し、遊び方の表示位置を固定しました。"
+  ] },
   { ver: "1.4.2", date: "2026-11-03", notes: [
     "画面の明るさを、ゲーム設定からすぐ調整できるようになりました。",
     "一部の画面で文字が読みにくかった表示を直しました。",
@@ -2253,7 +2268,7 @@ function vTitle() {
     '<h1 class="logo">成長<br>シミュレーター</h1>' +
     '<p class="lead">一編の原作が、アニメになり、映画になり、やがて街をつくる。<br>書く人にも、見つける人にもなれる物語。</p>' +
     '<div class="stack">' + btn("はじめから", "newgame", null, "pri big") + (has ? btn("つづきから", "slots", { mode: "load" }, "big") : "") +
-    '<div class="row2">' + btn("引き継ぎ", "code", null, "") + btn("設定", "settings", null, "") + '</div></div>' +
+    '<div class="row2">' + btn("引き継ぎ", "code", null, "") + btn("設定", "settings", null, "") + '</div><div class="row2">' + btn("遊び方", "guide", null, "") + btn("出典", "credits", null, "") + '</div></div>' +
     '<section class="card upd"><h2 class="h2">アップデート情報</h2>' + UPDATES.map(function (u) { return '<div class="upd-i"><b class="mono">v' + u.ver + '</b> <span class="muted mono">' + u.date + '</span><ul>' + u.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + '</ul></div>'; }).join("") + '</section>' +
     '<p class="muted small">' + (CLOUD.ready ? "クラウド保存: 使えます(別の端末からも続きを遊べます)" : "クラウド保存: この環境では使えません(端末内に保存します)") + '</p></div>';
 }
@@ -2787,7 +2802,7 @@ function vTitle() {
     '<h1 class="logo">成長<br>シミュレーター</h1>' +
     '<p class="lead">一編の原作が、アニメになり、映画になり、やがて街をつくる。<br>書く人にも、見つける人にもなれる物語。</p>' +
     '<div class="stack">' + btn("はじめから", "newgame", null, "pri big") + btn(has ? "つづきから" + (used.length > 1 ? "(" + used.length + "つの物語)" : "") : "つづきから(セーブなし)", "cont", null, "big" + (has ? "" : " dis")) + info +
-    '<div class="tgrid">' + btn("遊び方", "guide") + btn("実績・引き継ぎ", "grpRec") + btn("設定・セーブ", "settings") + '</div>' +
+    '<div class="tgrid">' + btn("遊び方", "guide") + btn("出典", "credits") + btn("実績・引き継ぎ", "grpRec") + btn("設定・セーブ", "settings") + '</div>' +
     '<button class="btn tnews" data-act="news">アップデート情報' + (un ? '<span class="newbadge">NEW</span>' : "") + '</button></div>' +
     '<p class="muted small">' + (CLOUD.ready ? "クラウド保存: 使えます(別の端末からも続きを遊べます)" : "データはこの端末に保存されます。端末を変えるときは「実績・引き継ぎ」から。") + '</p>' +
     '<p class="ver mono small muted">試作版 v' + GAME_VER + ' ／ 遊び方ガイド・実績・年表などを追加</p></div>';
@@ -2849,7 +2864,7 @@ function vSettings() {
     h += '<label class="fld"><span>画面の明るさ</span><input type="range" min="0.5" max="1.2" step="0.02" value="' + SET.bright + '" data-rng="bright"></label>' +
       '<div class="fld"><span>遊び方のヒント(各タブの一言解説)</span><div class="chips">' + chip("ON", "setflag", { k: "guide", v: 1 }, !!SET.guide) + chip("OFF", "setflag", { k: "guide", v: 0 }, !SET.guide) + '</div></div>' +
       '<div class="fld"><span>「次のおすすめ」の表示</span><div class="chips">' + chip("ON", "setflag", { k: "hint", v: 1 }, !!SET.hint) + chip("OFF", "setflag", { k: "hint", v: 0 }, !SET.hint) + '</div></div>' +
-      btn("遊び方をもう一度見る", "guide", null, "sm");
+      btn("遊び方をもう一度見る", "guide", null, "sm") + btn("出典", "credits", null, "sm");
   } else {
     h += '<div class="grid2">' + (G.S ? btn("セーブする", "slots", { mode: "save" }, "pri sm") : "") + btn("ロード", "slots", { mode: "cont" }, "sm") + btn("引き継ぎ", "tr", null, "sm") + '</div>' +
       '<h4 class="h3">もしものとき</h4><p class="small muted">物語を上書き・削除する前に、そのスロットの直前の状態が1つだけ控えとして残ります。間違えたときは、ここから戻せます。</p>';
@@ -2932,7 +2947,7 @@ function vMenu(S) {
   if (pts.length > 2) { var mx = Math.max.apply(null, pts.map(function (p) { return p.m; })), mn = Math.min.apply(null, pts.map(function (p) { return p.m; })); spark = '<svg viewBox="0 0 200 50" class="spark"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="' + pts.map(function (p, i) { return (i * 200 / (pts.length - 1)).toFixed(1) + ',' + (46 - (p.m - mn) / Math.max(1, mx - mn) * 42).toFixed(1); }).join(" ") + '"/></svg>'; }
   var nach = ACH.filter(function (a) { return ga()[a.id]; }).length;
   return tipHtml("menu") + '<h2 class="h1">メニュー</h2><div class="grid2">' + btn("セーブする", "slots", { mode: "save" }, "pri") + btn("ロード", "slots", { mode: "cont" }) + btn("引き継ぎ", "tr") + btn("設定", "settings") +
-    btn("実績・称号 <small>" + nach + "/" + ACH.length + "</small>", "ach") + btn("遊び方", "guide") + btn("作品図鑑", "dex") + btn("できごとの記録", "log") + btn("タイトルへ", "totitle") + '</div>' +
+    btn("実績・称号 <small>" + nach + "/" + ACH.length + "</small>", "ach") + btn("遊び方", "guide") + btn("出典", "credits") + btn("作品図鑑", "dex") + btn("できごとの記録", "log") + btn("タイトルへ", "totitle") + '</div>' +
     '<section class="card"><h2 class="h2">会社のあゆみ</h2>' + spark + '<p class="small">名声 ' + Math.round(S.fame) + ' ・ ' + companyRank(S) + ' ・ 累計収益 ' + fmtMoney(S.totalRev) + '</p></section>' +
     '<button class="btn tnews" data-act="news">アップデート情報' + (newsUnseen() ? '<span class="newbadge">NEW</span>' : "") + '</button>';
 }
@@ -4322,7 +4337,6 @@ function buildGuide() {
   pages.push({ h: "業界の仲間と争奪戦", b: ["世の中には、約100人の作家と編集者がいます。「編集部」タブの「業界」で、各社の社長・得意分野・方針を確認でき、挨拶や贈り物で関係を深め、条件がそろえば提携できます。「業界名簿」では顔ぶれや腕前も見られます。毎年、成長・引退・世代交代があります。", "有望な新人は、ライバル社と取り合いになります(編集部タブの「作家の争奪戦」)。契約金の「控えめ・標準・奮発」から選ぶか、「直接会って口説く」で挑みます。勝てそうかどうかの目安が出ます。期限までに決めないと、ライバル社が契約します。", "事務所が大きくなるほど、雇えるスタッフの人数が増えます(10人から最大40人)。"] });
   pages.push({ h: "会社の方針と目標", b: ["毎年のはじめに、会社の方針を選びます(新人発掘/ヒット集中/多角展開/安定経営)。一年間、会社の動きに影響します。", "約3か月ごとに「四半期目標」が届きます。達成すると報酬が出ます。ホームの「経営の目標」で進み具合を見られます。", "連載中の作品は、数か月ごとに「連載会議」で路線(王道・挑戦・ファンサービス)を決めます。長く続いた作品は人気の鮮度が落ちやすいので、路線の変更が助けになります。", "年に数回、新人賞・夏の大型イベント・年間ランキングの発表といった行事があります。"] });
   pages.push({ h: "イベントと設定", b: ["イベントには重要度があります(軽・中・重)。重いものほど、会社や人間関係に大きく関わります。", "「ゲーム設定」(⚙ボタン。パソコンは左上、スマホは画面上部)で、画面の明るさ・時間の速さ・作業枠が空いたときの扱い・イベントのスキップ(全部見る/軽をスキップ/中以下をスキップ)・難易度を、いつでも切り替えられます。「重」のイベントは、スキップの設定にかかわらず自分で選びます。", "ランキングには、ときどき「話題の大型連載」が現れます。連載が長くなると人気の鮮度が落ちるので、新しい連載や路線の変更で入れ替えていきましょう。"] });
-  pages.push({ h: "出典・クレジット", b: ["本作はオリジナルの作品です。作品名・人物名・会社名・団体名は、すべて架空のものです。実在のものとは関係ありません。", "作品の表紙・パークの地図・街並みなどのイラストは、ゲームの中で自動的に描いています(あらかじめ用意した画像ではありません)。", "BGMと効果音は、お使いの端末の音声機能で、その場で作って鳴らしています。", "文字には、Google Fonts で提供されている「Zen Kaku Gothic New」「Dela Gothic One」「IBM Plex Mono」を使っています(いずれも SIL Open Font License 1.1 のもとで公開されているフォントです)。", "セーブデータや設定は、お使いの端末の中にだけ保存されます。"] });
   pages.push({ h: "困ったときは", b: ["自分のステータス(体力・名声・各能力の数値)は、どの画面でも上の「自分のステータス」(パソコンは左の欄)で見られます。通信が遅い・つながらないときは、4秒ほどで保存済みの版から起動し、オフラインでも遊べます。", "お金の出入りは、ホームの「状況」にあります。収入は「作品の売上」「パークの収益」「メディア化の収益」「行動・副業の報酬」などに分けて、作品ごとの売上も見られます。", "スマホのホームは「いま(状況とおすすめ)」「行動(作業枠と行動の選択)」「状況(作品棚・お金・世の中)」の3つに分かれています。上のボタンで切り替えます。", "ホームの「次のおすすめ」が、いまやると良さそうなことを教えてくれます。", "画面の「← 戻る」やスマホの戻る操作で、ひとつ前に戻れます。右下の▲▼で、画面の一番上・一番下へ移動できます。", "メニューの「名前を変える」で、自分や会社の名前をいつでも変えられます。行動のしくみや各種の設定は、設定画面で変えられます。"] });
   GUIDE.length = 0; pages.forEach(function (p) { GUIDE.push(p); });
 }
@@ -7027,6 +7041,272 @@ vPark = function (S) {
   var h = '<h3 class="h3">パーク共通施設 <small class="muted">(区画の外に作る、パーク全体の施設)</small></h3>' + ["station", "hotel", "theater", "fire", "garden"].map(function (k) { return lvCard(S, k); }).join("");
   return o.replace('<h3 class="h3">区画 (', h + '<h3 class="h3">区画 (');
 };
+
+/* ===== v1.5.0 遊びやすさの改善 =====
+   ・題名の重複をなくし、語彙を大きく増やす
+   ・ボタンを押しても画面の位置が先頭に戻らない
+   ・おまかせ中でも、自分で選んだ行動を優先できる
+   ・いまの目標(ミッション)と行動の一言説明
+   ・出典ボタン / 遊び方の表示位置を固定 */
+
+/* ---------- 題名 ---------- */
+var T31 = {
+  adj: ["最果ての", "眠れる", "透明な", "星降る", "忘れられた", "白い", "夜明けの", "不器用な", "秘密の", "遠い", "壊れた", "黄昏の",
+    "蒼い", "紅い", "静かな", "終わらない", "名もなき", "凍てつく", "はじまりの", "やさしい", "嘘つきな", "小さな", "金色の", "真夜中の",
+    "雨上がりの", "迷いの", "月影の", "風の", "ひとりぼっちの", "走り出す", "揺れる", "ささやかな", "夢見がちな", "孤独な", "懐かしい", "かりそめの",
+    "約束された", "さかさまの", "灰色の", "春待ちの", "夏の終わりの", "冬の", "ひみつの", "遥かなる", "沈黙の", "硝子の", "琥珀色の", "あいまいな",
+    "いつかの", "はるかな", "ぼくらの", "わたしの", "気まぐれな", "止まった", "光る", "ほろ苦い", "まぼろしの", "ひそやかな", "うつろう", "ゆるやかな"],
+  noun: ["少女", "魔導書", "探偵", "約束", "放課後", "王国", "旅人", "図書館", "楽団", "花束", "魔女", "航海士", "時計", "雨", "騎士", "街",
+    "手紙", "灯台", "地図", "傘", "夜行列車", "喫茶店", "屋上", "教室", "海辺", "森", "塔", "庭園", "鍵", "仮面", "舞台", "画家", "詩人",
+    "兄弟", "姉妹", "転校生", "先生", "迷子", "怪盗", "伯爵", "姫", "勇者", "賢者", "傭兵", "狩人", "船乗り", "商人", "占い師", "人形",
+    "月", "星", "虹", "雪", "風", "嵐", "朝", "夕暮れ", "夜", "季節", "港", "駅", "橋", "坂道", "路地", "古書店", "音楽室", "食堂",
+    "ピアノ", "万年筆", "羅針盤", "砂時計", "懐中時計", "写真", "日記", "切符", "ランプ", "約款", "遺跡", "迷宮", "列島", "群島", "砂漠",
+    "湖", "洞窟", "城下町", "村", "島", "学園", "診療所", "工房", "劇場", "遊園地", "水族館", "天文台", "温室", "書斎", "回廊", "鐘楼"],
+  noun2: ["物語", "記録", "約束", "日々", "旅", "歌", "記憶", "詩", "手帖", "譚", "叙事詩", "断章", "夜話", "回想", "航路", "足跡", "標", "行方", "続き", "余白"],
+  verb: ["夜を駆ける", "まだ眠らない", "振り向かない", "空を見上げる", "旅に出る", "嘘をつく", "夢を見る", "街を去る", "歌い続ける", "世界を変える",
+    "笑わない", "海を渡る", "朝を待つ", "扉を開く", "名前を呼ぶ", "雨に濡れる", "星を数える", "走り出す", "手を伸ばす", "忘れない"],
+  num: ["七つの", "三人の", "百年目の", "十二番目の", "最後の", "最初の", "二度目の", "千の", "九つの", "五分前の", "ひとつの", "四月の"],
+  kata: ["ノクターン", "エコー", "プリズム", "ブルーム", "パレット", "カノン", "オルゴール", "メロディア", "アトラス", "ラプソディ", "セレナード", "コンパス", "ステラ", "リュミエール", "ソナタ", "アンサンブル", "フロンティア", "ミラージュ", "エチュード", "ハーモニー"]
+};
+var T31recent = [];
+function titlesUsed31() {
+  var u = {}, S = (typeof G !== "undefined") ? G.S : null;
+  T31recent.forEach(function (t) { u[t] = 1; });
+  if (!S) return u;
+  (S.works || []).forEach(function (w) { u[w.title] = 1; });
+  (S.rivalWorks || []).forEach(function (w) { u[w.title] = 1; });
+  (S.pool || []).forEach(function (c) { if (c && c.seed) u[c.seed.title] = 1; });
+  (S.dex || []).forEach(function (d) { u[d.title] = 1; });
+  (S.chart || []).forEach(function (c) { if (c && c.title) u[c.title] = 1; });
+  return u;
+}
+function rawTitle31() {
+  var T = T31, r = rnd();
+  if (r < 0.16) return pick(T.adj) + pick(T.noun);
+  if (r < 0.30) return pick(T.noun) + "と" + pick(T.noun);
+  if (r < 0.42) return pick(T.adj) + pick(T.noun) + "の" + pick(T.noun2);
+  if (r < 0.54) return pick(T.noun) + "の" + pick(T.noun2);
+  if (r < 0.64) return pick(T.noun) + "は" + pick(T.verb);
+  if (r < 0.72) return pick(T.adj) + pick(T.noun) + "と" + pick(T.noun);
+  if (r < 0.80) return pick(T.num) + pick(T.noun);
+  if (r < 0.87) return pick(T.kata) + "と" + pick(T.noun);
+  if (r < 0.93) return pick(T.noun) + "のいない" + pick(T.noun);
+  if (r < 0.97) return pick(T.kata) + "の" + pick(T.noun2);
+  return pick(T.adj) + pick(T.kata);
+}
+mkTitle = function () {
+  var u = titlesUsed31(), t = "", n = 0;
+  do { t = rawTitle31(); n++; } while (u[t] && n < 60);
+  if (u[t]) { var k = 2; while (u[t + "Ⅱ"] && k < 9) { k++; } t = t + (k > 2 ? "・" + k : "") + "Ⅱ"; }
+  T31recent.push(t); if (T31recent.length > 2500) T31recent.shift();
+  return t;
+};
+
+/* ---------- 画面の位置を保つ ---------- */
+var _scrollTo31 = window.scrollTo.bind(window);
+window.scrollTo = function (a, b) {
+  if (arguments.length === 2 && a === 0 && b === 0 && !G.topOK) return;
+  return _scrollTo31.apply(window, arguments);
+};
+function withTop31(fn) { return function () { G.topOK = true; try { return fn.apply(this, arguments); } finally { G.topOK = false; } }; }
+XACT.tab = withTop31(XACT.tab);
+XACT.hseg = withTop31(XACT.hseg);
+goBack = withTop31(goBack);
+var _lastScr31 = null;
+var _render31 = render;
+render = function () {
+  var y = window.scrollY, top = G.topOK, scr = G.screen;
+  _render31();
+  if (!top && y > 0 && scr === _lastScr31) {
+    requestAnimationFrame(function () { if (!G.topOK && window.scrollY < y - 2) _scrollTo31(0, y); });
+  }
+  _lastScr31 = scr;
+  if (G.hlNow) { G.hlNow = false; setTimeout(function () { var e = document.querySelector(".arow.hl, .tabs .hl, .hlbox"); if (e) e.scrollIntoView({ block: "center", behavior: "smooth" }); }, 60); }
+};
+
+/* ---------- おまかせ中でも、選んだ行動を優先できる ---------- */
+var _fillSlots31 = fillSlots;
+fillSlots = function (S) {
+  var before = jobsOf(S).map(function (j) { return j.id; });
+  G.inFill = true; var r;
+  try { r = _fillSlots31(S); } finally { G.inFill = false; }
+  jobsOf(S).forEach(function (j) { if (before.indexOf(j.id) < 0) j.auto = true; });
+  return r;
+};
+var _startJob31 = startJob;
+startJob = function (S, a, d, opt) {
+  var r = _startJob31(S, a, d, opt);
+  if (r.ok || G.inFill || (SET.slotMode || "manual") !== "auto") return r;
+  if (!/いっぱい/.test(r.msg || "")) return r;
+  var jobs = jobsOf(S), cand = null;
+  for (var i = jobs.length - 1; i >= 0; i--) if (jobs[i].auto) { cand = jobs[i]; break; }
+  if (!cand) return r;
+  var lab = cand.label; cancelJob(S, cand.id);
+  var r2 = _startJob31(S, a, d, opt);
+  if (!r2.ok) { // 失敗したときは元に戻す
+    var again = _startJob31(S, cand.a, cand.d, { dur: cand.dur, sta: cand.sta, money: cand.money });
+    if (again.ok && again.job) again.job.auto = true;
+    return r2;
+  }
+  r2.msg = "おまかせの「" + lab + "」を取りやめて、" + r2.msg;
+  return r2;
+};
+
+/* ---------- 行動の一言説明 ---------- */
+var ACTHELP = {
+  rest: "体力を回復します。体力が減ると行動できなくなるので、足りなくなったら休みます。",
+  vacation: "お金を使って、体力を大きく回復します。発想力も少し伸びます。",
+  job: "アルバイトでお金を稼ぎます。資金が足りないときの基本です。",
+  freelance: "文章を書く副業です。アルバイトより稼げますが、体力を使います。",
+  study: "選んだ能力を伸ばします。能力が高いほど、作品が当たりやすくなります。",
+  inputs: "名作を読んで、発想力と文章力を伸ばします。",
+  research: "取材旅行で発想力を大きく伸ばします。お金がかかります。",
+  seminar: "勉強会で交渉力や目利きを伸ばし、名声も少し上がります。",
+  mentor: "先輩に学んで、いちばん低い能力を引き上げます。",
+  network: "人脈をつくって名声を上げます。業界の仲間が増えやすくなります。",
+  sns: "SNSで作品や自分を発信して名声を上げます。お金はかかりません。",
+  signing: "人気作のサイン会を開いて、名声とファンを増やします。",
+  headline: "看板作品を雑誌の巻頭に載せて、人気とランキングを上げます。",
+  practice: "習作を書きます。4回重ねると、自分の連載を始められます。",
+  slush: "投稿作を読みます。4回重ねると、作家を見つける道が開きます。",
+  train: "弟子に稽古をつけて、弟子の能力を伸ばします。",
+  plan: "新しい連載を企画します。ジャンルやテーマを選ぶフォームが開きます。",
+  openoffice: "編集部を開き、作家を見つけて育てる道に進みます。",
+  takepen: "筆を執り、自分で連載を書く道に進みます。"
+};
+var _arow31 = arow;
+arow = function (S, a, d, icon, name, efs, o) {
+  var h = _arow31.apply(this, arguments), key = (o && o.act) || a;
+  var help = ACTHELP[a];
+  if (help) h = h.replace('<span class="efs">', '<span class="ah">' + help + '</span><span class="efs">');
+  if (G.hlUntil && Date.now() < G.hlUntil && G.hl === key) h = h.replace('class="arow', 'class="arow hl');
+  return h;
+};
+
+/* ---------- いまの目標(ミッション) ---------- */
+function msFlag(S, id) { S.flags.ms = S.flags.ms || {}; return !!S.flags.ms[id]; }
+function mine31(S) { return S.works.filter(function (w) { return w.author && w.author.type === "player"; }); }
+var MISSIONS = [
+  { id: "m1", t: "はじめの一歩を踏み出す", how: "「行動」を開き、「習作を書く」か「投稿作を読む」を選びます。選ぶと作業枠が使われ、数週間後に結果が届きます。",
+    done: function (S) { var m = S.player; return (m.wrote || 0) > 0 || (m.read || 0) > 0 || S.unlock.write || S.unlock.edit; },
+    go: function (S) { return { hseg: "act", hl: (S.player.read || 0) > (S.player.wrote || 0) ? "slush" : "practice" }; } },
+  { id: "m2", t: "進む道を開く", how: "同じ行動を4回くり返すと、「自分で連載を書く道」か「作家を見つける道」が開きます。体力が減ったら「休む」を挟みます。",
+    done: function (S) { return S.unlock.write || S.unlock.edit; },
+    go: function (S) { return { hseg: "act", hl: (S.player.read || 0) > (S.player.wrote || 0) ? "slush" : "practice" }; } },
+  { id: "m3", t: "最初の連載を始める", how: "「行動」の『新連載を企画』で、ジャンル・テーマ・主人公を選んで連載を始めます。作家を見つける道なら「編集部」で作家候補を迎えます。",
+    done: function (S) { return S.works.length > 0; },
+    go: function (S) { return S.unlock.write ? { hseg: "act", hl: "plan" } : { tab: "scout" }; } },
+  { id: "m4", t: "連載を続けて育てる", how: "「作品」タブで、連載中の作品の続きを書きます(スタッフがいれば任せられます)。話数が増えると人気や収入が伸びます。",
+    done: function (S) { return S.works.some(function (w) { return (w.eps || 0) >= 3; }); },
+    go: function () { return { tab: "works", wsub: "works" }; } },
+  { id: "m5", t: "体力とお金を確かめる", how: "「ホーム」の『状況』で、お金の出入りと作品の棚を確認できます。体力は上の「自分のステータス」で見られます。",
+    done: function (S) { return msFlag(S, "m5"); },
+    go: function () { return { hseg: "state", flag: "m5" }; } },
+  { id: "m6", t: "作品をアニメや映画に展開する", how: "「作品」タブの『展開』から、人気の出た作品をアニメ・映画・ゲームなどにできます。お金と時間がかかりますが、名声と収入が大きく伸びます。",
+    done: function (S) { return S.works.some(function (w) { return w.media && Object.keys(w.media).length > 0; }); },
+    go: function () { return { tab: "works", wsub: "media" }; } },
+  { id: "m7", t: "編集部で人を迎える", how: "「編集部」タブの『採用・発掘』で、スタッフや作家の候補を迎えます。迎えた人は自動で作業してくれます。",
+    done: function (S) { return (S.staff || []).length > 0; },
+    go: function () { return { tab: "scout" }; } },
+  { id: "m8", t: "ヒット作を生み出す", how: "作品の人気が高まると『ヒット』になります。能力を磨き、続きを欠かさず書き、メディア展開で後押ししましょう。",
+    done: function (S) { return S.works.some(function (w) { return w.hit; }); },
+    go: function () { return { tab: "works", wsub: "works" }; } },
+  { id: "m9", t: "テーマパークをのぞいてみる", how: "「パーク」タブで、人気作を題材にしたテーマパークを建てられます。開園条件を満たすと段階的に開園します。",
+    done: function (S) { return msFlag(S, "m9"); },
+    go: function () { return { tab: "park", flag: "m9" }; } },
+  { id: "m10", t: "殿堂入りを目指す", how: "長く愛された作品は「殿堂」に飾られます。「殿堂」タブで条件と現在の様子を確認できます。",
+    done: function (S) { return S.works.some(function (w) { return w.hall; }) || msFlag(S, "m10"); },
+    go: function () { return { tab: "hall", flag: "m10" }; } }
+];
+function curMission31(S) { for (var i = 0; i < MISSIONS.length; i++) if (!MISSIONS[i].done(S)) return MISSIONS[i]; return null; }
+function goMission31(id) {
+  var S = G.S, m = MISSIONS.find(function (x) { return x.id === id; }); if (!S || !m) return;
+  var g = m.go(S); G.modal = G.modal.filter(function (x) { return x.t !== "missions"; });
+  if (g.flag) { S.flags.ms = S.flags.ms || {}; S.flags.ms[g.flag] = 1; }
+  G.topOK = true;
+  try {
+    if (g.tab) { G.tab = g.tab; if (g.wsub) G.wsub = g.wsub; G.hist = G.hist || []; }
+    else { G.tab = "home"; }
+    if (g.hseg) G.hseg = g.hseg; else if (!g.tab) G.hseg = "now";
+    if (g.hl) { G.hl = g.hl; G.hlUntil = Date.now() + 9000; G.hlNow = true; }
+    G.fx = true; se("page"); render();
+  } finally { G.topOK = false; }
+  if (g.hl) setTimeout(function () { G.hlUntil = 0; }, 9500);
+}
+XACT.missiongo = function (d) { goMission31(d.id); };
+XACT.missions = function () { G.modal = G.modal.filter(function (m) { return m.t !== "missions"; }); G.modal.push({ t: "missions" }); se("tap"); render(); };
+function goalCard31(S) {
+  var cur = curMission31(S), n = MISSIONS.filter(function (m) { return m.done(S); }).length;
+  if (!cur) return '<section class="card goal"><b>🎯 目標をすべて達成しました</b><p class="small muted">ここからは自由に遊べます。作品を育て、会社を大きくして、殿堂入りを増やしましょう。</p>' + btn("目標の一覧", "missions", null, "sm") + '</section>';
+  return '<section class="card goal"><div class="goalh"><b>🎯 いまの目標</b><span class="mono small muted">' + n + ' / ' + MISSIONS.length + '</span></div><h3 class="goalt">' + esc(cur.t) + '</h3><p class="small">' + esc(cur.how) + '</p>' +
+    '<div class="grid2">' + btn("やってみる", "missiongo", { id: cur.id }, "pri sm") + btn("目標の一覧", "missions", null, "sm") + '</div></section>';
+}
+function missionsModal31(S) {
+  var cur = curMission31(S);
+  return '<h3 class="h2">目標の一覧</h3><p class="small muted">上から順に進めると、遊びの流れがつかめます。「やってみる」を押すと、該当する画面へ案内します。</p><div class="mlist">' +
+    MISSIONS.map(function (m) {
+      var dn = m.done(S), isCur = cur && cur.id === m.id;
+      return '<div class="mrow' + (dn ? " dn" : "") + (isCur ? " cur" : "") + '"><span class="mk">' + (dn ? "✓" : (isCur ? "▶" : "・")) + '</span><div class="mt"><b>' + esc(m.t) + '</b><p class="small muted">' + esc(m.how) + '</p>' +
+        (dn ? "" : btn("やってみる", "missiongo", { id: m.id }, "sm")) + '</div></div>';
+    }).join("") + '</div>';
+}
+var _vHome31 = vHome;
+vHome = function (S) {
+  var o = _vHome31(S);
+  if (G.pc) return goalCard31(S) + o;
+  if (G.hseg !== "now") return o;
+  var i = o.indexOf('</div>', o.indexOf('class="hseg"'));
+  return i < 0 ? o : o.slice(0, i + 6) + goalCard31(S) + o.slice(i + 6);
+};
+
+/* ---------- 出典 ---------- */
+function creditsModal31() {
+  return '<h3 class="h2">出典・権利について</h3><div class="credit">' +
+    '<p>本作は、オリジナルのゲームです。</p>' +
+    '<p>作品名・人物名・会社名・団体名・地名・出来事は、すべて架空のものです。実在のものとは関係ありません。</p>' +
+    '<p>文章・イラスト・画面のデザイン・効果音・音楽は、本作のために制作したオリジナルです。他の作品や既存の素材を、複製・転用していません。</p>' +
+    '<p>画面に使っている書体(Dela Gothic One / IBM Plex Mono / Zen Kaku Gothic New)は、SIL Open Font License 1.1 のもとで公開されているフォントで、その条件に従って使用しています。</p>' +
+    '<p>特定の実在作品・キャラクター・ブランドを模倣する意図はありません。</p>' +
+    '</div><div class="grid2">' + btn("閉じる", "close", null, "pri") + '</div>';
+}
+XACT.credits = function () { G.modal = G.modal.filter(function (m) { return m.t !== "credits"; }); G.modal.push({ t: "credits" }); se("tap"); render(); };
+
+var _vModal31 = vModal;
+vModal = function (m) {
+  var close = '<button class="x" data-act="close" aria-label="閉じる">×</button>';
+  if (m.t === "missions") return close + missionsModal31(G.S);
+  if (m.t === "credits") return close + creditsModal31();
+  return _vModal31(m);
+};
+
+/* ---------- 遊び方: 位置を固定 / ページ追加 ---------- */
+var _buildGuide31 = buildGuide;
+buildGuide = function () {
+  _buildGuide31();
+  if (GUIDE.some(function (g) { return g.h === "いまの目標と行動の選び方"; })) return;
+  var at = GUIDE.findIndex(function (g) { return g.h === "最初の一歩"; });
+  var pg = {
+    h: "いまの目標と行動の選び方", b: [
+      "ホームの「いま」に、次にやることを示す「いまの目標」が出ます。「やってみる」を押すと、その行動のある画面まで案内します。目標の一覧もそこから開けます。",
+      "「行動」の各項目には、何のための行動かを一言で書いてあります。迷ったら、体力が減っていれば「休む」、お金が少なければ「アルバイト」、それ以外は能力を伸ばす行動を選びます。",
+      "作業枠が「おまかせ」のときも、自分で選んだ行動を優先できます。枠が埋まっていれば、おまかせで始まった作業を取りやめて、選んだ行動を始めます(使った体力やお金は戻ります)。"
+    ]
+  };
+  GUIDE.splice(at < 0 ? 2 : at + 1, 0, pg);
+  var last = GUIDE[GUIDE.length - 1];
+  if (last && last.h === "困ったときは") last.b.push("権利や出典については、メニューや設定にある「出典」ボタンから確認できます。");
+};
+guideModal = function (i) {
+  buildGuide(); i = Math.max(0, Math.min(GUIDE.length - 1, i | 0));
+  return '<div class="gd"><div class="gd-n mono">' + (i + 1) + ' / ' + GUIDE.length + '</div><h3 class="h2">' + esc(GUIDE[i].h) + '</h3>' +
+    '<div class="gd-b">' + GUIDE[i].b.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join("") + '</div>' +
+    '<div class="gd-dots">' + GUIDE.map(function (g, k) { return '<i class="' + (k === i ? "on" : "") + '"></i>'; }).join("") + '</div>' +
+    '<div class="grid2">' + (i > 0 ? btn("◀ 前へ", "gdir", { d: -1 }) : btn("あとで読む", "close")) + (i < GUIDE.length - 1 ? btn("次へ ▶", "gdir", { d: 1 }, "pri") : btn("はじめる", "close", null, "pri")) + '</div></div>';
+};
+XACT.gdir = function (d) {
+  var top = G.modal[G.modal.length - 1]; top.i = Math.max(0, Math.min(GUIDE.length - 1, (top.i || 0) + (+d.d))); se("page"); render();
+};
+buildGuide();
 
 function boot() {
   loadSettings();
