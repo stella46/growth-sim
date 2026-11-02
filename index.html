@@ -7077,7 +7077,7 @@ function titlesUsed31() {
   (S.rivalWorks || []).forEach(function (w) { u[w.title] = 1; });
   (S.pool || []).forEach(function (c) { if (c && c.seed) u[c.seed.title] = 1; });
   (S.dex || []).forEach(function (d) { u[d.title] = 1; });
-  (S.chart || []).forEach(function (c) { if (c && c.title) u[c.title] = 1; });
+  try { var ch = S.chart; (Array.isArray(ch) ? ch : (ch && (ch.rows || ch.list || ch.now)) || []).forEach(function (c) { if (c && c.title) u[c.title] = 1; }); } catch (e) { }
   return u;
 }
 function rawTitle31() {
