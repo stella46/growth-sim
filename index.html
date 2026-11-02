@@ -278,6 +278,11 @@ svg.map{border-radius:12px}
 .gs-h{gap:6px}.gs-h .small{white-space:nowrap;font-size:11px}.gs-h b{white-space:nowrap}
 #scrl button{width:40px;height:40px;opacity:.78}#scrl{right:8px;gap:6px}
 .card.rankc .rk{font:400 17px "Dela Gothic One"}.card.coauto{margin:8px 0}.card.coauto .chips{display:flex;gap:6px}
+
+.tgrid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px}.tgrid .btn{width:100%;min-height:56px}
+.credit-f{margin-top:14px}.credit-f .btn{width:100%;min-height:52px}
+.pcw>*{min-width:0}.pcm{min-width:0;overflow-x:clip}
+@media (min-width:900px) and (max-width:1199px){.pcw{grid-template-columns:200px minmax(0,1fr) 290px;gap:12px;padding:14px 12px}.pc-side{padding:14px 12px}}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -7283,7 +7288,7 @@ function creditsModal31() {
     '<p>文章・イラスト・画面のデザイン・効果音・音楽は、本作のために制作したオリジナルです。他の作品や既存の素材を、複製・転用していません。</p>' +
     '<p>画面に使っている書体(Dela Gothic One / IBM Plex Mono / Zen Kaku Gothic New)は、SIL Open Font License 1.1 のもとで公開されているフォントで、その条件に従って使用しています。</p>' +
     '<p>特定の実在作品・キャラクター・ブランドを模倣する意図はありません。</p>' +
-    '</div><div class="grid2">' + btn("閉じる", "close", null, "pri") + '</div>';
+    '</div><div class="credit-f">' + btn("閉じる", "close", null, "pri") + '</div>';
 }
 XACT.credits = function () { G.modal = G.modal.filter(function (m) { return m.t !== "credits"; }); G.modal.push({ t: "credits" }); se("tap"); render(); };
 
