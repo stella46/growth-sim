@@ -283,6 +283,10 @@ svg.map{border-radius:12px}
 .credit-f{margin-top:14px}.credit-f .btn{width:100%;min-height:52px}
 .pcw>*{min-width:0}.pcm{min-width:0;overflow-x:clip}
 @media (min-width:900px) and (max-width:1199px){.pcw{grid-template-columns:200px minmax(0,1fr) 290px;gap:12px;padding:14px 12px}.pc-side{padding:14px 12px}}
+
+.lifeo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.lo{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px;border:1.5px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);cursor:pointer;min-height:84px}.lo.on{border-color:var(--ink);background:#fff8e1;box-shadow:0 0 0 2px var(--ink) inset}.lo small{color:var(--mute);font-size:11.5px}.lo .efs{font-size:11px;color:#14703f;margin-top:auto}
+.card.lifest .skl2{margin:6px 0}.card.comp{margin:10px 0}.life .btn.pri.big[disabled]{opacity:.45}
+@media (min-width:900px){.life{max-width:760px}.lifeo{grid-template-columns:repeat(3,1fr)}}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -294,8 +298,15 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.6.1", SAVE_VER = 1;
+var GAME_VER = "1.7.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.7.0", date: "2026-11-05", notes: [
+    "出版社に就職する道は、幼少期から始まるようになりました。育ちを選んで能力を身につけます。",
+    "就職活動を追加しました。大手から小さな出版社まで17社から、受ける会社を選べます。",
+    "能力・学歴・経験によって、合否が変わります。",
+    "副業の扱いは会社ごとに違います。相談できる会社もあります。",
+    "起業は、いつでもできるようになりました。"
+  ] },
   { ver: "1.6.1", date: "2026-11-05", notes: [
     "出版社に就職して始める道を、全面的に作り直しました。はじめから、規模のある会社に入社します。",
     "給与は会社の資金とは別の「貯金」に入るようになりました。",
@@ -7373,7 +7384,7 @@ playerTitle = function (S) {
 function rankTick32(S) {
   if (!S.player.pub) return;
   var r = S.player.rank || 0;
-  S.player.wallet = (S.player.wallet || 0) + RANKS32[r].pay; S.money -= RANKS32[r].pay;
+  var pay = Math.round(RANKS32[r].pay * (S.player.payMul || 1) * 10) / 10; S.player.wallet = (S.player.wallet || 0) + pay; S.money -= pay;
   if (S.t % 4 !== 0 || r >= RANKS32.length - 1) return;
   var nx = RANKS32[r + 1];
   if (nx.need(S)) {
@@ -7385,11 +7396,11 @@ function rankTick32(S) {
 }
 function rankInfo32(S) {
   var r = S.player.rank || 0, nx = RANKS32[r + 1], w = Math.round(S.player.wallet || 0);
-  return '<section class="card rankc"><h2 class="h2">あなたの役職</h2><p><b class="rk">' + esc(rankName32(S)) + '</b> <span class="small muted">週の給与 ' + RANKS32[r].pay + '万円(会社から支給)</span></p>' +
+  return '<section class="card rankc"><h2 class="h2">あなたの役職</h2><p><b class="rk">' + esc(rankName32(S)) + '</b> <span class="small muted">週の給与 ' + Math.round(RANKS32[r].pay * (S.player.payMul || 1) * 10) / 10 + '万円(会社から支給)</span></p>' +
     '<p class="small">貯金 <b class="mono">' + fmtMoney(w) + '</b> <span class="muted">(給与はここに貯まります。会社の資金とは別です)</span></p>' +
     (nx ? '<p class="small muted">次の役職: ' + esc(nx.n) + '(' + RANK_HINT32[r + 1] + ')</p>' : '<p class="small muted">出版社の頂点に立ちました。</p>') +
     '<p class="small muted">あなたは社員です。会社の方針や投資は、役職が上がるほど関われます。</p>' +
-    (S.t >= 96 && w >= 400 ? btn("独立して起業する", "indepask", null, "sm") : '<p class="small muted">独立するには、在籍2年以上・貯金400万円以上が必要です。</p>') + '</section>';
+    btn("独立して起業する", "indepask", null, "sm") + '<p class="small muted">起業はいつでもできます。ただし、貯金が少ないと、小さな会社からの出発になります。</p>' + '</section>';
 }
 var RANK_HINT32 = ["", "半年の在籍、または担当作品を1つ手がける", "自分が契約した作品2つ以上・在籍1年", "自分が契約した作品からヒット1つ・在籍2年", "ヒット2つ以上・在籍3年・部下3人以上", "ヒット4つ以上・在籍5年", "ヒット7つ以上・在籍7年半・会社の累計収益2億円以上"];
 
@@ -7397,13 +7408,16 @@ var RANK_HINT32 = ["", "半年の在籍、または担当作品を1つ手がけ�
 var _newGame32 = newGame;
 newGame = function (o) {
   var f = (typeof G !== "undefined" && G.form && G.form.ng) || {};
-  var pub = f.path === "pub" && !o.noPath;
-  if (pub) o.role = "editor";
+  var pub = f.path === "pub" && !o.noPath, pj = pub && typeof G !== "undefined" ? G.pubJoin : null;
+  if (pub) { o.role = "editor"; if (pj) o.company = pj.def.name; }
   var S = _newGame32(o);
   if (pub) {
     S.player.pub = true; S.player.rank = 0; S.unlock.edit = true; S.unlock.write = false;
-    S.company = (o.company || "名もなき出版社").slice(0, 14);
-    setupPubCompany32(S);
+    var def = pj ? pj.def : COMP33[COMP33.length - 2];
+    S.company = def.name;
+    if (pj) { for (var k in pj.life.sk) S.player.sk[k] = pj.life.sk[k]; S.player.edu = pj.life.edu; S.player.tags = pj.life.tags; }
+    S.player.side = pj ? !!pj.side : false; S.player.payMul = def.pay; S.player.corpId = def.id;
+    setupPubCompany32(S, def);
   }
   return S;
 };
@@ -7412,9 +7426,9 @@ vNew = function () {
   var f = G.form.ng, o = _vNew32();
   if (!f.path) f.path = "author";
   var ch = '<div class="fld"><span>進む道</span><div class="chips">' + chip("作家志望(一般人から)", "ng", { k: "path", v: "author" }, f.path === "author") + chip("出版社に就職", "ng", { k: "path", v: "pub" }, f.path === "pub") + '</div>' +
-    '<p class="muted small">' + (f.path === "pub" ? "編集者として入社し、作家を見つけて育てます。実績を積んで、主任・編集長・取締役、そして社長を目指します。" : "ふつうの人として始まります。書くか、見つけるか、その両方か。何をしてきたかで、道が開けていきます。") + '</p></div>';
+    '<p class="muted small">' + (f.path === "pub" ? "幼少期から育ちを選び、能力を身につけて、出版社への就職に挑みます。会社は規模も社風もさまざまです。" : "ふつうの人として始まります。書くか、見つけるか、その両方か。何をしてきたかで、道が開けていきます。") + '</p></div>';
   o = o.replace('<div class="fld"><span>難しさ</span>', ch + '<div class="fld"><span>難しさ</span>');
-  if (f.path === "pub") o = o.replace('屋号(活動の名前)', '出版社の名前').replace('placeholder="名もなき工房"', 'placeholder="名もなき出版社"');
+  if (f.path === "pub") o = o.replace(/<label class="fld"><span>屋号[\s\S]*?<\/label>/, "");
   return o;
 };
 
@@ -7486,14 +7500,16 @@ UNIT.worldtour = ["総動員", "万人"]; UNIT.global = ["配信開始週の視�
 var _buildGuide32 = buildGuide;
 buildGuide = function () {
   _buildGuide32();
-  if (GUIDE.some(function (g) { return g.h === "出版社で働く道"; })) return;
+  if (GUIDE.some(function (g) { return g.h === "出版社に就職する道"; })) return;
   var at = GUIDE.findIndex(function (g) { return g.h === "いまの目標と行動の選び方"; });
   GUIDE.splice(at < 0 ? 3 : at + 1, 0, {
-    h: "出版社で働く道", b: [
-      "はじめるときに「出版社に就職」を選ぶと、すでに規模のある出版社に、編集者として入社します。会社の資金は会社のもの。あなたの給与は、毎週「貯金」に入ります。",
-      "実績を積むと役職が上がります(新人編集者 → 編集者 → 主任 → 副編集長 → 編集長 → 取締役 → 社長)。役職が上がるほど給与が増えます。昇進は、自分が契約した作品の成果や、在籍年数で決まります。次の役職の条件は「会社」タブで見られます。",
-      "個人の出費(休暇・取材など)は貯金から出ます。社員なのでアルバイトはありません。在籍2年以上で貯金が400万円以上になると、「独立して起業する」を選べます。自分が契約した作品と作家、一部のスタッフを連れて、自分の会社を立ち上げます。",
-      "「会社のおまかせ」は、会社の長にあたる役職が必要です。社員のうちは使えず、編集長になると、編集部の運営(発掘・契約・採用・担当の配置)をおまかせにできます。自分で起業した場合は、はじめから使えます。"
+    h: "出版社に就職する道", b: [
+      "はじめるときに「出版社に就職」を選ぶと、幼少期から高校、進路まで、育ちを選んで能力を身につけます。そのあと就職活動で、受ける会社を選びます。",
+      "会社は大手から小さな町の出版社まで、17社あります。能力・学歴・経験によって、合否が決まります。大きな会社ほど、資金も人も作品も揃っていますが、難関です。受ける前に、合格の見込みが出ます。",
+      "副業の扱いは会社ごとに違います。「副業OK」「副業は要相談」「副業禁止」があり、要相談の会社は、内定後に相談できます。うまくいくこともあれば、認められないことも、まれに内定が取り消されることもあります。",
+      "入社後、給与は毎週「貯金」に入ります。個人の出費(休暇・取材など)は貯金から出ます。実績を積むと、役職が上がります(新人編集者 → … → 社長)。昇進は、自分が契約した作品の成果と、在籍年数で決まります。",
+      "起業はいつでもできます。「会社」タブの「独立して起業する」で、貯金と退職金を元手に、自分が契約した作品と作家、一部のスタッフを連れて、自分の会社を立ち上げます。",
+      "「会社のおまかせ」は、会社の長にあたる役職が必要です。社員のうちは使えず、編集長になると、編集部の運営をおまかせにできます。起業した場合は、はじめから使えます。"
     ]
   });
   var last = GUIDE[GUIDE.length - 1];
@@ -7507,22 +7523,22 @@ MISSIONS.push({ id: "m11", only: "pub", t: "昇進して役職を上げる", how
 function walletOf(S) { return S.player.pub ? (S.player.wallet || 0) : S.money; }
 function moneyLbl(S) { return S.player.pub ? "会社 " + fmtMoney(S.money) : fmtMoney(S.money); }
 /* 入社先は、すでに規模のある出版社 */
-function setupPubCompany32(S) {
-  var base = { easy: 4500, normal: 3000, hard: 2000 }[S.diff] || 3000;
-  S.fame = 60; S.player.wallet = { easy: 80, normal: 50, hard: 30 }[S.diff] || 50; S.player.joined = 0;
+function setupPubCompany32(S, def) {
+  var mul = { easy: 1.3, normal: 1, hard: 0.75 }[S.diff] || 1;
+  S.fame = def.fame; S.player.wallet = Math.round(({ easy: 80, normal: 50, hard: 30 }[S.diff] || 50) * (def.pay >= 1.4 ? 1.5 : 1)); S.player.joined = 0;
   S.money = 999999; G.setup = true;
   try {
-    for (var i = 0; i < 6 && S.hire.length; i++) actHire(S, S.hire[0].id);
+    for (var i = 0; i < def.staff && S.hire.length; i++) { actHire(S, S.hire[0].id); if (!S.hire.length) genHire(S); }
     var eds = S.staff.filter(function (s) { return s.role === "editor"; });
-    for (var k = 0; k < 3; k++) {
-      var c = genCand(S, "scout"); S.pool.push(c);
+    for (var k = 0; k < def.works; k++) {
+      var c = genCand(S, "scout"); if (def.med) c.seed.medium = def.med; S.pool.push(c);
       var r = actSign(S, c.id); if (!r.ok) continue; var w = W(S, r.wid); if (!w) continue;
-      w.pop = ri(32, 58); w.fans = ri(30000, 140000); w.weeks = ri(24, 90); w.eps = ri(18, 70); w.byMe = false;
+      w.pop = ri(30, 40 + Math.min(30, Math.round(def.fame / 6))); w.fans = ri(30000, 90000 + def.fame * 1500); w.weeks = ri(24, 90); w.eps = ri(18, 70); w.byMe = false;
       if (eds.length) w.editor = eds[k % eds.length].id;
     }
   } finally { G.setup = false; }
   S.pool = []; S.hire = []; genHire(S);
-  S.money = base; S.log = []; addLog(S, "出版社に入社した。");
+  S.money = Math.round(def.fund * mul); S.log = []; addLog(S, def.name + "に入社した。");
 }
 var _actSign32 = actSign;
 actSign = function (S, cid) {
@@ -7536,7 +7552,7 @@ var PERSONAL32 = { vacation: 1, inputs: 1, research: 1, seminar: 1, mentor: 1, n
 var _startJob32 = startJob;
 startJob = function (S, a, d, opt) {
   if (S.player.pub) {
-    if (a === "job" || a === "freelance") return { ok: false, msg: "会社員なので、アルバイトや副業は必要ありません" };
+    if ((a === "job" || a === "freelance") && !S.player.side) return { ok: false, msg: "この会社では、副業は認められていません" };
     if (PERSONAL32[a] && opt && opt.money) {
       if ((S.player.wallet || 0) < opt.money) return { ok: false, msg: "貯金が足りません" };
       var o2 = {}; for (var k in opt) o2[k] = opt[k]; var pm = opt.money; o2.money = 0;
@@ -7553,7 +7569,13 @@ cancelJob = function (S, id) {
   var ok = _cancelJob32(S, id); if (ok && wm) S.player.wallet = (S.player.wallet || 0) + wm; return ok;
 };
 var _arow32b = arow;
-arow = function (S, a) { if (S.player.pub && (a === "job" || a === "freelance")) return ""; return _arow32b.apply(this, arguments); };
+arow = function (S, a) { if (S.player.pub && !S.player.side && (a === "job" || a === "freelance")) return ""; return _arow32b.apply(this, arguments); };
+var _finishJob32 = finishJob;
+finishJob = function (S, j, msgs) {
+  var m0 = S.money, r = _finishJob32(S, j, msgs);
+  if (S.player.pub && (j.a === "job" || j.a === "freelance")) { var dm = S.money - m0; if (dm > 0) { S.money -= dm; S.player.wallet = (S.player.wallet || 0) + dm; } }
+  return r;
+};
 var _financeTick32 = financeTick;
 financeTick = function (S, m0, tr0, news) {
   var r = _financeTick32(S, m0, tr0, news);
@@ -7577,14 +7599,14 @@ function indepModal32(S) {
 XACT.indepgo = function () {
   var S = G.S; if (!S.player.pub) return;
   var name = ((G.form.indep && G.form.indep.name) || (S.player.name + "出版")).trim().slice(0, 14) || "名もなき出版社";
-  var sev = RANKS32[S.player.rank || 0].pay * 40, keepW = myWorks32(S);
+  var sev = RANKS32[S.player.rank || 0].pay * (S.player.payMul || 1) * 40, keepW = myWorks32(S);
   var ids = {}; keepW.forEach(function (w) { ids[w.author.id] = 1; });
   S.works = S.works.filter(function (w) { return w.byMe || w.author.type === "player"; });
   S.authors = S.authors.filter(function (a) { return ids[a.id]; });
   S.staff.sort(function (a, b) { return bondOf(b) - bondOf(a); }); S.staff = S.staff.slice(0, 3);
   S.works.forEach(function (w) { if (w.editor && !S.staff.some(function (s) { return s.id === w.editor; })) w.editor = null; });
   S.money = Math.round((S.player.wallet || 0) + sev); S.player.wallet = 0;
-  S.fame = Math.round(S.fame * 0.55); S.company = name; S.player.pub = false; S.player.rank = 0; S.unlock.edit = true;
+  S.fame = Math.round(S.fame * 0.55); S.company = name; S.player.pub = false; S.player.side = false; S.player.rank = 0; S.unlock.edit = true;
   S.pool = []; S.hire = []; genHire(S);
   var msg = "独立した。新会社「" + name + "」を設立(資金 " + fmtMoney(S.money) + ")";
   addLog(S, msg); S.news = [msg].concat(S.news || []).slice(0, 10);
@@ -7595,6 +7617,185 @@ vModal = function (m) {
   if (m.t === "indep") return '<button class="x" data-act="close" aria-label="閉じる">×</button>' + indepModal32(G.S);
   return _vModal32(m);
 };
+
+/* ===== v1.7.0 出版社への就職: 幼少期から始めて、就職活動で会社を選ぶ ===== */
+
+var SK33 = { prose: "文章力", art: "画力", idea: "発想力", eye: "目利き", biz: "交渉力" };
+
+/* ---------- 育ちの選択 ---------- */
+var LIFE33 = [
+  { h: "幼少期", sub: "6〜9歳ごろ", n: 3, opts: [
+    { t: "絵本・読み聞かせ", d: "物語に触れる", g: { prose: 6, idea: 3 } },
+    { t: "お絵かき", d: "描くことが好きになる", g: { art: 7, idea: 2 } },
+    { t: "ごっこ遊び・空想", d: "頭の中の世界が広がる", g: { idea: 7, prose: 1 } },
+    { t: "図鑑を眺める", d: "いろいろなものを見分ける", g: { eye: 6, prose: 2 } },
+    { t: "お店屋さんごっこ", d: "やりとりが楽しい", g: { biz: 6, eye: 2 } },
+    { t: "外で遊び回る", d: "友だちが多くなる", g: { biz: 3, eye: 3, idea: 2 } }
+  ] },
+  { h: "小学校高学年〜中学", sub: "10〜14歳ごろ", n: 3, opts: [
+    { t: "本を読み漁る", d: "図書室の常連", g: { prose: 7, idea: 3 } },
+    { t: "漫画を描く", d: "ノートに描き続ける", g: { art: 7, idea: 3, prose: 1 } },
+    { t: "学級新聞・委員活動", d: "人をまとめる", g: { prose: 4, biz: 5 } },
+    { t: "部活に打ち込む", d: "チームで動く力", g: { biz: 5, eye: 2, idea: 1 } },
+    { t: "塾・習い事", d: "学力がつく", g: { eye: 3, prose: 2 }, edu: 1 },
+    { t: "創作ノートをつける", d: "物語を書きためる", g: { prose: 6, idea: 4 } },
+    { t: "友人と同人誌をつくる", d: "売る体験をする", g: { art: 3, prose: 3, biz: 3 }, tag: "circle" }
+  ] },
+  { h: "高校", sub: "15〜17歳ごろ", n: 3, opts: [
+    { t: "文芸部", d: "書く仲間ができる", g: { prose: 7, eye: 3 } },
+    { t: "美術部", d: "技術を磨く", g: { art: 8, idea: 2 } },
+    { t: "生徒会", d: "調整と交渉を学ぶ", g: { biz: 7, eye: 2 } },
+    { t: "受験勉強", d: "学力を上げる", g: { prose: 3, eye: 3 }, edu: 1 },
+    { t: "アルバイト", d: "社会経験を積む", g: { biz: 5, eye: 1 } },
+    { t: "公募に作品を出す", d: "投稿の経験", g: { prose: 4, idea: 3, eye: 2 }, tag: "contest" },
+    { t: "海外ホームステイ", d: "視野が広がる", g: { idea: 4, biz: 4 }, tag: "abroad" }
+  ] },
+  { h: "進路", sub: "18歳〜", n: 2, edu: true, opts: [
+    { t: "難関大学へ進学", d: "学歴の評価が高い", g: { prose: 3, eye: 3 }, edu: 4, kind: "edu" },
+    { t: "大学へ進学", d: "幅広く学ぶ", g: { prose: 2, eye: 2 }, edu: 3, kind: "edu" },
+    { t: "専門学校へ進学", d: "技術を深める", g: { art: 4, prose: 3 }, edu: 2, kind: "edu" },
+    { t: "進学せず、自分で学ぶ", d: "学歴はつかない", g: { biz: 4, idea: 3 }, edu: 1, kind: "edu" },
+    { t: "出版サークル・文芸サークル", d: "本づくりを体験する", g: { prose: 4, eye: 4 }, tag: "circle" },
+    { t: "出版社のインターン", d: "現場を知る。就職に有利", g: { biz: 5, eye: 3 }, tag: "intern" },
+    { t: "書店でアルバイト", d: "売れる本を肌で知る", g: { eye: 6, biz: 3 }, tag: "shop" },
+    { t: "個人でWeb連載", d: "読者の反応をもらう", g: { prose: 4, idea: 4, biz: 1 }, tag: "web" }
+  ] }
+];
+
+/* ---------- 就職先 ---------- */
+var COMP33 = [
+  { id: "c1", name: "暁星書院", size: "大手", fund: 9000, fame: 130, staff: 10, works: 6, need: 70, focus: "eye", side: "no", pay: 1.5, med: null, d: "老舗の総合出版社。文芸も漫画も手がける業界の顔。" },
+  { id: "c2", name: "蒼樹社", size: "大手", fund: 8000, fame: 120, staff: 9, works: 6, need: 68, focus: "art", side: "consult", pay: 1.4, med: "manga", d: "漫画雑誌で知られる大手。看板作品を数多く抱える。" },
+  { id: "c3", name: "銀鈴社", size: "大手", fund: 7000, fame: 110, staff: 9, works: 5, need: 66, focus: "prose", side: "no", pay: 1.4, med: "novel", d: "文芸に強い名門。賞の権威でも知られる。" },
+  { id: "c4", name: "翠嵐館", size: "中堅", fund: 4500, fame: 85, staff: 8, works: 5, need: 56, focus: "idea", side: "consult", pay: 1.15, med: null, d: "新しい企画に積極的な中堅。若手にも任せる。" },
+  { id: "c5", name: "月白書房", size: "中堅", fund: 4000, fame: 80, staff: 7, works: 4, need: 54, focus: "prose", side: "consult", pay: 1.1, med: "novel", d: "小説中心の堅実な出版社。" },
+  { id: "c6", name: "燦雲社", size: "中堅", fund: 4200, fame: 82, staff: 7, works: 5, need: 55, focus: "art", side: "consult", pay: 1.1, med: "manga", d: "漫画に力を入れる中堅。作家との距離が近い。" },
+  { id: "c7", name: "白檀堂", size: "中堅", fund: 3800, fame: 75, staff: 7, works: 4, need: 52, focus: "eye", side: "ok", pay: 1.05, med: null, d: "児童書と教養書が得意。副業にも寛容。" },
+  { id: "c8", name: "琥珀舎", size: "専門", fund: 2500, fame: 55, staff: 5, works: 3, need: 46, focus: "eye", side: "ok", pay: 1.0, med: "novel", d: "ミステリ専門の出版社。目利きが物を言う。" },
+  { id: "c9", name: "風見出版", size: "専門", fund: 2600, fame: 58, staff: 5, works: 4, need: 45, focus: "idea", side: "consult", pay: 1.0, med: "manga", d: "若い読者向けの作品が中心。流行に敏感。" },
+  { id: "c10", name: "虹橋書林", size: "専門", fund: 2400, fame: 50, staff: 5, works: 3, need: 44, focus: "biz", side: "ok", pay: 1.0, med: null, d: "実用書・学習書で安定。営業力のある人を求める。" },
+  { id: "c11", name: "ハルカ出版", size: "新興", fund: 1800, fame: 35, staff: 4, works: 3, need: 38, focus: "idea", side: "ok", pay: 0.9, med: null, d: "Web発の作品で伸びる新興。自由な社風。" },
+  { id: "c12", name: "黎明ブックス", size: "新興", fund: 1600, fame: 30, staff: 4, works: 3, need: 36, focus: "biz", side: "ok", pay: 0.9, med: null, d: "電子書籍に特化。スピード重視。" },
+  { id: "c13", name: "ノクタ堂", size: "新興", fund: 1500, fame: 28, staff: 3, works: 3, need: 34, focus: "art", side: "ok", pay: 0.9, med: "manga", d: "同人から育った漫画の出版社。" },
+  { id: "c14", name: "夜明け舎", size: "新興", fund: 1400, fame: 25, staff: 3, works: 2, need: 32, focus: "prose", side: "ok", pay: 0.9, med: "novel", d: "文芸の新人を育てる小さな会社。" },
+  { id: "c15", name: "さざなみ書房", size: "小規模", fund: 900, fame: 12, staff: 2, works: 2, need: 26, focus: "eye", side: "ok", pay: 0.8, med: null, d: "町の小さな出版社。少人数で何でもやる。" },
+  { id: "c16", name: "まるき堂", size: "小規模", fund: 700, fame: 8, staff: 2, works: 2, need: 22, focus: "biz", side: "ok", pay: 0.8, med: null, d: "家族経営の出版社。人手が足りない。" },
+  { id: "c17", name: "手帖社", size: "小規模", fund: 800, fame: 10, staff: 2, works: 2, need: 24, focus: "prose", side: "consult", pay: 0.8, med: "novel", d: "地味だが誠実な会社。副業は相談次第。" }
+];
+var SIDE33 = { ok: "副業OK", consult: "副業は要相談", no: "副業禁止" };
+var TAG33 = { circle: "同人・サークル活動", intern: "出版社のインターン", contest: "公募の応募経験", abroad: "海外経験", shop: "書店での勤務", web: "Web連載" };
+
+function lifeAvg33(L) { var s = 0, n = 0; for (var k in SK33) { s += L.sk[k]; n++; } return s / n; }
+function lifeScore33(L, c) {
+  var sc = (L.edu + Math.min(1, (L.eduPre || 0) * 0.5)) * 6 + L.sk[c.focus] * 0.5 + lifeAvg33(L) * 0.4;
+  if (L.tags.intern) sc += 8; if (L.tags.contest) sc += 4; if (L.tags.circle) sc += 3; if (L.tags.shop && (c.focus === "eye" || c.focus === "biz")) sc += 3; if (L.tags.web && c.focus !== "eye") sc += 2;
+  if (L.tags.abroad) sc += 2; return sc + (L.bonus || 0);
+}
+function lifeChance33(L, c) { return Math.max(0.03, Math.min(0.97, 0.5 + (lifeScore33(L, c) - c.need) / 30)); }
+function lifeMark33(p) { return p >= 0.8 ? "◎ 有望" : p >= 0.5 ? "○ 見込みあり" : p >= 0.25 ? "△ 厳しい" : "× かなり厳しい"; }
+
+/* ---------- はじめる ---------- */
+function beginLife33() {
+  var f = G.form.ng;
+  G.life = { ph: 0, pick: [], sk: { prose: 8, art: 8, idea: 8, eye: 8, biz: 8 }, edu: 0, tags: {}, bonus: 0, res: {}, offers: [], year: 0 };
+  G.screen = "life"; se("ok"); render(); window.scrollTo && _scrollTo31(0, 0);
+}
+var _start33 = XACT.start;
+XACT.start = function () {
+  var f = G.form.ng;
+  if (f.path === "pub" && !G.pubJoin) { beginLife33(); return; }
+  _start33.apply(this, arguments); G.pubJoin = null; G.life = null;
+};
+XACT.lifepick = function (d) {
+  var L = G.life, st = LIFE33[L.ph], i = +d.i, at = L.pick.indexOf(i);
+  if (at >= 0) L.pick.splice(at, 1);
+  else {
+    if (st.edu && st.opts[i].kind === "edu") L.pick = L.pick.filter(function (j) { return st.opts[j].kind !== "edu"; });
+    if (L.pick.length >= st.n) L.pick.shift();
+    L.pick.push(i);
+  }
+  se("tap"); render();
+};
+function lifeOk33(L) {
+  var st = LIFE33[L.ph]; if (L.pick.length !== st.n) return false;
+  if (st.edu && !L.pick.some(function (j) { return st.opts[j].kind === "edu"; })) return false; return true;
+}
+XACT.lifenext = function () {
+  var L = G.life, st = LIFE33[L.ph]; if (!lifeOk33(L)) { toast("選択肢を" + st.n + "つ選んでください", false); return; }
+  L.pick.forEach(function (j) {
+    var o = st.opts[j]; for (var k in o.g) L.sk[k] = Math.min(60, L.sk[k] + o.g[k] + ri(-1, 2));
+    if (o.edu) { if (o.kind === "edu") L.edu = o.edu; else L.eduPre = (L.eduPre || 0) + o.edu; }
+    if (o.tag) L.tags[o.tag] = 1;
+  });
+  L.hist = (L.hist || []).concat([{ h: st.h, p: L.pick.map(function (j) { return st.opts[j].t; }) }]);
+  L.pick = []; L.ph++; se("ok"); render(); _scrollTo31(0, 0);
+};
+XACT.lifeapply = function (d) {
+  var L = G.life, c = COMP33.find(function (x) { return x.id === d.id; }); if (!c || L.res[c.id]) return;
+  var ok = rnd() < lifeChance33(L, c); L.res[c.id] = { ok: ok, side: null };
+  if (ok) L.offers.push(c.id);
+  se(ok ? "ok" : "ng"); toast(ok ? c.name + "から内定をもらった" : c.name + "は不採用だった", ok); render();
+};
+XACT.lifeside = function (d) {
+  var L = G.life, c = COMP33.find(function (x) { return x.id === d.id; }), r = L.res[d.id]; if (!c || !r || !r.ok || r.side != null || c.side !== "consult") return;
+  var p = Math.max(0.2, Math.min(0.85, 0.45 + (lifeScore33(L, c) - c.need) / 60));
+  if (rnd() < 0.08) { r.ok = false; r.side = false; L.offers = L.offers.filter(function (x) { return x !== c.id; }); toast("副業の話が響き、内定が取り消された…", false); se("ng"); }
+  else { r.side = rnd() < p; toast(r.side ? "副業を認めてもらえた" : "副業は認めてもらえなかった", r.side); se(r.side ? "ok" : "ng"); }
+  render();
+};
+XACT.lifeyear = function () {
+  var L = G.life; L.year++; var ks = Object.keys(SK33);
+  for (var i = 0; i < 3; i++) { var k = pick(ks); L.sk[k] = Math.min(60, L.sk[k] + ri(3, 6)); }
+  L.bonus = (L.bonus || 0) + 2; L.res = {}; L.offers = []; se("ok"); toast("もう一年、経験を積んだ。能力が少し上がった", true); render();
+};
+XACT.lifejoin = function (d) {
+  var L = G.life, c = COMP33.find(function (x) { return x.id === d.id; }), r = L.res[d.id]; if (!c || !r || !r.ok) return;
+  var side = c.side === "ok" ? true : c.side === "consult" ? !!r.side : false;
+  G.pubJoin = { def: c, life: JSON.parse(JSON.stringify(L)), side: side };
+  G.form.ng.company = c.name; G.screen = "new"; XACT.start();
+};
+
+/* ---------- 画面 ---------- */
+function lifeStat33(L) {
+  var h = '<section class="card lifest"><b class="small">いまの自分</b><div class="skl2">';
+  for (var k in SK33) h += '<div class="srow"><span>' + SK33[k] + '</span>' + bar(L.sk[k], 60, "") + '<em class="mono">' + Math.round(L.sk[k]) + '</em></div>';
+  var tg = Object.keys(L.tags).map(function (t) { return TAG33[t]; });
+  h += '</div><p class="small muted">学歴: ' + (["在学中", "高卒・独学", "専門学校卒", "大学卒", "難関大学卒"][L.edu] || "在学中") + (tg.length ? ' ・ 経験: ' + tg.join("、") : "") + '</p></section>';
+  return h;
+}
+function vLife33() {
+  var L = G.life, back = '<button class="back" data-act="totitle">← タイトルへ</button>';
+  if (L.ph < LIFE33.length) {
+    var st = LIFE33[L.ph];
+    return '<div class="wrap life">' + back + '<p class="mono small muted">出版社への道 ' + (L.ph + 1) + ' / ' + (LIFE33.length + 1) + '</p><h2 class="h1">' + esc(st.h) + '</h2><p class="small muted">' + esc(st.sub) + '。' +
+      (st.edu ? "進学先を1つと、そのほかを1つ" : "") + st.n + 'つ選んでください。選んだことで、能力が伸びます。</p>' + lifeStat33(L) +
+      '<div class="lifeo">' + st.opts.map(function (o, i) {
+        var on = L.pick.indexOf(i) >= 0, g = Object.keys(o.g).map(function (k) { return SK33[k] + "+"; }).join(" ");
+        return '<button class="lo' + (on ? " on" : "") + '" data-act="lifepick" data-i="' + i + '"><b>' + esc(o.t) + '</b><small>' + esc(o.d) + '</small><span class="efs">' + esc(g) + (o.edu ? " 学歴" : "") + '</span></button>';
+      }).join("") + '</div>' + '<button class="btn pri big" data-act="lifenext"' + (lifeOk33(L) ? "" : " disabled") + '>' + (L.ph < LIFE33.length - 1 ? "次へ" : "就職活動へ") + '</button></div>';
+  }
+  var h = '<div class="wrap life">' + back + '<p class="mono small muted">出版社への道 ' + (LIFE33.length + 1) + ' / ' + (LIFE33.length + 1) + '</p><h2 class="h1">就職活動</h2><p class="small muted">受ける会社を選びます。能力と経験で、合否が決まります。何社でも受けられます。内定が出たら、入社する会社を1つ選びます。</p>' + lifeStat33(L);
+  if (L.offers.length) h += '<p class="small"><b>内定 ' + L.offers.length + '社</b> — 入社する会社を選べます。</p>';
+  var order = { "大手": 0, "中堅": 1, "専門": 2, "新興": 3, "小規模": 4 };
+  COMP33.slice().sort(function (a, b) { return order[a.size] - order[b.size] || b.need - a.need; }).forEach(function (c) {
+    var r = L.res[c.id], p = lifeChance33(L, c);
+    h += '<section class="card comp"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags"><span class="tag">' + c.size + '</span><span class="tag ' + (c.side === "ok" ? "up" : c.side === "no" ? "dn" : "") + '">' + SIDE33[c.side] + '</span></span></div>' +
+      '<p class="small">' + esc(c.d) + '</p><p class="small muted">重視する力: ' + SK33[c.focus] + ' ・ 初任給の目安 週' + Math.round(3 * c.pay * 10) / 10 + '万円 ・ 社員 約' + (c.staff + 4) + '人</p>';
+    if (!r) h += '<div class="cand-f"><span class="small">合格の見込み: <b>' + lifeMark33(p) + '</b></span>' + btn("応募する", "lifeapply", { id: c.id }, "pri sm") + '</div>';
+    else if (!r.ok) h += '<p class="small dn">不採用</p>';
+    else {
+      h += '<p class="small up"><b>内定</b>' + (c.side === "consult" ? (r.side == null ? " ・ 副業は未相談" : r.side ? " ・ 副業は認められた" : " ・ 副業は認められなかった") : "") + '</p><div class="grid2">';
+      if (c.side === "consult" && r.side == null) h += btn("副業を相談する<small>うまくいかない恐れも</small>", "lifeside", { id: c.id }, "sm");
+      h += btn("この会社に入社する", "lifejoin", { id: c.id }, "pri sm") + '</div>';
+    }
+    h += '</section>';
+  });
+  if (COMP33.every(function (c) { return L.res[c.id]; }) && !L.offers.length) h += '<section class="card note"><b>どこからも内定が出なかった…</b><p class="small muted">もう一年、経験を積んで挑みなおせます。</p>' + btn("もう一年、経験を積む", "lifeyear", null, "pri") + '</section>';
+  else if (!L.offers.length) h += '<div class="row2">' + btn("もう一年、経験を積む<small>結果はリセット</small>", "lifeyear", null, "sm") + '</div>';
+  return h + '</div>';
+}
+var _vGame33 = vGame;
+vGame = function () { if (G.screen === "life" && G.life) return vLife33(); return _vGame33(); };
 
 function boot() {
   loadSettings();
