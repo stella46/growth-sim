@@ -1,6 +1,6 @@
 // 成長シミュレーター：オフライン対応
 // 開くたびに最新版を取りに行く。ただし 4 秒たっても取れなければ、保存してある版でそのまま起動する。
-const CACHE='growth-sim-v1.7.1';
+const CACHE='growth-sim-v1.8.0';
 const WAIT_MS=4000;
 const CORE=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 const tell=async(type)=>{try{const cs=await self.clients.matchAll({includeUncontrolled:true,type:'window'});cs.forEach(c=>c.postMessage({type}))}catch(e){}};

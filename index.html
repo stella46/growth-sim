@@ -288,6 +288,7 @@ svg.map{border-radius:12px}
 .card.lifest .skl2{margin:6px 0}.card.comp{margin:10px 0}.life .btn.pri.big[disabled]{opacity:.45}
 @media (min-width:900px){.life{max-width:760px}.lifeo{grid-template-columns:repeat(3,1fr)}}
 #asv{position:fixed;left:12px;bottom:96px;z-index:30;background:rgba(20,22,28,.82);color:#fff;font-size:11px;padding:5px 10px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s}#asv.on{opacity:1}body[data-lay=pc] #asv{bottom:20px}
+.arow .sec{display:block;font-size:11.5px;color:#b3261e;margin:0 0 4px}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -299,8 +300,14 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.7.1", SAVE_VER = 1;
+var GAME_VER = "1.8.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.8.0", date: "2026-11-05", notes: [
+    "出版社の社員は、役職によってできることが変わります。権限のないことは、上司に相談して許可をもらう形になりました。",
+    "退職と再就職ができるようになりました。",
+    "就職活動の面接で、副業の方針を質問できます。",
+    "会社に内緒で、副業や趣味の創作を始められるようになりました。続けるほど、会社に知られるおそれがあります。"
+  ] },
   { ver: "1.7.1", date: "2026-11-05", notes: [
     "自動セーブを強化しました。操作のあと、一定時間ごと、画面を離れるときにも保存します。"
   ] },
@@ -7366,14 +7373,15 @@ buildGuide();
 })();
 
 /* ---------- 役職 ---------- */
+function ten32(S) { return S.t - (S.player.joined || 0); }
 var RANKS32 = [
   { n: "新人編集者", pay: 3, need: function () { return true; } },
-  { n: "編集者", pay: 5, need: function (S) { return S.t >= 24 || myWorks32(S).length >= 1; } },
-  { n: "主任", pay: 8, need: function (S) { return myWorks32(S).length >= 2 && S.t >= 48; } },
-  { n: "副編集長", pay: 12, need: function (S) { return myHits32(S) >= 1 && S.t >= 96; } },
-  { n: "編集長", pay: 18, need: function (S) { return myHits32(S) >= 2 && S.t >= 144 && S.staff.length >= 3; } },
-  { n: "取締役", pay: 28, need: function (S) { return myHits32(S) >= 4 && S.t >= 240; } },
-  { n: "社長", pay: 45, need: function (S) { return myHits32(S) >= 7 && S.t >= 360 && S.totalRev >= 20000; } }
+  { n: "編集者", pay: 5, need: function (S) { return ten32(S) >= 24 || myWorks32(S).length >= 1; } },
+  { n: "主任", pay: 8, need: function (S) { return myWorks32(S).length >= 2 && ten32(S) >= 48; } },
+  { n: "副編集長", pay: 12, need: function (S) { return myHits32(S) >= 1 && ten32(S) >= 96; } },
+  { n: "編集長", pay: 18, need: function (S) { return myHits32(S) >= 2 && ten32(S) >= 144 && S.staff.length >= 3; } },
+  { n: "取締役", pay: 28, need: function (S) { return myHits32(S) >= 4 && ten32(S) >= 240; } },
+  { n: "社長", pay: 45, need: function (S) { return myHits32(S) >= 7 && ten32(S) >= 360 && S.totalRev >= 20000; } }
 ];
 function myWorks32(S) { return S.works.filter(function (w) { return w.byMe; }); }
 function myHits32(S) { return myWorks32(S).filter(function (w) { return w.hit; }).length; }
@@ -7420,7 +7428,7 @@ newGame = function (o) {
     var def = pj ? pj.def : COMP33[COMP33.length - 2];
     S.company = def.name;
     if (pj) { for (var k in pj.life.sk) S.player.sk[k] = pj.life.sk[k]; S.player.edu = pj.life.edu; S.player.tags = pj.life.tags; }
-    S.player.side = pj ? !!pj.side : false; S.player.payMul = def.pay; S.player.corpId = def.id;
+    S.player.side = def.side === "ok"; S.player.policy = def.side; S.player.trust = 30; S.player.payMul = def.pay; S.player.corpId = def.id;
     setupPubCompany32(S, def);
   }
   return S;
@@ -7527,9 +7535,10 @@ MISSIONS.push({ id: "m11", only: "pub", t: "昇進して役職を上げる", how
 function walletOf(S) { return S.player.pub ? (S.player.wallet || 0) : S.money; }
 function moneyLbl(S) { return S.player.pub ? "会社 " + fmtMoney(S.money) : fmtMoney(S.money); }
 /* 入社先は、すでに規模のある出版社 */
-function setupPubCompany32(S, def) {
+function setupPubCompany32(S, def, opt) {
+  opt = opt || {};
   var mul = { easy: 1.3, normal: 1, hard: 0.75 }[S.diff] || 1;
-  S.fame = def.fame; S.player.wallet = Math.round(({ easy: 80, normal: 50, hard: 30 }[S.diff] || 50) * (def.pay >= 1.4 ? 1.5 : 1)); S.player.joined = 0;
+  S.fame = def.fame; if (!opt.keep) { S.player.wallet = Math.round(({ easy: 80, normal: 50, hard: 30 }[S.diff] || 50) * (def.pay >= 1.4 ? 1.5 : 1)); S.player.joined = 0; } else S.player.joined = S.t;
   S.money = 999999; G.setup = true;
   try {
     for (var i = 0; i < def.staff && S.hire.length; i++) { actHire(S, S.hire[0].id); if (!S.hire.length) genHire(S); }
@@ -7542,7 +7551,7 @@ function setupPubCompany32(S, def) {
     }
   } finally { G.setup = false; }
   S.pool = []; S.hire = []; genHire(S);
-  S.money = Math.round(def.fund * mul); S.log = []; addLog(S, def.name + "に入社した。");
+  S.money = Math.round(def.fund * mul); if (!opt.keep) S.log = []; addLog(S, def.name + "に入社した。");
 }
 var _actSign32 = actSign;
 actSign = function (S, cid) {
@@ -7556,7 +7565,7 @@ var PERSONAL32 = { vacation: 1, inputs: 1, research: 1, seminar: 1, mentor: 1, n
 var _startJob32 = startJob;
 startJob = function (S, a, d, opt) {
   if (S.player.pub) {
-    if ((a === "job" || a === "freelance") && !S.player.side) return { ok: false, msg: "この会社では、副業は認められていません" };
+    
     if (PERSONAL32[a] && opt && opt.money) {
       if ((S.player.wallet || 0) < opt.money) return { ok: false, msg: "貯金が足りません" };
       var o2 = {}; for (var k in opt) o2[k] = opt[k]; var pm = opt.money; o2.money = 0;
@@ -7573,7 +7582,7 @@ cancelJob = function (S, id) {
   var ok = _cancelJob32(S, id); if (ok && wm) S.player.wallet = (S.player.wallet || 0) + wm; return ok;
 };
 var _arow32b = arow;
-arow = function (S, a) { if (S.player.pub && !S.player.side && (a === "job" || a === "freelance")) return ""; return _arow32b.apply(this, arguments); };
+
 var _finishJob32 = finishJob;
 finishJob = function (S, j, msgs) {
   var m0 = S.money, r = _finishJob32(S, j, msgs);
@@ -7686,7 +7695,8 @@ var COMP33 = [
   { id: "c16", name: "まるき堂", size: "小規模", fund: 700, fame: 8, staff: 2, works: 2, need: 22, focus: "biz", side: "ok", pay: 0.8, med: null, d: "家族経営の出版社。人手が足りない。" },
   { id: "c17", name: "手帖社", size: "小規模", fund: 800, fame: 10, staff: 2, works: 2, need: 24, focus: "prose", side: "consult", pay: 0.8, med: "novel", d: "地味だが誠実な会社。副業は相談次第。" }
 ];
-var SIDE33 = { ok: "副業OK", consult: "副業は要相談", no: "副業禁止" };
+var SIDE33 = { ok: "副業OK", consult: "副業は無理だが、入社後に相談すれば検討してもらえる", no: "副業は禁止(相談も不可)" };
+var SIDE33S = { ok: "副業OK", consult: "入社後に相談可", no: "副業禁止" };
 var TAG33 = { circle: "同人・サークル活動", intern: "出版社のインターン", contest: "公募の応募経験", abroad: "海外経験", shop: "書店での勤務", web: "Web連載" };
 
 function lifeAvg33(L) { var s = 0, n = 0; for (var k in SK33) { s += L.sk[k]; n++; } return s / n; }
@@ -7736,9 +7746,10 @@ XACT.lifenext = function () {
 };
 XACT.lifeapply = function (d) {
   var L = G.life, c = COMP33.find(function (x) { return x.id === d.id; }); if (!c || L.res[c.id]) return;
-  var ok = rnd() < lifeChance33(L, c); L.res[c.id] = { ok: ok, side: null };
+  var ask = !!d.ask, pp = lifeChance33(L, c) - (ask ? (c.side === "no" ? 0.10 : 0.04) : 0);
+  var ok = rnd() < pp; L.res[c.id] = { ok: ok, side: null, asked: ask };
   if (ok) L.offers.push(c.id);
-  se(ok ? "ok" : "ng"); toast(ok ? c.name + "から内定をもらった" : c.name + "は不採用だった", ok); render();
+  se(ok ? "ok" : "ng"); toast((ask ? "面接で副業について質問した。" : "") + (ok ? c.name + "から内定をもらった" : c.name + "は不採用だった"), ok); render();
 };
 XACT.lifeside = function (d) {
   var L = G.life, c = COMP33.find(function (x) { return x.id === d.id; }), r = L.res[d.id]; if (!c || !r || !r.ok || r.side != null || c.side !== "consult") return;
@@ -7754,7 +7765,8 @@ XACT.lifeyear = function () {
 };
 XACT.lifejoin = function (d) {
   var L = G.life, c = COMP33.find(function (x) { return x.id === d.id; }), r = L.res[d.id]; if (!c || !r || !r.ok) return;
-  var side = c.side === "ok" ? true : c.side === "consult" ? !!r.side : false;
+  var side = c.side === "ok";
+  if (G.rehire) { rehire32(G.S, c, side); G.rehire = false; G.life = null; G.screen = "game"; G.tab = "home"; se("ok"); render(); autosave(); return; }
   G.pubJoin = { def: c, life: JSON.parse(JSON.stringify(L)), side: side };
   G.form.ng.company = c.name; G.screen = "new"; XACT.start();
 };
@@ -7762,13 +7774,13 @@ XACT.lifejoin = function (d) {
 /* ---------- 画面 ---------- */
 function lifeStat33(L) {
   var h = '<section class="card lifest"><b class="small">いまの自分</b><div class="skl2">';
-  for (var k in SK33) h += '<div class="srow"><span>' + SK33[k] + '</span>' + bar(L.sk[k], 60, "") + '<em class="mono">' + Math.round(L.sk[k]) + '</em></div>';
+  for (var k in SK33) h += '<div class="srow"><span>' + SK33[k] + '</span>' + bar(L.sk[k], G.rehire ? 100 : 60, "") + '<em class="mono">' + Math.round(L.sk[k]) + '</em></div>';
   var tg = Object.keys(L.tags).map(function (t) { return TAG33[t]; });
   h += '</div><p class="small muted">学歴: ' + (["在学中", "高卒・独学", "専門学校卒", "大学卒", "難関大学卒"][L.edu] || "在学中") + (tg.length ? ' ・ 経験: ' + tg.join("、") : "") + '</p></section>';
   return h;
 }
 function vLife33() {
-  var L = G.life, back = '<button class="back" data-act="totitle">← タイトルへ</button>';
+  var L = G.life, back = G.rehire ? '<button class="back" data-act="rehireback">← やっぱり辞めない</button>' : '<button class="back" data-act="totitle">← タイトルへ</button>';
   if (L.ph < LIFE33.length) {
     var st = LIFE33[L.ph];
     return '<div class="wrap life">' + back + '<p class="mono small muted">出版社への道 ' + (L.ph + 1) + ' / ' + (LIFE33.length + 1) + '</p><h2 class="h1">' + esc(st.h) + '</h2><p class="small muted">' + esc(st.sub) + '。' +
@@ -7781,15 +7793,14 @@ function vLife33() {
   var h = '<div class="wrap life">' + back + '<p class="mono small muted">出版社への道 ' + (LIFE33.length + 1) + ' / ' + (LIFE33.length + 1) + '</p><h2 class="h1">就職活動</h2><p class="small muted">受ける会社を選びます。能力と経験で、合否が決まります。何社でも受けられます。内定が出たら、入社する会社を1つ選びます。</p>' + lifeStat33(L);
   if (L.offers.length) h += '<p class="small"><b>内定 ' + L.offers.length + '社</b> — 入社する会社を選べます。</p>';
   var order = { "大手": 0, "中堅": 1, "専門": 2, "新興": 3, "小規模": 4 };
-  COMP33.slice().sort(function (a, b) { return order[a.size] - order[b.size] || b.need - a.need; }).forEach(function (c) {
+  COMP33.filter(function (c) { return !G.rehire || !G.S || c.id !== G.S.player.corpId; }).slice().sort(function (a, b) { return order[a.size] - order[b.size] || b.need - a.need; }).forEach(function (c) {
     var r = L.res[c.id], p = lifeChance33(L, c);
-    h += '<section class="card comp"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags"><span class="tag">' + c.size + '</span><span class="tag ' + (c.side === "ok" ? "up" : c.side === "no" ? "dn" : "") + '">' + SIDE33[c.side] + '</span></span></div>' +
-      '<p class="small">' + esc(c.d) + '</p><p class="small muted">重視する力: ' + SK33[c.focus] + ' ・ 初任給の目安 週' + Math.round(3 * c.pay * 10) / 10 + '万円 ・ 社員 約' + (c.staff + 4) + '人</p>';
-    if (!r) h += '<div class="cand-f"><span class="small">合格の見込み: <b>' + lifeMark33(p) + '</b></span>' + btn("応募する", "lifeapply", { id: c.id }, "pri sm") + '</div>';
+    h += '<section class="card comp"><div class="cand-h"><b>' + esc(c.name) + '</b><span class="tags"><span class="tag">' + c.size + '</span>' + (r && r.asked ? '<span class="tag ' + (c.side === "ok" ? "up" : c.side === "no" ? "dn" : "") + '">' + SIDE33S[c.side] + '</span>' : '<span class="tag">副業:面接で質問可</span>') + '</span></div>' +
+      '<p class="small">' + esc(c.d) + '</p>' + (r && r.asked ? '<p class="small"><b>副業:</b> ' + esc(SIDE33[c.side]) + '</p>' : '') + '<p class="small muted">重視する力: ' + SK33[c.focus] + ' ・ 初任給の目安 週' + Math.round(3 * c.pay * 10) / 10 + '万円 ・ 社員 約' + (c.staff + 4) + '人</p>';
+    if (!r) h += '<div class="cand-f"><span class="small">合格の見込み: <b>' + lifeMark33(p) + '</b></span></div><div class="grid2">' + btn("応募する", "lifeapply", { id: c.id }, "pri sm") + btn("副業も質問して応募<small>印象が少し下がる</small>", "lifeapply", { id: c.id, ask: 1 }, "sm") + '</div>';
     else if (!r.ok) h += '<p class="small dn">不採用</p>';
     else {
-      h += '<p class="small up"><b>内定</b>' + (c.side === "consult" ? (r.side == null ? " ・ 副業は未相談" : r.side ? " ・ 副業は認められた" : " ・ 副業は認められなかった") : "") + '</p><div class="grid2">';
-      if (c.side === "consult" && r.side == null) h += btn("副業を相談する<small>うまくいかない恐れも</small>", "lifeside", { id: c.id }, "sm");
+      h += '<p class="small up"><b>内定</b></p><div class="grid2">';
       h += btn("この会社に入社する", "lifejoin", { id: c.id }, "pri sm") + '</div>';
     }
     h += '</section>';
@@ -7827,6 +7838,231 @@ function save34(why) {
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") save34("hide"); });
   window.addEventListener("pagehide", function () { save34("hide"); });
 })();
+
+/* ===== v1.8.0 社員の権限・副業の規定・内緒の副業・退職と再就職 ===== */
+
+function trust35(S) { if (S.player.trust == null) S.player.trust = 30; return S.player.trust; }
+function addTrust35(S, n) { S.player.trust = Math.max(0, Math.min(100, trust35(S) + n)); }
+
+/* ---------- 役職ごとの権限 ---------- */
+var CAP35 = [
+  { acts: ["sign"], need: 1, label: "作家との契約" },
+  { acts: ["hire", "assign"], need: 2, label: "スタッフの採用・担当の配置" },
+  { acts: ["fire", "camp", "spec", "fest", "trip", "train2"], need: 3, label: "解雇・広告・特装版・催し・研修" },
+  { acts: ["lease", "poach", "prize2", "promote", "coll"], need: 4, label: "版権の貸し出し・引き抜き・新人賞・役職の任命" },
+  { acts: ["build", "build2", "dept", "invest", "coally", "parkbuild", "parkgo", "parkgo2", "parkup", "popup", "parkmode", "parkpol"], need: 5, label: "拠点・設備・出資・提携・パークの建設と運営" },
+  { acts: ["buyout"], need: 6, label: "他社の買収" }
+];
+function capNeed35(a) {
+  for (var i = 0; i < CAP35.length; i++) if (CAP35[i].acts.indexOf(a) >= 0) return { need: CAP35[i].need, label: CAP35[i].label, grp: CAP35[i] };
+  return null;
+}
+function mediaNeed35() {
+  var m = G.form && G.form.m, def = m && MEDIA[m.type], c = def ? def.cost : 0;
+  return { need: c < 1000 ? 2 : c < 5000 ? 3 : c < 20000 ? 4 : 5, label: "メディア展開(" + (def ? def.name : "") + ")" };
+}
+function permitChance35(S, need) {
+  var gap = Math.max(1, need - (S.player.rank || 0));
+  return Math.max(0.05, Math.min(0.92, 0.62 + (trust35(S) - 30) / 200 - 0.2 * (gap - 1)));
+}
+var _act35 = act;
+act = function (a, el) {
+  var S = G.S;
+  if (S && S.player && S.player.pub && !G.bypass && G.screen === "game") {
+    var c = (a === "mgo") ? mediaNeed35() : capNeed35(a);
+    if (c && (S.player.rank || 0) < c.need) {
+      var d = {}; if (el && el.dataset) for (var k in el.dataset) d[k] = el.dataset[k];
+      G.modal = G.modal.filter(function (m) { return m.t !== "permit"; });
+      G.modal.push({ t: "permit", a: a, d: d, need: c.need, label: c.label }); se("tap"); render(); return;
+    }
+  }
+  return _act35(a, el);
+};
+XACT.permitgo = function () {
+  var S = G.S, m = G.modal[G.modal.length - 1]; if (!m || m.t !== "permit") return;
+  var dn = (S.player.deny || {})[m.a];
+  if (dn && dn > S.t) { toast("先日断られたばかりです。しばらくしてから相談しましょう", false); se("ng"); return; }
+  var p = permitChance35(S, m.need);
+  G.modal = G.modal.filter(function (x) { return x !== m; });
+  if (rnd() < p) {
+    addTrust35(S, 1); toast("許可がおりた", true); se("ok");
+    G.bypass = true; try { act(m.a, { dataset: m.d }); } finally { G.bypass = false; }
+  } else {
+    S.player.deny = S.player.deny || {}; S.player.deny[m.a] = S.t + 4; addTrust35(S, -3);
+    toast("「いまのあなたには早い」と断られた", false); se("ng"); render();
+  }
+};
+function permitModal35(S, m) {
+  var p = permitChance35(S, m.need), mark = p >= 0.7 ? "通りそう" : p >= 0.45 ? "五分五分" : p >= 0.25 ? "厳しそう" : "かなり厳しそう";
+  return '<h3 class="h2">権限がありません</h3><p>「' + esc(m.label) + '」は、<b>' + esc(RANKS32[m.need].n) + '</b>以上の役職が必要です。(あなたは「' + esc(rankName32(S)) + '」)</p>' +
+    '<p class="small muted">上司に相談して、特別に許可をもらうこともできます。通るかどうかは、上司からの信頼しだいです。断られると、信頼が少し下がります。</p>' +
+    '<p class="small">相談の見込み: <b>' + mark + '</b></p><div class="grid2">' + btn("やめる", "close") + btn("上司に相談する", "permitgo", null, "pri") + '</div>';
+}
+
+/* ---------- 副業: 規定・申請・内緒 ---------- */
+XACT.sidereq = function () {
+  var S = G.S, P = S.player; if (!P.pub || P.side || P.policy !== "consult") return;
+  if ((P.sideDeny || 0) > S.t) { toast("先日断られたばかりです", false); se("ng"); return; }
+  var p = Math.max(0.15, Math.min(0.9, 0.35 + (trust35(S) - 30) / 200 + 0.05 * (P.rank || 0)));
+  if (rnd() < p) { P.side = true; P.risk = 0; addTrust35(S, 1); toast("副業を認めてもらえた", true); se("ok"); }
+  else { P.sideDeny = S.t + 12; addTrust35(S, -2); toast("「いまは見送ってほしい」と言われた", false); se("ng"); }
+  render();
+};
+var SIDEPOL35 = { ok: "副業OK(届出なしで可)", consult: "副業は原則禁止。ただし、相談すれば認められることがある", no: "副業は全面禁止(相談も不可)" };
+function riskWord35(S) { var r = S.player.risk || 0; return r < 8 ? "気づかれていない" : r < 25 ? "やや怪しまれそう" : r < 50 ? "気づかれそう" : "いつばれてもおかしくない"; }
+
+/* 内緒の副業 / 趣味の創作 */
+JOBT.DUR.hobby = 3; FREE_STA.hobby = 6; if (AP_ACTS.indexOf("hobby") < 0) AP_ACTS.push("hobby");
+EXEC.hobby = function (S) {
+  var P = S.player; gainSkill(S, "prose", 0.9); gainSkill(S, "idea", 0.9);
+  var inc = ri(1, 4); P.wallet = (P.wallet || 0) + inc;
+  var p = 0.05 + (P.sk.prose + P.sk.idea) / 2 / 1200, msg = "趣味の作品を公開した(収入 " + inc + "万円)";
+  if (rnd() < p && (P.sideInc || 0) < 60) {
+    var up = ri(3, 12); P.sideInc = Math.min(60, (P.sideInc || 0) + up);
+    msg = "公開した作品が思わぬ反響を呼んだ。毎週の副収入が増えた(週 +" + up + "万円)";
+  }
+  if (!P.side) P.risk = (P.risk || 0) + 3 + (P.sideInc || 0) * 0.3;
+  return yes(msg);
+};
+var _actLabel35 = actLabel;
+actLabel = function (a, d, S) { return a === "hobby" ? "趣味の創作を公開" : _actLabel35.apply(this, arguments); };
+ACTHELP.hobby = "趣味で作品を公開します。当たると、毎週の副収入になります。会社の許可がないと、気づかれるおそれがあります。";
+var _actionsCard35 = actionsCard;
+actionsCard = function (S) {
+  var o = _actionsCard35(S);
+  if (!S.player.pub) return o;
+  var row = arow(S, "hobby", {}, "🎨", "趣味の創作を公開", [ef("文章力・発想力 ↑", "up"), ef("当たれば副収入", "mo"), staEf(6)], { sta: 6 });
+  return o.indexOf('<h4 class="h3">発信・交流</h4>') >= 0 ? o.replace('<h4 class="h3">発信・交流</h4>', '<h4 class="h3">発信・交流</h4>' + row) : o;
+};
+var _arow35 = arow;
+arow = function (S, a, d, icon, name, efs, o) {
+  var h = _arow35.apply(this, arguments);
+  if (S.player.pub && !S.player.side && (a === "job" || a === "freelance" || a === "hobby") && h)
+    h = h.replace('<span class="efs">', '<span class="sec">会社には内緒です。気づかれると問題になります。</span><span class="efs">');
+  return h;
+};
+var _finishJob35 = finishJob;
+finishJob = function (S, j, msgs) {
+  var r = _finishJob35(S, j, msgs);
+  if (S.player.pub && !S.player.side && (j.a === "job" || j.a === "freelance")) S.player.risk = (S.player.risk || 0) + (j.a === "job" ? 4 : 6);
+  return r;
+};
+
+/* 毎週: 副収入と、ばれる危険 */
+function sideTick35(S) {
+  var P = S.player; if (!P.pub) return;
+  if (P.sideInc > 0) { P.wallet = (P.wallet || 0) + P.sideInc; if (!P.side) P.risk = (P.risk || 0) + P.sideInc * 0.04; }
+  if (P.risk > 0) P.risk = Math.min(100, Math.max(0, P.risk - 0.2));
+  if (P.side) { P.risk = 0; P.discP = null; return; }
+  if (!P.discP && P.risk > 0 && rnd() < P.risk * 0.0012) P.discP = S.t;
+  if (P.discP != null) {
+    if (S.t - P.discP >= 6) { discResolve35(S, "warn"); return; }
+    if (G.S === S && G.screen === "game" && !G.cur && !G.cine && !(G.modal || []).some(function (m) { return m.t === "disc"; })) {
+      G.modal.push({ t: "disc" }); G.rtPause = true;
+    }
+  }
+}
+function discResolve35(S, how) {
+  var P = S.player, msg = "";
+  G.modal = (G.modal || []).filter(function (m) { return m.t !== "disc"; });
+  if (how === "ask") {
+    var p = Math.max(0.1, Math.min(0.8, 0.22 + (trust35(S) - 30) / 200 + (P.policy === "consult" ? 0.25 : 0) - (P.policy === "no" ? 0.1 : 0)));
+    if (rnd() < p) { P.side = true; msg = "事情を説明して、副業を認めてもらえた"; addTrust35(S, -4); }
+    else { P.sideInc = 0; msg = "副業は認められず、やめることになった。収入は途絶えた"; addTrust35(S, -12); }
+  } else if (how === "stop") { P.sideInc = 0; msg = "副業をやめた。厳重注意で済んだ"; addTrust35(S, -8); }
+  else { P.sideInc = Math.floor((P.sideInc || 0) / 2); msg = "副業のことで厳重注意を受けた。収入は減った"; addTrust35(S, -10); }
+  P.risk = 0; P.discP = null; S.news = [msg].concat(S.news || []).slice(0, 10); addLog(S, msg); toast(msg, how === "ask" && P.side);
+}
+XACT.discask = function () { discResolve35(G.S, "ask"); se("tap"); render(); };
+XACT.discstop = function () { discResolve35(G.S, "stop"); se("tap"); render(); };
+function discModal35(S) {
+  var P = S.player;
+  return '<h3 class="h2">副業が会社に知られた</h3><p>会社に内緒にしていた副業のことが、上司の耳に入った。' + (P.sideInc > 0 ? '(副収入は毎週 ' + P.sideInc + '万円)' : '') + '</p>' +
+    '<p class="small muted">この会社の規定: ' + esc(SIDEPOL35[P.policy || "no"]) + '。どう対応しますか?</p>' +
+    '<div class="stack">' + btn("正直に話して、認めてもらえるよう頼む<small>うまくいけば公認に。だめなら副業をやめる</small>", "discask", null, "pri") + btn("副業をやめる<small>厳重注意で済む</small>", "discstop") + btn("会社を辞める<small>起業や転職へ進む</small>", "retireask") + '</div>';
+}
+
+/* ---------- 退職・再就職 ---------- */
+XACT.retireask = function () {
+  G.modal = (G.modal || []).filter(function (m) { return m.t !== "disc" && m.t !== "retire"; }); G.modal.push({ t: "retire" }); se("tap"); render();
+};
+function retireModal35(S) {
+  return '<h3 class="h2">会社を辞める</h3><p class="small">いまの会社を退職します。会社の作品・作家・スタッフ・パークは、置いていくことになります。</p>' +
+    '<ul class="small"><li><b>再就職</b>:別の会社を探します。実績は、中途採用の評価に加わります。</li><li><b>起業</b>:貯金と退職金で、自分の会社を立ち上げます。</li></ul>' +
+    '<div class="stack">' + btn("再就職活動をする", "retirejob", null, "pri") + btn("起業する", "indepask") + btn("やっぱり辞めない", "close") + '</div>';
+}
+XACT.retirejob = function () {
+  var S = G.S, P = S.player, hits = myHits32(S);
+  G.modal = []; var sk = {}; for (var k in P.sk) sk[k] = P.sk[k];
+  G.life = { ph: LIFE33.length, pick: [], sk: sk, edu: P.edu || 2, eduPre: 0, tags: P.tags || {}, bonus: 4 + (P.rank || 0) * 2 + hits * 2, res: {}, offers: [], year: 0 };
+  G.rehire = true; G.screen = "life"; se("ok"); render(); _scrollTo31(0, 0);
+};
+XACT.rehireback = function () { G.rehire = false; G.life = null; G.screen = "game"; se("tap"); render(); };
+function rehire32(S, def, side) {
+  var P = S.player, hits = myHits32(S), r = P.rank || 0, old = S.company;
+  S.works = S.works.filter(function (w) { return w.author.type === "player"; }); S.authors = []; S.staff = []; S.projects = []; S.jobs = []; S.chances = [];
+  S.pool = []; S.hire = []; genHire(S); S.offers = []; S.biz = null; S.flags.coAuto = 0; if (S.park) S.park.areas = [];
+  P.pub = true; P.rank = Math.max(0, r - 1); P.payMul = def.pay; P.corpId = def.id; P.policy = def.side; P.side = def.side === "ok"; P.trust = 30; P.deny = {}; P.sideDeny = 0; P.discP = null;
+  S.company = def.name; setupPubCompany32(S, def, { keep: true });
+  S.fame = def.fame + Math.min(40, hits * 4);
+  var msg = old + "を退職し、" + def.name + "に入社した(役職: " + rankName32(S) + ")"; addLog(S, msg); S.news = [msg].concat(S.news || []).slice(0, 10);
+}
+
+/* ---------- モーダル ---------- */
+var _vModal35 = vModal;
+vModal = function (m) {
+  var x = '<button class="x" data-act="close" aria-label="閉じる">×</button>';
+  if (m.t === "permit") return x + permitModal35(G.S, m);
+  if (m.t === "disc") return discModal35(G.S);
+  if (m.t === "retire") return x + retireModal35(G.S);
+  return _vModal35(m);
+};
+
+/* ---------- 会社タブの役職カード ---------- */
+function rankInfo32(S) {
+  var P = S.player, r = P.rank || 0, nx = RANKS32[r + 1], w = Math.round(P.wallet || 0), pay = Math.round(RANKS32[r].pay * (P.payMul || 1) * 10) / 10;
+  var can = CAP35.filter(function (c) { return c.need <= r; }).map(function (c) { return c.label; }), nxc = CAP35.filter(function (c) { return c.need === r + 1; }).map(function (c) { return c.label; });
+  var h = '<section class="card rankc"><h2 class="h2">あなたの役職</h2><p><b class="rk">' + esc(rankName32(S)) + '</b> <span class="small muted">週の給与 ' + pay + '万円(会社から支給)</span></p>' +
+    '<p class="small">貯金 <b class="mono">' + fmtMoney(w) + '</b> ・ 上司からの信頼 <b class="mono">' + Math.round(trust35(S)) + '</b></p>' +
+    (nx ? '<p class="small muted">次の役職: ' + esc(nx.n) + '(' + RANK_HINT32[r + 1] + ')</p>' : '<p class="small muted">出版社の頂点に立ちました。</p>') +
+    '<p class="small"><b>いまできること:</b> 発掘・応募、' + (can.length ? esc(can.join("、")) : "(ほかは上司への相談が必要です)") + '</p>' +
+    (nxc.length ? '<p class="small muted">昇進で増える権限: ' + esc(nxc.join("、")) + '</p>' : '') +
+    '<p class="small muted">権限のないことは、上司に相談すれば許可をもらえることがあります。</p>' +
+    '<h3 class="h3">副業</h3><p class="small">規定: ' + esc(SIDEPOL35[P.policy || "no"]) + '</p>' +
+    (P.side ? '<p class="small up">副業は認められています。</p>' : '<p class="small">状況: 会社には届けていません' + (P.sideInc > 0 || (P.risk || 0) > 0 ? ' ・ 周囲の目: ' + riskWord35(S) : '') + '</p>' +
+      (P.sideInc > 0 ? '<p class="small muted">内緒の副収入: 毎週 ' + P.sideInc + '万円</p>' : '') +
+      (P.policy === "consult" ? btn("副業を会社に申請する", "sidereq", null, "sm") : '')) +
+    '<div class="grid2">' + btn("会社を辞める", "retireask", null, "sm") + btn("独立して起業する", "indepask", null, "sm") + '</div>' +
+    '<p class="small muted">起業はいつでもできます。ただし、貯金が少ないと、小さな会社からの出発になります。</p></section>';
+  return h;
+}
+
+/* ---------- 毎週の処理 ---------- */
+var _tick35 = tick;
+tick = function (S) {
+  var r = _tick35(S);
+  try { sideTick35(S); } catch (e) { console.error(e); }
+  return r;
+};
+
+/* ---------- 遊び方 ---------- */
+var _buildGuide35 = buildGuide;
+buildGuide = function () {
+  _buildGuide35();
+  var at = GUIDE.findIndex(function (g) { return g.h === "出版社に就職する道"; });
+  if (at >= 0 && !GUIDE[at].v8) {
+    GUIDE[at].v8 = 1;
+    GUIDE[at].b = [
+      "はじめるときに「出版社に就職」を選ぶと、幼少期から高校、進路まで、育ちを選んで能力を身につけます。そのあと就職活動で、受ける会社を選びます。会社は大手から小さな町の出版社まで、17社あります。能力・学歴・経験で、合否が決まります。",
+      "応募するときに「副業も質問して応募」を選ぶと、その会社の副業の方針がわかります(OK / 副業は無理だが入社後に相談すれば検討してもらえる / 全面禁止)。質問すると、印象が少し下がります。質問しなくても、入社後に会社タブで規定を確認できます。",
+      "入社後、給与は毎週「貯金」に入ります。実績を積むと役職が上がり(新人編集者 → … → 社長)、できることが増えます。権限のない操作は、上司に相談して許可をもらえることもありますが、信頼が低いと断られます。",
+      "副業が認められていなくても、こっそりアルバイトや、趣味の創作の公開ができます。当たると毎週の副収入になりますが、続けるほど会社に知られやすくなります。知られたときは、事情を話して認めてもらう・副業をやめる・会社を辞める、の中から選びます。",
+      "「会社を辞める」で、再就職活動に進めます。実績は評価に加わりますが、いまの会社の作品・スタッフは置いていきます。起業は、いつでも「独立して起業する」からできます。",
+      "「会社のおまかせ」は、会社の長にあたる役職が必要です。編集長になると、編集部の運営をおまかせにできます。起業した場合は、はじめから使えます。"
+    ];
+  }
+};
+buildGuide();
 
 function boot() {
   loadSettings();
