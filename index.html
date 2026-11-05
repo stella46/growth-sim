@@ -294,8 +294,15 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.6.0", SAVE_VER = 1;
+var GAME_VER = "1.6.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.6.1", date: "2026-11-05", notes: [
+    "出版社に就職して始める道を、全面的に作り直しました。はじめから、規模のある会社に入社します。",
+    "給与は会社の資金とは別の「貯金」に入るようになりました。",
+    "昇進の条件を、自分の仕事の成果にもとづくものに変えました。",
+    "貯金がたまると、独立して自分の会社を起こせるようになりました。",
+    "「会社のおまかせ」は、会社の長にあたる役職になってから使えるようにしました。"
+  ] },
   { ver: "1.6.0", date: "2026-11-02", notes: [
     "はじめるときに、「出版社に就職」する道を選べるようになりました。",
     "役職を追加しました。実績を積むと昇進し、給与も上がります。",
@@ -3233,7 +3240,7 @@ vGame = function () {
   for (var i = 0; i < S.apMax; i++) ap += '<i class="pip' + (i < S.ap ? " on" : "") + '"></i>';
   var body = { home: vHome, works: vWorks, scout: vScout, media: vMedia, park: vPark, hall: vHall, menu: vMenu }[G.tab](S);
   return '<header class="top2"><div class="t2a"><div class="t2n"><b class="co">' + esc(S.company) + '</b><span class="mono small">' + d.label + '</span></div><button class="next2" data-act="next">週を進める ▶</button></div>' +
-    '<div class="t2b"><span class="money2 mono">' + fmtMoney(S.money) + '</span>' + (fin ? '<span class="dl ' + (net >= 0 ? "up" : "dn") + '">' + (net >= 0 ? "▲" : "▼") + fmtMoney(Math.abs(net)) + '/週</span>' : "") + '<span class="t2p">' + ap + '</span><span class="t2s">' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</span></div>' +
+    '<div class="t2b"><span class="money2 mono">' + moneyLbl(S) + '</span>' + (fin ? '<span class="dl ' + (net >= 0 ? "up" : "dn") + '">' + (net >= 0 ? "▲" : "▼") + fmtMoney(Math.abs(net)) + '/週</span>' : "") + '<span class="t2p">' + ap + '</span><span class="t2s">' + bar(S.player.sta, 100, S.player.sta < 30 ? "warn" : "") + '</span></div>' +
     '<nav class="tabs2">' + TABS.map(function (t) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (G.tab === t[0] ? "on" : "") + '"><i>' + NAVI[t[0]] + '</i>' + t[1] + '</button>'; }).join("") + '</nav></header>' +
     '<main class="wrap navtop' + (G.fx ? " rise" : "") + '">' + body + '</main>';
 };
@@ -3515,12 +3522,12 @@ vGame = function () {
   var body = tabBody(S), cur = G.tab === "media" ? "works" : G.tab;
   if (G.pc) {
     return '<div class="pcw"><aside class="pc-side"><div class="ps-co"><b class="co">' + esc(S.company) + '</b><span class="small">' + esc(playerTitle(S)) + ' ・ ' + esc(companyRank(S)) + '</span></div>' +
-      '<div class="ps-money"><span class="money2 mono">' + fmtMoney(S.money) + '</span>' + dl + '</div><div class="ps-sta">' + staBar(S) + '</div>' +
+      '<div class="ps-money"><span class="money2 mono">' + moneyLbl(S) + '</span>' + dl + '</div><div class="ps-sta">' + staBar(S) + '</div>' +
       '<nav class="ps-nav">' + TABS5.map(function (t, i) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (cur === t[0] ? "on" : "") + '"><i>' + t[2] + '</i>' + t[1] + '<kbd>' + (i + 1) + '</kbd></button>'; }).join("") + '<button data-act="tab" data-t="menu" class="' + (cur === "menu" ? "on" : "") + '"><i>☰</i>メニュー<kbd>0</kbd></button></nav></aside>' +
       '<main class="wrap pcm' + (G.fx ? " rise" : "") + '">' + body + '</main><aside class="pc-right">' + weekPanel(S) + '</aside></div>';
   }
   return '<header class="top2"><div class="t2a"><div class="t2n"><b class="co">' + esc(S.company) + '</b><span class="mono small">' + d.label + '</span></div><button class="menub" data-act="tab" data-t="menu" aria-label="メニュー">☰</button><button class="next2" data-act="next">週を進める ▶</button></div>' +
-    '<div class="t2b"><span class="money2 mono">' + fmtMoney(S.money) + '</span>' + dl + '<span class="t2r">' + modeChip(S) + staBar(S) + '</span></div>' +
+    '<div class="t2b"><span class="money2 mono">' + moneyLbl(S) + '</span>' + dl + '<span class="t2r">' + modeChip(S) + staBar(S) + '</span></div>' +
     '<nav class="tabs2 t5">' + TABS5.map(function (t) { return '<button data-act="tab" data-t="' + t[0] + '" class="' + (cur === t[0] ? "on" : "") + '"><i>' + t[2] + '</i>' + t[1] + '</button>'; }).join("") + '</nav></header>' +
     '<main class="wrap navtop' + (G.fx ? " rise" : "") + '">' + body + '</main>';
 };
@@ -4268,7 +4275,7 @@ function monEf(n) { return n < 0 ? ef('資金 ' + n + '万', "dn") : ef('資金 
 function arow(S, a, d, icon, name, efs, o) {
   o = o || {}; var dur = jobDur(a), lack = "", note = "";
   if (o.sta && S.player.sta < o.sta) { lack = " lack"; note = "体力が足りない"; }
-  else if (o.money && S.money < o.money) { lack = " lack"; note = "資金が足りない"; }
+  else if (o.money && walletOf(S) < o.money) { lack = " lack"; note = S.player.pub ? "貯金が足りない" : "資金が足りない"; }
   else if (a === "rest" && S.player.sta >= 90) { lack = " lack"; note = "体力は十分"; }
   var da = ""; for (var k in (d || {})) da += ' data-' + k + '="' + esc(d[k]) + '"';
   return '<button class="arow' + lack + (o.pri ? " pri" : "") + '" data-act="' + (o.act || a) + '"' + da + '><span class="ai">' + icon + '</span><span class="am"><b>' + name + '</b>' + (o.sub ? '<small>' + o.sub + '</small>' : "") + '<span class="efs">' + efs.join("") + '</span>' + (note ? '<em class="small">' + note + '</em>' : "") + '</span>' + (o.noDur ? "" : '<span class="ad">' + dur + '週</span>') + '</button>';
@@ -4935,13 +4942,13 @@ vMedia = function (S) {
 /* ---- 自分のステータス(どのタブでも) ---- */
 function statRows(S) {
   var me = S.player, h = '<div class="srow"><span>体力</span>' + bar(me.sta, 100, me.sta < 30 ? "warn" : "") + '<em class="mono">' + Math.round(me.sta) + '/100</em></div>' +
-    '<div class="srow"><span>名声</span><i></i><em class="mono">' + Math.round(S.fame) + '</em></div>';
+    '<div class="srow"><span>名声</span><i></i><em class="mono">' + Math.round(S.fame) + '</em></div>' + (S.player.pub ? '<div class="srow"><span>貯金</span><i></i><em class="mono">' + fmtMoney(S.player.wallet || 0) + '</em></div>' : '');
   Object.keys(SKILLS).forEach(function (k) { h += '<div class="srow"><span>' + SKILLS[k] + '</span>' + bar(me.sk[k], 100, "") + '<em class="mono">' + Math.round(me.sk[k]) + '</em></div>'; });
   return h;
 }
 function statPanel(S) {
   var me = S.player;
-  return '<section class="card gstat"><button class="gs-h" data-act="statopen"><b>自分のステータス</b><span class="small mono">体力 ' + Math.round(me.sta) + ' ・ 名声 ' + Math.round(S.fame) + ' ・ ' + esc(fmtMoney(S.money)) + '</span><i>' + (G.statOpen ? "▲" : "▼") + '</i></button>' +
+  return '<section class="card gstat"><button class="gs-h" data-act="statopen"><b>自分のステータス</b><span class="small mono">体力 ' + Math.round(me.sta) + ' ・ 名声 ' + Math.round(S.fame) + ' ・ ' + esc(S.player.pub ? '貯金 ' + fmtMoney(S.player.wallet || 0) : fmtMoney(S.money)) + '</span><i>' + (G.statOpen ? "▲" : "▼") + '</i></button>' +
     (G.statOpen ? '<div class="gs-b">' + statRows(S) + '</div>' : '') + '</section>';
 }
 var _vGame20 = vGame;
@@ -7345,14 +7352,16 @@ buildGuide();
 
 /* ---------- 役職 ---------- */
 var RANKS32 = [
-  { n: "新人編集者", pay: 1.5, need: function () { return true; } },
-  { n: "編集者", pay: 2.5, need: function (S) { return S.works.length >= 1 && (S.fame >= 12 || S.t >= 24); } },
-  { n: "主任", pay: 4, need: function (S) { return S.works.length >= 2 && S.fame >= 45; } },
-  { n: "副編集長", pay: 6, need: function (S) { return hits32(S) >= 1 && S.fame >= 110; } },
-  { n: "編集長", pay: 9, need: function (S) { return hits32(S) >= 2 && S.fame >= 220 && S.staff.length >= 3; } },
-  { n: "取締役", pay: 14, need: function (S) { return hits32(S) >= 4 && S.fame >= 400; } },
-  { n: "社長", pay: 20, need: function (S) { return hits32(S) >= 7 && S.fame >= 700 && S.totalRev >= 20000; } }
+  { n: "新人編集者", pay: 3, need: function () { return true; } },
+  { n: "編集者", pay: 5, need: function (S) { return S.t >= 24 || myWorks32(S).length >= 1; } },
+  { n: "主任", pay: 8, need: function (S) { return myWorks32(S).length >= 2 && S.t >= 48; } },
+  { n: "副編集長", pay: 12, need: function (S) { return myHits32(S) >= 1 && S.t >= 96; } },
+  { n: "編集長", pay: 18, need: function (S) { return myHits32(S) >= 2 && S.t >= 144 && S.staff.length >= 3; } },
+  { n: "取締役", pay: 28, need: function (S) { return myHits32(S) >= 4 && S.t >= 240; } },
+  { n: "社長", pay: 45, need: function (S) { return myHits32(S) >= 7 && S.t >= 360 && S.totalRev >= 20000; } }
 ];
+function myWorks32(S) { return S.works.filter(function (w) { return w.byMe; }); }
+function myHits32(S) { return myWorks32(S).filter(function (w) { return w.hit; }).length; }
 function hits32(S) { return S.works.filter(function (w) { return w.hit; }).length; }
 function rankName32(S) { return RANKS32[Math.min(RANKS32.length - 1, S.player.rank || 0)].n; }
 var _playerTitle32 = playerTitle;
@@ -7364,7 +7373,7 @@ playerTitle = function (S) {
 function rankTick32(S) {
   if (!S.player.pub) return;
   var r = S.player.rank || 0;
-  S.money += RANKS32[r].pay;
+  S.player.wallet = (S.player.wallet || 0) + RANKS32[r].pay; S.money -= RANKS32[r].pay;
   if (S.t % 4 !== 0 || r >= RANKS32.length - 1) return;
   var nx = RANKS32[r + 1];
   if (nx.need(S)) {
@@ -7375,11 +7384,14 @@ function rankTick32(S) {
   }
 }
 function rankInfo32(S) {
-  var r = S.player.rank || 0, nx = RANKS32[r + 1];
-  return '<section class="card rankc"><h2 class="h2">あなたの役職</h2><p><b class="rk">' + esc(rankName32(S)) + '</b> <span class="small muted">週の給与 ' + RANKS32[r].pay + '万円</span></p>' +
-    (nx ? '<p class="small muted">次の役職: ' + esc(nx.n) + '(' + RANK_HINT32[r + 1] + ')</p>' : '<p class="small muted">出版社の頂点に立ちました。</p>') + '</section>';
+  var r = S.player.rank || 0, nx = RANKS32[r + 1], w = Math.round(S.player.wallet || 0);
+  return '<section class="card rankc"><h2 class="h2">あなたの役職</h2><p><b class="rk">' + esc(rankName32(S)) + '</b> <span class="small muted">週の給与 ' + RANKS32[r].pay + '万円(会社から支給)</span></p>' +
+    '<p class="small">貯金 <b class="mono">' + fmtMoney(w) + '</b> <span class="muted">(給与はここに貯まります。会社の資金とは別です)</span></p>' +
+    (nx ? '<p class="small muted">次の役職: ' + esc(nx.n) + '(' + RANK_HINT32[r + 1] + ')</p>' : '<p class="small muted">出版社の頂点に立ちました。</p>') +
+    '<p class="small muted">あなたは社員です。会社の方針や投資は、役職が上がるほど関われます。</p>' +
+    (S.t >= 96 && w >= 400 ? btn("独立して起業する", "indepask", null, "sm") : '<p class="small muted">独立するには、在籍2年以上・貯金400万円以上が必要です。</p>') + '</section>';
 }
-var RANK_HINT32 = ["", "作品を1つ手がけ、名声か在籍期間を積む", "作品2つ以上・名声45以上", "ヒット作1つ以上・名声110以上", "ヒット作2つ以上・名声220以上・スタッフ3人以上", "ヒット作4つ以上・名声400以上", "ヒット作7つ以上・名声700以上・累計収益2億円以上"];
+var RANK_HINT32 = ["", "半年の在籍、または担当作品を1つ手がける", "自分が契約した作品2つ以上・在籍1年", "自分が契約した作品からヒット1つ・在籍2年", "ヒット2つ以上・在籍3年・部下3人以上", "ヒット4つ以上・在籍5年", "ヒット7つ以上・在籍7年半・会社の累計収益2億円以上"];
 
 /* ---------- はじめ方: 出版社に就職する道 ---------- */
 var _newGame32 = newGame;
@@ -7391,7 +7403,7 @@ newGame = function (o) {
   if (pub) {
     S.player.pub = true; S.player.rank = 0; S.unlock.edit = true; S.unlock.write = false;
     S.company = (o.company || "名もなき出版社").slice(0, 14);
-    addLog(S, "出版社に入社した。");
+    setupPubCompany32(S);
   }
   return S;
 };
@@ -7407,7 +7419,9 @@ vNew = function () {
 };
 
 /* ---------- 会社のおまかせ ---------- */
+function canAuto32(S) { return !S.player.pub || (S.player.rank || 0) >= 4; }
 function coAutoCard32(S) {
+  if (!canAuto32(S)) return '<section class="card coauto"><b>会社のおまかせ</b><p class="small muted">あなたは社員のため、会社の運営は任せられません。編集長になると、編集部の運営をおまかせにできます。</p></section>';
   var on = !!S.flags.coAuto;
   return '<section class="card coauto"><div class="goalh"><b>会社のおまかせ</b>' + '<span class="chips">' + chip("OFF", "coauto", { v: 0 }, !on) + chip("ON", "coauto", { v: 1 }, on) + '</span></div>' +
     '<p class="small muted">ONにすると、作家の発掘と契約、スタッフの採用、担当編集の割り当てを会社が自動で進めます。契約や採用は、資金に余裕があるときだけ行います。' + (on ? "" : "細かく決めたいときはOFFのままで。") + '</p></section>';
@@ -7423,7 +7437,7 @@ vScout = function (S) {
   return o.slice(0, j < 0 ? i + 5 : j + 6) + card + o.slice(j < 0 ? i + 5 : j + 6);
 };
 function coAutoTick32(S) {
-  if (!S.flags.coAuto || !S.unlock.edit) return;
+  if (!S.flags.coAuto || !S.unlock.edit || !canAuto32(S)) return;
   var did = [], eye = S.player.sk.eye || 20;
   if (S.t % 3 === 0 && S.pool.length < 4) { S.pool.push(genCand(S, "net")); }
   // 契約
@@ -7476,9 +7490,10 @@ buildGuide = function () {
   var at = GUIDE.findIndex(function (g) { return g.h === "いまの目標と行動の選び方"; });
   GUIDE.splice(at < 0 ? 3 : at + 1, 0, {
     h: "出版社で働く道", b: [
-      "はじめるときに「出版社に就職」を選ぶと、編集者として入社します。作家を見つけて契約し、育てることが仕事です。",
-      "実績を積むと、役職が上がります(新人編集者 → 編集者 → 主任 → 副編集長 → 編集長 → 取締役 → 社長)。役職ごとに、毎週の給与が増えます。次の役職の条件は、「会社」タブで見られます。",
-      "「会社」タブの「会社のおまかせ」をONにすると、作家の発掘・契約、スタッフの採用、担当編集の割り当てを自動で進めます。資金に余裕があるときだけ動きます。"
+      "はじめるときに「出版社に就職」を選ぶと、すでに規模のある出版社に、編集者として入社します。会社の資金は会社のもの。あなたの給与は、毎週「貯金」に入ります。",
+      "実績を積むと役職が上がります(新人編集者 → 編集者 → 主任 → 副編集長 → 編集長 → 取締役 → 社長)。役職が上がるほど給与が増えます。昇進は、自分が契約した作品の成果や、在籍年数で決まります。次の役職の条件は「会社」タブで見られます。",
+      "個人の出費(休暇・取材など)は貯金から出ます。社員なのでアルバイトはありません。在籍2年以上で貯金が400万円以上になると、「独立して起業する」を選べます。自分が契約した作品と作家、一部のスタッフを連れて、自分の会社を立ち上げます。",
+      "「会社のおまかせ」は、会社の長にあたる役職が必要です。社員のうちは使えず、編集長になると、編集部の運営(発掘・契約・採用・担当の配置)をおまかせにできます。自分で起業した場合は、はじめから使えます。"
     ]
   });
   var last = GUIDE[GUIDE.length - 1];
@@ -7488,6 +7503,98 @@ buildGuide = function () {
 buildGuide();
 MISSIONS.push({ id: "m11", only: "pub", t: "昇進して役職を上げる", how: "ヒット作を出し、名声を高めると昇進します。次の役職の条件は「会社」タブの「あなたの役職」で確認できます。",
   done: function (S) { return (S.player.rank || 0) >= 3; }, go: function () { return { tab: "scout" }; } });
+
+function walletOf(S) { return S.player.pub ? (S.player.wallet || 0) : S.money; }
+function moneyLbl(S) { return S.player.pub ? "会社 " + fmtMoney(S.money) : fmtMoney(S.money); }
+/* 入社先は、すでに規模のある出版社 */
+function setupPubCompany32(S) {
+  var base = { easy: 4500, normal: 3000, hard: 2000 }[S.diff] || 3000;
+  S.fame = 60; S.player.wallet = { easy: 80, normal: 50, hard: 30 }[S.diff] || 50; S.player.joined = 0;
+  S.money = 999999; G.setup = true;
+  try {
+    for (var i = 0; i < 6 && S.hire.length; i++) actHire(S, S.hire[0].id);
+    var eds = S.staff.filter(function (s) { return s.role === "editor"; });
+    for (var k = 0; k < 3; k++) {
+      var c = genCand(S, "scout"); S.pool.push(c);
+      var r = actSign(S, c.id); if (!r.ok) continue; var w = W(S, r.wid); if (!w) continue;
+      w.pop = ri(32, 58); w.fans = ri(30000, 140000); w.weeks = ri(24, 90); w.eps = ri(18, 70); w.byMe = false;
+      if (eds.length) w.editor = eds[k % eds.length].id;
+    }
+  } finally { G.setup = false; }
+  S.pool = []; S.hire = []; genHire(S);
+  S.money = base; S.log = []; addLog(S, "出版社に入社した。");
+}
+var _actSign32 = actSign;
+actSign = function (S, cid) {
+  var r = _actSign32(S, cid);
+  if (r.ok && S.player.pub && !G.setup && r.wid) { var w = W(S, r.wid); if (w) w.byMe = true; }
+  return r;
+};
+
+/* 個人の出費は貯金から / 会社員はアルバイトをしない */
+var PERSONAL32 = { vacation: 1, inputs: 1, research: 1, seminar: 1, mentor: 1, network: 1 };
+var _startJob32 = startJob;
+startJob = function (S, a, d, opt) {
+  if (S.player.pub) {
+    if (a === "job" || a === "freelance") return { ok: false, msg: "会社員なので、アルバイトや副業は必要ありません" };
+    if (PERSONAL32[a] && opt && opt.money) {
+      if ((S.player.wallet || 0) < opt.money) return { ok: false, msg: "貯金が足りません" };
+      var o2 = {}; for (var k in opt) o2[k] = opt[k]; var pm = opt.money; o2.money = 0;
+      var r = _startJob32(S, a, d, o2);
+      if (r.ok && r.job) { S.player.wallet -= pm; r.job.wmoney = pm; }
+      return r;
+    }
+  }
+  return _startJob32(S, a, d, opt);
+};
+var _cancelJob32 = cancelJob;
+cancelJob = function (S, id) {
+  var j = jobsOf(S).find(function (x) { return x.id === id; }), wm = j && j.wmoney;
+  var ok = _cancelJob32(S, id); if (ok && wm) S.player.wallet = (S.player.wallet || 0) + wm; return ok;
+};
+var _arow32b = arow;
+arow = function (S, a) { if (S.player.pub && (a === "job" || a === "freelance")) return ""; return _arow32b.apply(this, arguments); };
+var _financeTick32 = financeTick;
+financeTick = function (S, m0, tr0, news) {
+  var r = _financeTick32(S, m0, tr0, news);
+  if (S.player.pub && S.fin && S.fin.living) { S.money += S.fin.living; S.fin.extra = Math.round((S.fin.extra - S.fin.living) * 10) / 10; S.fin.living = 0; }
+  return r;
+};
+
+/* ---------- 独立して起業 ---------- */
+XACT.indepask = function () {
+  G.form.indep = G.form.indep || { name: "" }; if (!G.form.indep.name) G.form.indep.name = (G.S.player.name + "出版").slice(0, 14);
+  G.modal = G.modal.filter(function (m) { return m.t !== "indep"; }); G.modal.push({ t: "indep" }); se("tap"); render();
+};
+function indepModal32(S) {
+  var f = G.form.indep || { name: "" };
+  var mine = myWorks32(S).length, st = S.staff.length;
+  return '<h3 class="h2">独立して起業する</h3><p class="small">いまの会社を退職し、自分の出版社を立ち上げます。</p>' +
+    '<ul class="small"><li>貯金と退職金が、新しい会社の資金になります。</li><li>自分が契約した作品(' + mine + '作品)と、その作家がついてきます。</li><li>スタッフは、信頼の厚い数人だけが残ります(いまは ' + st + ' 人)。</li><li>いまの会社の作品や、名声の多くは置いていきます。</li></ul>' +
+    '<label class="fld"><span>新しい会社の名前</span><input data-in="indep.name" value="' + esc(f.name) + '" maxlength="14"></label>' +
+    '<div class="grid2">' + btn("やめておく", "close") + btn("独立する", "indepgo", null, "pri") + '</div>';
+}
+XACT.indepgo = function () {
+  var S = G.S; if (!S.player.pub) return;
+  var name = ((G.form.indep && G.form.indep.name) || (S.player.name + "出版")).trim().slice(0, 14) || "名もなき出版社";
+  var sev = RANKS32[S.player.rank || 0].pay * 40, keepW = myWorks32(S);
+  var ids = {}; keepW.forEach(function (w) { ids[w.author.id] = 1; });
+  S.works = S.works.filter(function (w) { return w.byMe || w.author.type === "player"; });
+  S.authors = S.authors.filter(function (a) { return ids[a.id]; });
+  S.staff.sort(function (a, b) { return bondOf(b) - bondOf(a); }); S.staff = S.staff.slice(0, 3);
+  S.works.forEach(function (w) { if (w.editor && !S.staff.some(function (s) { return s.id === w.editor; })) w.editor = null; });
+  S.money = Math.round((S.player.wallet || 0) + sev); S.player.wallet = 0;
+  S.fame = Math.round(S.fame * 0.55); S.company = name; S.player.pub = false; S.player.rank = 0; S.unlock.edit = true;
+  S.pool = []; S.hire = []; genHire(S);
+  var msg = "独立した。新会社「" + name + "」を設立(資金 " + fmtMoney(S.money) + ")";
+  addLog(S, msg); S.news = [msg].concat(S.news || []).slice(0, 10);
+  G.modal = G.modal.filter(function (m) { return m.t !== "indep"; }); se("ok"); toast(msg, true); render(); autosave();
+};
+var _vModal32 = vModal;
+vModal = function (m) {
+  if (m.t === "indep") return '<button class="x" data-act="close" aria-label="閉じる">×</button>' + indepModal32(G.S);
+  return _vModal32(m);
+};
 
 function boot() {
   loadSettings();
