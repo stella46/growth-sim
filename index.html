@@ -301,8 +301,13 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.12.0", SAVE_VER = 1;
+var GAME_VER = "1.13.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.13.0", date: "2026-11-16", notes: [
+    "他社の作品や会社の、売れた冊数や映画化・アニメ化などが見られるようになりました。",
+    "歴代の名作や年間ランキングにも、売れた冊数と展開が表示されます。",
+    "連載のない出版社が出ないようにしました。"
+  ] },
   { ver: "1.12.0", date: "2026-11-16", notes: [
     "他社の作品や会社にも、人気や累計部数などの数値が表示されるようになりました。",
     "業界の出版社と他社の連載が、大きく増えました。",
@@ -8350,7 +8355,7 @@ function chartRows37(rows, mineKeys) {
   var h = '<ol class="chl">';
   rows.forEach(function (r) {
     var d = !r.prev ? '<i class="dl nw">NEW</i>' : r.rank < r.prev ? '<i class="dl up">▲' + (r.prev - r.rank) + '</i>' : r.rank > r.prev ? '<i class="dl dn">▼' + (r.rank - r.prev) + '</i>' : '<i class="dl">―</i>';
-    h += '<li class="' + (r.mine ? "mine" : "") + '"><b>' + r.rank + '</b><span class="tt">' + esc(r.title) + '<small>' + (r.mine ? (r.grp ? esc(r.grp) + "発" : "自社") : esc(r.pub) + (r.monster ? " ・ 話題の大型連載" : "") + (r.grp ? " ・ " + esc(r.grp) + "発" : "")) + (r.pop != null ? " ・ 人気 " + r.pop : "") + (r.cp ? " ・ 累計 " + fmtCp41(r.cp) : "") + '</small></span>' + d + '</li>';
+    h += '<li class="' + (r.mine ? "mine" : "") + '"><b>' + r.rank + '</b><span class="tt">' + esc(r.title) + '<small>' + (r.mine ? (r.grp ? esc(r.grp) + "発" : "自社") : esc(r.pub) + (r.monster ? " ・ 話題の大型連載" : "") + (r.grp ? " ・ " + esc(r.grp) + "発" : "")) + (r.pop != null ? " ・ 人気 " + r.pop : "") + (r.cp ? " ・ 累計 " + fmtCp41(r.cp) : "") + (r.med ? " ・ " + esc(r.med) : "") + '</small></span>' + d + '</li>';
   });
   return h + '</ol>';
 }
@@ -8788,7 +8793,7 @@ buildGuide = function () {
 buildGuide();
 
 /* ===== v1.12.0 他社の作品・会社にも数値 / 業界の会社と作品を増やす ===== */
-function fmtCp41(x) { return x >= 10000 ? (Math.round(x / 1000) / 10) + "億部" : x >= 100 ? Math.round(x) + "万部" : x >= 1 ? (Math.round(x * 10) / 10) + "万部" : "1万部未満"; }
+function fmtCp41(x) { return x >= 10000 ? (Math.round(x / 1000) / 10) + "億冊" : x >= 100 ? Math.round(x) + "万冊" : x >= 1 ? (Math.round(x * 10) / 10) + "万冊" : "1万冊未満"; }
 
 var IND41 = [
   ["紫苑社", 3], ["琥珀書林", 2], ["南風堂", 2], ["雪華出版", 2], ["蒼穹社", 3], ["白梅書房", 2], ["朝凪出版", 2], ["夕霧館", 2], ["銀杏社", 3], ["若葉書院", 2], ["潮騒出版", 2], ["桔梗堂", 2],
@@ -8804,8 +8809,19 @@ function ensureRivals41(S) {
     if (have[x[0]]) return; var rg = SZ41[x[1]]; add = true;
     S.rivals.push({ name: x[0], score: ri(rg[0], rg[1]), k: 0.05 + rnd() * 0.5, size: x[1] });
   });
+  S.rivals.forEach(function (r) { if (r.sales == null) { r.sales = Math.round(r.score * r.score * 0.6 + ri(0, 80)); r.films = Math.round(r.score / 16); r.anime = Math.round(r.score / 11); } });
+  if (!S.flags.pub41 && S.rivalWorks && S.rivalWorks.length) {
+    S.flags.pub41 = 1; var pc = S.rivals;
+    S.rivalWorks.forEach(function (w) { w.pub = weightedCo41(S).name; });
+    pc.forEach(function (c) { var need = Math.max(1, Math.round(Math.max(0, c.score) / 18)); while (coWorks41(S, c.name).length < need) { var big = {}; S.rivalWorks.forEach(function (w) { big[w.pub] = (big[w.pub] || 0) + 1; }); var cand = S.rivalWorks.filter(function (w) { return !w.monster && (big[w.pub] || 0) > 1; }); if (!cand.length) break; pick(cand).pub = c.name; } });
+  }
   var ys = Math.floor(S.t / 48);
   if (add && ys > 0) S.rivals.forEach(function (r) { if (r.size != null) r.score += ys * ri(2, 6); });
+}
+function weightedCo41(S) {
+  var tot = 0, ws = S.rivals.map(function (c) { var w = 3 + Math.max(0, c.score); tot += w; return w; }), x = rnd() * tot, i = 0;
+  while (i < ws.length - 1 && x > ws[i]) { x -= ws[i]; i++; }
+  return S.rivals[i];
 }
 function coWorks41(S, name) { return (S.rivalWorks || []).filter(function (r) { return r.pub === name; }); }
 
@@ -8815,16 +8831,25 @@ var _newRival41 = newRivalWork;
 newRivalWork = function (S) {
   var r = _newRival41(S);
   if (S && S.rivals && S.rivals.length > 10) {
-    var tot = 0, ws = S.rivals.map(function (c) { var w = 3 + Math.max(0, c.score); tot += w; return w; }), x = rnd() * tot, i = 0;
-    while (i < ws.length - 1 && x > ws[i]) { x -= ws[i]; i++; }
-    r.pub = S.rivals[i].name;
+    r.pub = weightedCo41(S).name;
   }
   r.copies = 0; return r;
 };
 var _chart41 = chartTick;
 chartTick = function (S, news) {
   _chart41(S, news);
-  (S.rivalWorks || []).forEach(function (r) { r.copies = (r.copies || 0) + Math.pow(r.pop / 55, 3) * 1.2 * (r.monster ? 3 : 1); });
+  var med = {};
+  (S.rivalWorks || []).forEach(function (r) {
+    var wk = Math.pow(r.pop / 55, 3) * 1.2 * (r.monster ? 3 : 1); r.copies = (r.copies || 0) + wk; r.med = r.med || [];
+    var co = S.rivals.find(function (c) { return c.name === r.pub; }); if (co) co.sales = (co.sales || 0) + wk;
+    if (r.copies >= 150 && r.med.indexOf("アニメ化") < 0 && ch(0.01)) { r.med.push("アニメ化"); if (co) co.anime = (co.anime || 0) + 1; }
+    if (r.copies >= 500 && r.med.indexOf("映画化") < 0 && ch(0.006)) { r.med.push("映画化"); if (co) co.films = (co.films || 0) + 1; }
+    if (r.copies >= 300 && r.med.indexOf("ドラマ化") < 0 && ch(0.004)) r.med.push("ドラマ化");
+    med[r.id] = r.med.join("・");
+  });
+  S.works.forEach(function (w) { med[w.id] = Object.keys(w.media || {}).map(function (k) { return MEDIA[k] ? MEDIA[k].name : ""; }).filter(Boolean).join("・"); });
+  var put = function (rows) { (rows || []).forEach(function (x) { x.med = med[x.key] || ""; }); };
+  if (S.chart) { put(S.chart.rows); if (S.chart.sub) Object.keys(S.chart.sub).forEach(function (k) { put(S.chart.sub[k].rows); }); }
 };
 var _tick41 = tick;
 tick = function (S) { try { ensureRivals41(S); } catch (e) { console.error(e); } return _tick41(S); };
@@ -8836,11 +8861,11 @@ vHall = function (S) {
   var re = /<h3 class="h3">出版社ランキング<\/h3><ol class="rank">[\s\S]*?<\/ol>/;
   if (!re.test(o)) return o;
   ensureRivals41(S);
-  var rows = S.rivals.map(function (r) { return { name: r.name, score: r.score, me: false, n: coWorks41(S, r.name).length, sz: r.size }; });
-  var mine = { name: S.company, score: ourScore(S), me: true, n: S.works.filter(function (w) { return w.state === "serial"; }).length };
+  var rows = S.rivals.map(function (r) { return { name: r.name, score: r.score, me: false, n: coWorks41(S, r.name).length, sales: r.sales || 0, films: r.films || 0, anime: r.anime || 0 }; });
+  var mine = { name: S.company, score: ourScore(S), me: true, n: S.works.filter(function (w) { return w.state === "serial"; }).length, sales: S.works.reduce(function (a, w) { return a + (w.cp2 || 0); }, 0), films: S.works.filter(function (w) { return w.media && w.media.movie; }).length, anime: S.works.filter(function (w) { return w.media && w.media.anime; }).length };
   rows.push(mine); rows.sort(function (a, b) { return b.score - a.score; });
   var rk = rows.findIndex(function (c) { return c.me; }) + 1, show = rows.filter(function (c, i) { return i < 10 || c.me; });
-  var li = function (c) { return '<li' + (c.me ? ' class="mine"' : '') + '><b>' + (rows.indexOf(c) + 1) + '. ' + esc(c.name) + '</b><span class="muted small"> 名声 ' + Math.round(c.score) + ' ・ 連載 ' + c.n + '本' + (c.me ? " ・ あなた ★" : "") + '</span></li>'; };
+  var li = function (c) { return '<li' + (c.me ? ' class="mine"' : '') + '><b>' + (rows.indexOf(c) + 1) + '. ' + esc(c.name) + '</b><span class="muted small"> 名声 ' + Math.round(c.score) + ' ・ 連載 ' + c.n + '本 ・ 累計 ' + fmtCp41(c.sales) + ' ・ アニメ化 ' + c.anime + '作 ・ 映画化 ' + c.films + '作' + (c.me ? " ・ あなた ★" : "") + '</span></li>'; };
   var h = '<h3 class="h3">出版社ランキング <small class="muted">全' + rows.length + '社</small></h3><p class="small muted">いまの順位: 第' + rk + '位(名声で並びます)</p><ol class="rank">' + show.map(li).join("") + '</ol>';
   return o.replace(re, h);
 };
@@ -8853,6 +8878,29 @@ buildGuide = function () {
   if (p && !p.v12) { p.v12 = 1; p.b = p.b.concat(["業界には、40社ほどの出版社があり、それぞれの連載が週刊ランキングに並びます。他社の作品にも「人気」と「累計部数」の数値があります。会社の順位は、「殿堂」タブの出版社ランキングで、名声順に見られます。"]); }
 };
 buildGuide();
+
+/* 歴代の名作・年間ランキング: 売れた冊数と展開を表示 */
+function compOf41(S, title) {
+  var f = null;
+  (S.rank.all || []).forEach(function (x) { if (x.title === title) f = x; });
+  if (!f) (S.rank.year || []).forEach(function (r) { r.rows.forEach(function (x) { if (x.title === title) f = x; }); });
+  return f;
+}
+function sales41(S, title, comp, mine) {
+  var w = mine ? S.works.find(function (x) { return x.title === title; }) : null;
+  if (w && w.cp2 != null) return { cp: w.cp2, med: Object.keys(w.media || {}).map(function (k) { return MEDIA[k] ? MEDIA[k].name : ""; }).filter(Boolean).join("・") };
+  var h = hstr(title), c = comp || 50, cp = Math.pow(1.09, c - 30) * (30 + h % 40) / 10, m = [];
+  if (c >= 60 && h % 7 < 5) m.push("アニメ化"); if (c >= 68 && h % 4 === 0) m.push("ドラマ化"); if (c >= 72 && h % 3 !== 0) m.push("映画化"); if (c >= 70 && h % 5 === 1) m.push("ゲーム化");
+  return { cp: cp, med: m.join("・") };
+}
+var _rankList41 = rankList;
+rankList = function (rows) {
+  var S = G.S; if (!S) return _rankList41(rows);
+  return '<ol class="rank">' + rows.map(function (x) {
+    var f = compOf41(S, x.title), st = f ? sales41(S, x.title, f.comp, x.mine) : null;
+    return '<li' + (x.mine ? ' class="mine"' : "") + '><b>' + esc(x.title) + '</b><span class="muted small">' + esc(x.author) + (x.mine ? " ★" : "") + (st ? " ・ 累計 " + fmtCp41(st.cp) + (st.med ? " ・ " + st.med : "") : "") + '</span></li>';
+  }).join("") + '</ol>';
+};
 
 function boot() {
   loadSettings();
