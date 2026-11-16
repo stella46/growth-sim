@@ -301,8 +301,11 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.15.0", SAVE_VER = 1;
+var GAME_VER = "1.15.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.15.1", date: "2026-11-16", notes: [
+    "売れた冊数などの数値を、現実的な規模に直しました。"
+  ] },
   { ver: "1.15.0", date: "2026-11-16", notes: [
     "出版社の名前を、遊び心のあるものに作り直しました。",
     "会社の連載本数が、規模と累計冊数に見合うようになりました。",
@@ -8564,8 +8567,8 @@ simWork = function (S, w, news) {
     }
     var m = mult39(S, w), gain = w.fans - f0 * 0.99;
     if (gain > 0) w.fans = Math.max(0, f0 * 0.99 + gain * m);
-    if (w.cp2 == null) { w.cp2 = 0; w.cpx = 1; }
-    w.cp2 += r * m * 1.2;
+    if (w.cp2 == null) { w.cp2 = 0; w.cpx = 1; w.cpz = 1; }
+    w.cp2 += r * m * 0.12;
     w.rev += r * (m - 1) / 0.6;
     return r * m;
   }
@@ -8851,11 +8854,11 @@ chartTick = function (S, news) {
   _chart41(S, news);
   var med = {};
   (S.rivalWorks || []).forEach(function (r) {
-    var wk = Math.pow(r.pop / 55, 3) * 12 * (r.monster ? 3 : 1); r.copies = (r.copies || 0) + wk; r.med = r.med || [];
+    var wk = Math.pow(r.pop / 55, 3) * 1.2 * (r.monster ? 3 : 1); r.copies = (r.copies || 0) + wk; r.med = r.med || [];
     var co = S.rivals.find(function (c) { return c.name === r.pub; }); if (co) co.s2 = (co.s2 || 0) + wk;
-    if (r.copies >= 1500 && r.med.indexOf("アニメ化") < 0 && ch(0.01)) { r.med.push("アニメ化"); if (co) co.a2 = (co.a2 || 0) + 1; }
-    if (r.copies >= 5000 && r.med.indexOf("映画化") < 0 && ch(0.006)) { r.med.push("映画化"); if (co) co.f2 = (co.f2 || 0) + 1; }
-    if (r.copies >= 3000 && r.med.indexOf("ドラマ化") < 0 && ch(0.004)) r.med.push("ドラマ化");
+    if (r.copies >= 150 && r.med.indexOf("アニメ化") < 0 && ch(0.01)) { r.med.push("アニメ化"); if (co) co.a2 = (co.a2 || 0) + 1; }
+    if (r.copies >= 500 && r.med.indexOf("映画化") < 0 && ch(0.006)) { r.med.push("映画化"); if (co) co.f2 = (co.f2 || 0) + 1; }
+    if (r.copies >= 300 && r.med.indexOf("ドラマ化") < 0 && ch(0.004)) r.med.push("ドラマ化");
     med[r.id] = r.med.join("・");
   });
   S.works.forEach(function (w) { med[w.id] = Object.keys(w.media || {}).map(function (k) { return MEDIA[k] ? MEDIA[k].name : ""; }).filter(Boolean).join("・"); });
@@ -8958,7 +8961,7 @@ function assignPubs42(S, all) {
   cs.forEach(function (c) { while (cnt[c.name] < qt[c.name] && surplus.length) { surplus.pop().pub = c.name; cnt[c.name]++; } });
   surplus.forEach(function (w) { var c = cs[Math.floor(rnd() * cs.length)]; w.pub = c.name; });
 }
-function coFame42(cp) { return 20 * Math.log(1 + cp / 20) / Math.LN10; }
+function coFame42(cp) { return 22 * Math.log(1 + cp / 30) / Math.LN10; }
 function prep42(S) {
   if (!S.rivals) return;
   if (!S.flags.ren42) {
@@ -8982,15 +8985,16 @@ function ensureAll42(S) {
   if (!S.flags.pub42) { S.flags.pub42 = 1; assignPubs42(S, true); } else assignPubs42(S, false);
 }
 var _nr42 = newRivalWork;
-newRivalWork = function (S) { var r = _nr42(S); r.cpx = 1; return r; };
+newRivalWork = function (S) { var r = _nr42(S); r.cpx = 1; r.cpz = 1; return r; };
 var _tick42 = tick;
 tick = function (S) {
   try { prep42(S); } catch (e) { console.error(e); }
   var r = _tick42(S);
   try {
     if (!S.flags.pub42 || S.t % 4 === 0) ensureAll42(S);
-    S.works.forEach(function (w) { if (w.cp2 != null && !w.cpx) { w.cp2 *= 10; w.cpx = 1; } });
-    (S.rivalWorks || []).forEach(function (w) { if (w.copies && !w.cpx) { w.copies *= 10; w.cpx = 1; } });
+    S.works.forEach(function (w) { if (w.cp2 != null && !w.cpz) { if (w.cpx) w.cp2 /= 10; w.cpz = 1; } });
+    (S.rivalWorks || []).forEach(function (w) { if (!w.cpz) { if (w.cpx && w.copies) w.copies /= 10; w.cpz = 1; } });
+    S.rivals.forEach(function (c) { if (!c.sz) { c.s2 = (c.s2 || 0) / 10; c.sz = 1; } });
   } catch (e) { console.error(e); }
   return r;
 };
@@ -9009,20 +9013,20 @@ var HOF42 = (function () {
   var top3 = CO42.filter(function (c) { return c[1] === 3; }).map(function (c) { return c[0]; }).concat(COS), mid = CO42.filter(function (c) { return c[1] >= 2; }).map(function (c) { return c[0]; }).concat(COS), all = CO42.map(function (c) { return c[0]; }).concat(COS);
   for (i = 0; i < 1000; i++) {
     var t = "", n = 0; do { t = r() < 0.2 ? pk(T39) : raw(); n++; } while (used[t] && n < 80); if (used[t]) t += "Ⅱ"; used[t] = 1;
-    var cp = 50000 * Math.pow(0.006, i / 999) * (1 + (r() - 0.5) * 0.002);
+    var cp = 10000 * Math.pow(0.003, i / 999) * (1 + (r() - 0.5) * 0.002);
     out.push({ title: t, author: pk(SURN) + " " + pk(GIVEN), co: i < 150 ? pk(top3) : i < 450 ? pk(mid) : pk(all), y: 1965 + Math.floor(r() * 60), cp: Math.round(cp) });
   }
   out.sort(function (a, b) { return b.cp - a.cp; });
-  out.forEach(function (x, k) { var n = k < 20 ? 6 : k < 100 ? 5 : k < 250 ? 4 : k < 500 ? 3 : k < 800 ? 2 : 1; x.med = HM42.slice(0, n); x.rank = k + 1; });
+  out.forEach(function (x, k) { var n = k < 20 ? 6 : k < 60 ? 5 : k < 150 ? 4 : k < 300 ? 3 : k < 600 ? 2 : 1; x.med = HM42.slice(0, n); x.rank = k + 1; });
   return out;
 })();
 var HB42 = {};
 HOF42.forEach(function (x) { var b = HB42[x.co] || (HB42[x.co] = { cp: 0, anime: 0, films: 0 }); b.cp += x.cp; if (x.med.indexOf("アニメ化") >= 0) b.anime++; if (x.med.indexOf("映画化") >= 0) b.films++; });
 function coStat42(r) {
   var b = HB42[r.name] || { cp: 0, anime: 0, films: 0 }, h = hstr(r.name), sz = r.size == null ? 1 : r.size;
-  var base = [20 + h % 180, 300 + h % 2700, 3000 + h % 27000, 30000 + h % 70000][sz];
+  var base = [2 + h % 18, 30 + h % 270, 300 + h % 2700, 3000 + h % 7000][sz];
   var cp = base + b.cp + (r.s2 || 0);
-  return { cp: cp, anime: Math.max(Math.floor(cp / 80000), b.anime) + (r.a2 || 0), films: Math.max(Math.floor(cp / 200000), b.films) + (r.f2 || 0) };
+  return { cp: cp, anime: Math.max(Math.floor(cp / 15000), b.anime) + (r.a2 || 0), films: Math.max(Math.floor(cp / 40000), b.films) + (r.f2 || 0) };
 }
 function hofList42(S) {
   var min = HOF42[HOF42.length - 1].cp, mine = [];
