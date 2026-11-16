@@ -289,6 +289,7 @@ svg.map{border-radius:12px}
 @media (min-width:900px){.life{max-width:760px}.lifeo{grid-template-columns:repeat(3,1fr)}}
 #asv{position:fixed;left:12px;bottom:96px;z-index:30;background:rgba(20,22,28,.82);color:#fff;font-size:11px;padding:5px 10px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s}#asv.on{opacity:1}body[data-lay=pc] #asv{bottom:20px}
 .arow .sec{display:block;font-size:11.5px;color:#b3261e;margin:0 0 4px}
+.grpl{list-style:none;padding:0;margin:8px 0}.grpl li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 </style>
 
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
@@ -300,8 +301,14 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.8.0", SAVE_VER = 1;
+var GAME_VER = "1.9.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.9.0", date: "2026-11-16", notes: [
+    "作品の表紙を、漫画と小説で大きく描き分けました。現代的なアニメ調のイラストも加わりました。",
+    "ランキングが、より厳しくなりました。新人・話題・定番のランキングも加わりました。",
+    "弟子や絵師、原作者を迎えて、一門やグループとして育てていけるようになりました。",
+    "はじめ方を整理しました。"
+  ] },
   { ver: "1.8.0", date: "2026-11-05", notes: [
     "出版社の社員は、役職によってできることが変わります。権限のないことは、上司に相談して許可をもらう形になりました。",
     "退職と再就職ができるようになりました。",
@@ -8061,6 +8068,410 @@ buildGuide = function () {
       "「会社のおまかせ」は、会社の長にあたる役職が必要です。編集長になると、編集部の運営をおまかせにできます。起業した場合は、はじめから使えます。"
     ];
   }
+};
+buildGuide();
+
+/* ===== v1.9.0 表紙の全面刷新: 漫画=カラフルで勢いのある表紙 / 小説=淡い空気感のライトノベル風 / どちらも現代アニメ調のキャラ入り ===== */
+
+var HAIR36 = ["#2b2b3a", "#5a3a2a", "#e8c25a", "#e0668f", "#4a7be0", "#7a52c8", "#e8744a", "#3fb8a0", "#c9cfe6", "#8a3a3a"];
+var EYE36 = ["#3a7be0", "#2fa37a", "#d65a5a", "#8a56d8", "#e0a030", "#2a8fb8", "#c04a8a"];
+var OUT36 = {
+  school: ["#f4f6ff", "#d23a4e", "#27408b"], fantasy: ["#4a3a8c", "#e0b84a", "#2a1f5c"], mystery: ["#6a5a4a", "#3a2f28", "#caa766"], romance: ["#ffd6e4", "#ee5f8a", "#ffffff"],
+  scifi: ["#27324d", "#35d0e8", "#101830"], sports: ["#e8473a", "#ffffff", "#2a2a2a"], daily: ["#ffe6b8", "#e88a3a", "#ffffff"], horror: ["#2a2030", "#9a1f3a", "#6a4a7a"],
+  history: ["#a83a4a", "#f4e4c8", "#2a2a2a"], work: ["#2f3e5a", "#d23a4e", "#ffffff"]
+};
+
+/* アニメ調のキャラクター(上半身)。原点=顔の中心、幅およそ44 */
+function animeChar36(h, genre, big) {
+  var hair = HAIR36[h % HAIR36.length], hair2 = "rgba(0,0,0,.22)", eye = EYE36[(h >> 3) % EYE36.length], style = (h >> 6) % 5, skin = "#ffe4d2", o = OUT36[genre] || OUT36.school, s = "";
+  var hr = genre === "horror" ? "#d02a4a" : eye;
+  // 後ろ髪
+  if (style === 1) s += '<path d="M-15,-6 Q-20,18 -14,34 L14,34 Q20,18 15,-6z" fill="' + hair + '"/>';
+  else if (style === 2) s += '<path d="M-14,-8 Q-26,2 -22,26 Q-16,22 -13,8z M14,-8 Q26,2 22,26 Q16,22 13,8z" fill="' + hair + '"/><circle cx="-22" cy="-6" r="3.2" fill="' + o[1] + '"/><circle cx="22" cy="-6" r="3.2" fill="' + o[1] + '"/>';
+  else if (style === 3) s += '<path d="M10,-14 Q30,-8 24,22 Q20,8 12,0z" fill="' + hair + '"/><circle cx="14" cy="-12" r="3" fill="' + o[1] + '"/>';
+  else if (style === 4) s += '<path d="M-15,-6 Q-18,8 -14,12 L14,12 Q18,8 15,-6z" fill="' + hair + '"/>';
+  else s += '<path d="M-14,-8 Q-17,6 -13,10 L13,10 Q17,6 14,-8z" fill="' + hair + '"/>';
+  // 体(ジャンルごとの服)
+  var body = '<path d="M-19,34 Q-17,16 -7,14 L7,14 Q17,16 19,34z" fill="' + o[0] + '"/>';
+  switch (genre) {
+    case "school": body += '<path d="M-7,14 L0,24 L7,14 L4,14 L0,19 L-4,14z" fill="' + o[2] + '"/><path d="M-7,14 L0,26 L7,14" fill="none" stroke="#fff" stroke-width="1.3"/><path d="M-3,22 L0,19 L3,22 L2,27 L-2,27z" fill="' + o[1] + '"/>'; break;
+    case "fantasy": body += '<path d="M-19,34 Q-20,18 -9,13 L0,20 L9,13 Q20,18 19,34z" fill="' + o[0] + '" stroke="' + o[1] + '" stroke-width="1"/><circle cx="0" cy="21" r="2.4" fill="' + o[1] + '"/><path d="M-9,13 Q0,18 9,13" fill="none" stroke="' + o[1] + '" stroke-width="1.6"/>'; break;
+    case "mystery": body += '<path d="M-7,14 L0,26 L7,14z" fill="#f2efe6"/><path d="M-7,14 L-12,30 M7,14 L12,30" stroke="' + o[2] + '" stroke-width="1.4"/><circle cx="0" cy="22" r="1" fill="' + o[2] + '"/>'; break;
+    case "romance": body += '<path d="M-8,14 Q0,22 8,14" fill="' + skin + '"/><path d="M-4,17 L0,21 L4,17 L2,24 L-2,24z" fill="' + o[1] + '"/>'; break;
+    case "scifi": body += '<path d="M-19,34 Q-17,16 -7,14 L-4,14 L-6,34z M19,34 Q17,16 7,14 L4,14 L6,34z" fill="' + o[2] + '"/><path d="M-6,20 H6 M-5,26 H5" stroke="' + o[1] + '" stroke-width="1.4"/>'; break;
+    case "sports": body += '<path d="M-8,14 Q0,21 8,14" fill="' + skin + '"/><text y="31" text-anchor="middle" font-size="11" font-weight="700" fill="' + o[1] + '" font-family="IBM Plex Mono,monospace">' + (1 + h % 9) + '</text>'; break;
+    case "daily": body += '<path d="M-6,14 L-5,34 L5,34 L6,14z" fill="' + o[2] + '"/><path d="M-6,14 L0,19 L6,14" fill="none" stroke="' + o[1] + '" stroke-width="1.3"/>'; break;
+    case "horror": body += '<path d="M-8,14 Q0,20 8,14" fill="#cfc8d8"/><path d="M-12,18 Q0,28 12,18" fill="none" stroke="' + o[1] + '" stroke-width="1.2"/>'; break;
+    case "history": body += '<path d="M-8,14 L4,34 M8,14 L-4,34" stroke="' + o[1] + '" stroke-width="3"/><path d="M-14,28 H14" stroke="' + o[2] + '" stroke-width="3"/>'; break;
+    default: body += '<path d="M-7,14 L0,22 L7,14z" fill="#fff"/><path d="M0,19 L-2,34 L2,34z" fill="' + o[1] + '"/>';
+  }
+  s += body + '<rect x="-3.6" y="9" width="7.2" height="7" fill="' + skin + '"/><path d="M-3.6,13 Q0,16 3.6,13" fill="rgba(0,0,0,.1)"/>';
+  // 顔
+  s += '<path d="M-12.5,-2 Q-12.5,12 -5,13.5 Q0,15 5,13.5 Q12.5,12 12.5,-2 Q12.5,-14 0,-14 Q-12.5,-14 -12.5,-2z" fill="' + skin + '"/>';
+  s += '<ellipse cx="-12.6" cy="2" rx="1.6" ry="2.6" fill="' + skin + '"/><ellipse cx="12.6" cy="2" rx="1.6" ry="2.6" fill="' + skin + '"/>';
+  // 目(大きなアニメ目)
+  [-1, 1].forEach(function (sg) {
+    var x = sg * 5.6;
+    s += '<ellipse cx="' + x + '" cy="2" rx="3.6" ry="4.5" fill="#fff"/><ellipse cx="' + x + '" cy="2.4" rx="3" ry="4" fill="' + hr + '"/><ellipse cx="' + x + '" cy="2.8" rx="1.7" ry="2.5" fill="#1a1a2a"/>' +
+      '<path d="M' + (x - 3.8) + ',-1.6 Q' + x + ',-3.6 ' + (x + 3.8) + ',-1.6" fill="none" stroke="#1a1a2a" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<circle cx="' + (x - 1.1) + '" cy="0.9" r="1.3" fill="#fff"/><circle cx="' + (x + 1.3) + '" cy="4.2" r=".7" fill="#fff"/>';
+  });
+  s += '<ellipse cx="-8.8" cy="7.2" rx="2.6" ry="1.3" fill="rgba(255,110,130,.35)"/><ellipse cx="8.8" cy="7.2" rx="2.6" ry="1.3" fill="rgba(255,110,130,.35)"/>';
+  s += (h >> 9) % 3 === 0 ? '<path d="M-2.2,9 Q0,11.6 2.2,9" fill="#fff" stroke="#b04a4a" stroke-width=".9"/>' : (h >> 9) % 3 === 1 ? '<path d="M-1.8,9.4 Q0,10.8 1.8,9.4" fill="none" stroke="#b04a4a" stroke-width="1" stroke-linecap="round"/>' : '<ellipse cx="0" cy="9.6" rx="1.3" ry="1.1" fill="#c85a5a"/>';
+  // 前髪
+  s += '<path d="M-14.5,0 Q-16,-19 0,-19 Q16,-19 14.5,0 L12,-9 L8,-2 L4.5,-11 L0,-3 L-4,-11 L-8,-2 L-12,-9z" fill="' + hair + '"/>';
+  s += '<path d="M-9,-16 Q0,-20 9,-16" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.4" stroke-linecap="round"/>';
+  s += '<path d="M-14.5,0 Q-16,10 -13,14 L-12.4,-3z M14.5,0 Q16,10 13,14 L12.4,-3z" fill="' + hair + '"/>';
+  // アクセサリ
+  if (genre === "fantasy") s += '<path d="M-8,-17 L-5,-23 L0,-18 L5,-23 L8,-17z" fill="' + o[1] + '"/>';
+  else if (genre === "mystery") s += '<path d="M-15,-14 Q0,-30 15,-14 Q0,-18 -15,-14z" fill="' + o[1] + '"/><rect x="-15" y="-15" width="30" height="2.4" rx="1" fill="' + o[2] + '"/>';
+  else if (genre === "sports") s += '<rect x="-14" y="-12" width="28" height="3" fill="' + o[1] + '"/>';
+  else if (genre === "scifi") s += '<path d="M-14,-1 Q-14,-16 0,-16 Q14,-16 14,-1" fill="none" stroke="' + o[1] + '" stroke-width="1.8"/><rect x="11" y="-1" width="6" height="5" rx="1.5" fill="' + o[1] + '"/>';
+  else if (genre === "romance" || genre === "school") s += '<path d="M-12,-14 L-6,-12 L-12,-9z M-12,-14 L-17,-11 L-12,-9z" fill="' + o[1] + '"/>';
+  else if (genre === "horror") s += '<path d="M14,-8 L19,-16 L12,-14z" fill="#9a1f3a"/>';
+  else if (genre === "history") s += '<path d="M-3,-19 L0,-24 L3,-19z" fill="' + o[1] + '"/>';
+  return s;
+}
+
+/* 背景の飾り(ジャンルごと) */
+function deco36(g, h, mode, hue) {
+  var s = "", i, W = "rgba(255,255,255,", n;
+  function R(k, m) { return hstr(g + h + k) % m; }
+  switch (g) {
+    case "school": for (i = 0; i < 9; i++) s += '<ellipse cx="' + R(i, 80) + '" cy="' + R(i + 20, 100) + '" rx="2.6" ry="1.6" fill="rgba(255,190,210,.8)" transform="rotate(' + R(i + 40, 180) + ' ' + R(i, 80) + ' ' + R(i + 20, 100) + ')"/>'; break;
+    case "fantasy": s += '<circle cx="62" cy="30" r="9" fill="rgba(255,240,170,.9)"/><circle cx="58" cy="27" r="8" fill="rgba(70,50,140,.75)"/>'; for (i = 0; i < 12; i++) s += '<path d="M' + R(i, 80) + ',' + R(i + 9, 70) + ' l1,2.4 2.4,1 -2.4,1 -1,2.4 -1,-2.4 -2.4,-1 2.4,-1z" fill="#fff6c8"/>'; break;
+    case "mystery": s += '<circle cx="16" cy="28" r="9" fill="rgba(255,248,210,.85)"/>'; for (i = 0; i < 3; i++) s += '<ellipse cx="' + (14 + i * 26) + '" cy="' + (78 + R(i, 8)) + '" rx="22" ry="4" fill="' + W + '.18)"/>'; break;
+    case "romance": for (i = 0; i < 10; i++) s += '<circle cx="' + R(i, 80) + '" cy="' + R(i + 7, 100) + '" r="' + (1.5 + R(i + 3, 5)) + '" fill="rgba(255,255,255,.35)"/>'; s += '<path d="M62,30 C50,20 54,10 62,17 C70,10 74,20 62,30z" fill="rgba(255,120,160,.7)"/>'; break;
+    case "scifi": for (i = 0; i < 8; i++) s += '<line x1="0" y1="' + (60 + i * 7) + '" x2="80" y2="' + (60 + i * 7) + '" stroke="rgba(80,230,255,.18)"/>'; s += '<circle cx="60" cy="32" r="9" fill="rgba(255,255,255,.2)"/><ellipse cx="60" cy="32" rx="16" ry="3.6" fill="none" stroke="rgba(255,255,255,.55)" transform="rotate(-20 60 32)"/>'; for (i = 0; i < 10; i++) s += '<circle cx="' + R(i, 80) + '" cy="' + R(i + 5, 60) + '" r=".7" fill="#fff"/>'; break;
+    case "sports": s += '<circle cx="60" cy="30" r="16" fill="rgba(255,236,120,.65)"/><circle cx="14" cy="92" r="6" fill="rgba(255,255,255,.55)"/><path d="M8,92 H20 M14,86 V98" stroke="rgba(0,0,0,.3)"/>'; break;
+    case "daily": for (i = 0; i < 9; i++) s += '<circle cx="' + R(i, 80) + '" cy="' + R(i + 11, 100) + '" r="' + (2 + R(i, 6)) + '" fill="rgba(255,255,255,.28)"/>'; s += '<g fill="#ffd84a"><circle cx="64" cy="22" r="3"/><circle cx="68" cy="26" r="3"/><circle cx="60" cy="26" r="3"/><circle cx="64" cy="30" r="3"/></g><circle cx="64" cy="26" r="2.4" fill="#e88a3a"/>'; break;
+    case "horror": s += '<circle cx="56" cy="30" r="12" fill="rgba(200,40,60,.75)"/>'; for (i = 0; i < 3; i++) s += '<path d="M' + (10 + i * 18) + ',' + (18 + R(i, 20)) + ' q4,-4 8,0 q-2,1 -4,0 q-2,1 -4,0z" fill="#1a0f22"/>'; break;
+    case "history": s += '<circle cx="58" cy="34" r="11" fill="rgba(255,100,70,.8)"/><path d="M0,70 L18,52 L34,66 L52,48 L80,70z" fill="rgba(40,20,20,.35)"/>'; break;
+    default: for (i = 0; i < 7; i++) { var bh = 16 + R(i, 34); s += '<rect x="' + (i * 12 - 2) + '" y="' + (74 - bh) + '" width="10" height="' + bh + '" fill="rgba(20,30,60,.35)"/>'; }
+  }
+  return s;
+}
+
+function cover36(w) {
+  var h = hstr(w.id + w.title), g = w.genre, hue = GHUE[g] || 200, id = "cv" + (h % 99999), manga = w.medium === "manga", t = w.title, i, s = "";
+  var fam = 'font-family="Dela Gothic One,Zen Kaku Gothic New,sans-serif"';
+  if (manga) {
+    var h2 = (hue + 150 + (h % 4) * 20) % 360;
+    s += '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(' + hue + ',92%,58%)"/><stop offset="1" stop-color="hsl(' + h2 + ',90%,52%)"/></linearGradient>' +
+      '<radialGradient id="' + id + 'g" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>';
+    s += '<rect width="80" height="112" fill="url(#' + id + ')"/>';
+    // 集中線
+    for (i = 0; i < 26; i++) { var an = i / 26 * 6.2832, an2 = an + 0.07; s += '<polygon points="46,62 ' + (46 + Math.cos(an) * 120).toFixed(1) + ',' + (62 + Math.sin(an) * 120).toFixed(1) + ' ' + (46 + Math.cos(an2) * 120).toFixed(1) + ',' + (62 + Math.sin(an2) * 120).toFixed(1) + '" fill="rgba(255,255,255,' + (i % 2 ? ".16" : ".08") + ')"/>'; }
+    // ハーフトーン
+    for (i = 0; i < 30; i++) s += '<circle cx="' + ((i % 6) * 6 + 4 + (Math.floor(i / 6) % 2) * 3) + '" cy="' + (96 - Math.floor(i / 6) * 6) + '" r="' + (2.2 - Math.floor(i / 6) * 0.4).toFixed(1) + '" fill="rgba(0,0,0,.22)"/>';
+    s += deco36(g, h, "manga", hue);
+    s += '<circle cx="46" cy="62" r="30" fill="url(#' + id + 'g)"/>';
+    s += '<g transform="translate(46,69) scale(1.34)">' + animeChar36(h, g, true) + '</g>';
+    // 斜めの帯とタイトル
+    s += '<polygon points="0,13 80,6 80,16 0,23" fill="rgba(20,20,40,.82)"/>';
+    s += '<g transform="rotate(-5 40 40)">';
+    var L = [], q; for (q = 0; q < t.length && L.length < 3; q += 5) L.push(t.slice(q, q + 5));
+    s += L.map(function (l, k) { return '<text x="5" y="' + (35 + k * 12) + '" font-size="11.5" ' + fam + ' fill="#fff" stroke="#14142a" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round">' + esc(l) + '</text>'; }).join("");
+    s += '</g>';
+    s += '<rect x="0" y="100" width="80" height="12" fill="#14142a"/><rect x="3" y="102.5" width="24" height="7" fill="#ffd21f"/><text x="15" y="108" text-anchor="middle" font-size="5.4" font-weight="700" fill="#14142a" font-family="IBM Plex Mono,monospace">COMIC</text><text x="77" y="108" text-anchor="end" font-size="5.2" fill="#fff" font-family="Zen Kaku Gothic New,sans-serif">' + esc(gname(g, GENRES)) + '</text>';
+    s += '<rect x="1" y="1" width="78" height="110" fill="none" stroke="#14142a" stroke-width="2"/>';
+  } else {
+    var hb = (hue + 40 + (h % 3) * 15) % 360;
+    s += '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(' + hue + ',70%,82%)"/><stop offset=".6" stop-color="hsl(' + hb + ',75%,90%)"/><stop offset="1" stop-color="hsl(' + ((hb + 20) % 360) + ',60%,96%)"/></linearGradient></defs>';
+    s += '<rect width="80" height="112" fill="url(#' + id + ')"/>';
+    for (i = 0; i < 7; i++) s += '<circle cx="' + (hstr(t + i) % 80) + '" cy="' + (hstr(w.id + i) % 100) + '" r="' + (3 + hstr(i + t) % 9) + '" fill="rgba(255,255,255,.28)"/>';
+    s += deco36(g, h, "novel", hue);
+    // 地平線のやわらかい丘
+    s += '<path d="M0,86 Q20,76 40,84 T80,80 V112 H0z" fill="hsla(' + hue + ',45%,70%,.55)"/>';
+    s += '<g transform="translate(40,74) scale(1.02)">' + animeChar36(h >> 2, g, false) + '</g>';
+    // 白いタイトルプレート
+    s += '<rect x="6" y="18" width="68" height="' + (t.length > 6 ? 27 : 20) + '" rx="3" fill="rgba(255,255,255,.88)"/><rect x="8" y="20" width="64" height="' + (t.length > 6 ? 23 : 16) + '" rx="2" fill="none" stroke="hsl(' + hue + ',50%,55%)" stroke-width=".7"/>';
+    var L2 = [], q2; for (q2 = 0; q2 < t.length && L2.length < 2; q2 += 6) L2.push(t.slice(q2, q2 + 6));
+    s += L2.map(function (l, k) { return '<text x="40" y="' + (31 + k * 11.5) + '" text-anchor="middle" font-size="9" font-weight="700" fill="hsl(' + hue + ',60%,24%)" font-family="Zen Kaku Gothic New,sans-serif">' + esc(l) + '</text>'; }).join("");
+    s += '<rect x="0" y="100" width="80" height="12" fill="rgba(255,255,255,.9)"/><text x="6" y="108" font-size="5.6" fill="hsl(' + hue + ',50%,36%)" font-family="IBM Plex Mono,monospace" letter-spacing=".6">NOVEL</text><text x="74" y="108" text-anchor="end" font-size="5.2" fill="hsl(' + hue + ',40%,36%)" font-family="Zen Kaku Gothic New,sans-serif">' + esc(gname(g, GENRES)) + '</text>';
+    s += '<rect x="2.5" y="2.5" width="75" height="107" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/>';
+  }
+  return '<svg class="cover" viewBox="0 0 80 112" role="img" aria-label="' + esc(w.title) + 'の表紙">' + s + '</svg>';
+}
+
+cover = function (w) {
+  var o = cover36(w), ex = "", th = THK[w.theme];
+  if (th) ex += '<circle cx="68" cy="9.5" r="7" fill="rgba(0,0,0,.5)" stroke="rgba(255,255,255,.9)" stroke-width=".8"/><text x="68" y="12.6" text-anchor="middle" font-size="8.4" fill="#fff" font-weight="700" font-family="Zen Kaku Gothic New,sans-serif">' + th + '</text>';
+  var mk = w.media && (w.media.anime ? "アニメ" : w.media.movie ? "映画" : w.media.drama ? "ドラマ" : w.media.stage ? "舞台" : w.media.game ? "ゲーム" : Object.keys(w.media).length ? "展開中" : "");
+  if (mk) ex += '<rect x="0" y="3" width="' + (mk.length * 7 + 8) + '" height="10" fill="hsl(48,95%,60%)"/><polygon points="' + (mk.length * 7 + 8) + ",3 " + (mk.length * 7 + 12) + ",8 " + (mk.length * 7 + 8) + ',13" fill="hsl(48,95%,60%)"/><text x="4" y="10.6" font-size="7.2" font-weight="700" fill="#3a2a00" font-family="Zen Kaku Gothic New,sans-serif">' + mk + '</text>';
+  if (w.grp) ex += '<rect x="0" y="95" width="26" height="6" fill="hsl(48,95%,58%)"/><text x="13" y="99.7" text-anchor="middle" font-size="4.4" font-weight="700" fill="#3a2a00" font-family="Zen Kaku Gothic New,sans-serif">GROUP発</text>';
+  if (w.ever) ex += '<text x="40" y="97" text-anchor="middle" font-size="7" font-weight="700" fill="hsl(48,95%,55%)" stroke="#fff" stroke-width=".5" paint-order="stroke" font-family="Zen Kaku Gothic New,sans-serif">♛ 不朽</text>';
+  if (w.hall) ex += '<text x="72" y="96" text-anchor="middle" font-size="10" fill="hsl(48,95%,55%)" stroke="#fff" stroke-width=".5" paint-order="stroke">★</text>';
+  return ex ? o.replace(/<\/svg>\s*$/, ex + '</svg>') : o;
+};
+
+/* ===== v1.9.0 ランキングを厳しく / 新人・話題・定番ランキング ===== */
+
+var RGRP36 = ["玄武グループ", "天領財閥", "藤乃宮グループ", "蒼海ホールディングス", "鳳凰グループ", "八雲財閥"];
+var CHT36 = [["all", "総合"], ["new", "新人"], ["hot", "話題"], ["classic", "定番"]];
+var CHDESC36 = {
+  all: "いま連載中の作品すべてを、人気で並べた順位です。上位は実績のある作品ばかりで、1位は簡単には取れません。",
+  new: "連載1年以内の作品だけの順位です。新人王を狙えます。",
+  hot: "最近の勢いが強い作品の順位です。順位が一気に上がった作品や、特集された作品が入ります。",
+  classic: "連載2年以上、長く愛されている作品の順位です。時代が変わっても残る作品が並びます。"
+};
+
+var _newRival36 = newRivalWork;
+newRivalWork = function (S) {
+  var r = _newRival36(S); r.born = S.t; r.grp = ch(0.2) ? pick(RGRP36) : ""; return r;
+};
+
+function myScore36(S, w) {
+  var sc = w.pop * 0.9 + Math.min(6, Math.max(0, w.boost) * 0.25) + (isEver(w) ? 3 : 0) - freshPenalty(w);
+  sc -= Math.max(0, 15 - w.weeks * 0.35); // 連載の序盤は、実績がないぶん順位が伸びにくい
+  if (w.grp && S.group) sc += (S.group.lv || 0) * 1.3;
+  return sc;
+}
+
+function rkSub36(S, rows) {
+  var yr = 48, sub = { "new": [], hot: [], classic: [] }, sn = S.flags.snA || S.flags.snB || {};
+  rows.forEach(function (r) {
+    var age = r.mine ? r.weeks : S.t - (r.born == null ? S.t - 80 : r.born);
+    if (age <= yr) sub["new"].push({ key: r.key, title: r.title, pub: r.pub, mine: r.mine, score: r.score + (r.mine ? 0 : 0), grp: r.grp });
+    var base = sn[r.key] == null ? r.score - 6 : sn[r.key];
+    sub.hot.push({ key: r.key, title: r.title, pub: r.pub, mine: r.mine, score: (r.score - base) * 2 + r.score * 0.25 + (r.hype || 0), grp: r.grp });
+    if (age >= 96 || r.ever) sub.classic.push({ key: r.key, title: r.title, pub: r.pub, mine: r.mine, score: r.score + Math.min(10, age / 24), grp: r.grp });
+  });
+  var prev = (S.chart && S.chart.sub) || {}, out = {};
+  Object.keys(sub).forEach(function (k) {
+    var l = sub[k].sort(function (a, b) { return b.score - a.score; }), pr = (prev[k] && prev[k].rank) || {}, rk = {};
+    l.forEach(function (r, i) { r.rank = i + 1; r.prev = pr[r.key] || 0; rk[r.key] = i + 1; });
+    out[k] = { rows: l.slice(0, NEW.CHART_N), rank: rk, total: l.length };
+  });
+  return out;
+}
+
+chartTick = function (S, news) {
+  rivalInit(S); S.flags = S.flags || {};
+  while (S.rivalWorks.length < V1.RIVAL_N) S.rivalWorks.push(newRivalWork(S));
+  var yr = Math.floor(S.t / 48), dm = { easy: -4, normal: 0, hard: 8 }[S.diff] || 0, tgt = 57 + Math.min(40, yr * 3) + dm + Math.min(12, S.fame / 40);
+  S.rivalWorks.forEach(function (r) { if (r.born == null) r.born = S.t - ri(0, 120); if (r.grp == null) r.grp = ch(0.2) ? pick(RGRP36) : ""; });
+  // 看板級の長寿作品(ベテラン)が常に何本かある
+  var vets = S.rivalWorks.filter(function (r) { return r.vet; });
+  while (vets.length < 4) { var cand = S.rivalWorks.filter(function (r) { return !r.vet && !r.monster; })[0]; if (!cand) break; cand.vet = true; cand.born = S.t - ri(100, 260); cand.pop = Math.max(cand.pop, tgt + 6); vets.push(cand); }
+  if (!S.rivalWorks.some(function (r) { return r.monster; }) && S.t >= V1.MONSTER_FROM && ch(V1.MONSTER_RATE * (S.diff === "hard" ? 1.5 : S.diff === "easy" ? 0.5 : 1))) {
+    S.rivalWorks.push({ id: uid("rw"), title: mkTitle(), pub: pick(RIVALS), pop: 80, monster: true, until: S.t + ri(24, 40), born: S.t, grp: "" });
+    news.push("他社から、とてつもない新連載が現れた。ランキングの勢力図が変わりそうだ。");
+  }
+  S.rivalWorks.forEach(function (r, i) {
+    if (r.monster) { r.pop = cl(r.pop + (tgt + 36 - r.pop) * 0.1 + nrm() * 2, 5, 125); if (S.t >= r.until) S.rivalWorks[i] = newRivalWork(S); return; }
+    if (!(r.surge > S.t) && ch(0.016)) r.surge = S.t + ri(8, 20);
+    var goal = (r.surge > S.t ? tgt + 30 : tgt) + (r.vet ? 7 : 0) + (r.grp ? 3 : 0);
+    r.pop = cl(r.pop + (goal - r.pop) * 0.06 + nrm() * 3.6, 5, 118);
+    if (!r.vet && r.pop < 14 && ch(0.2)) S.rivalWorks[i] = newRivalWork(S);
+  });
+  var rows = [];
+  S.works.forEach(function (w) { if (w.state === "serial") rows.push({ key: w.id, title: w.title, pub: S.company, score: myScore36(S, w), mine: true, wid: w.id, weeks: w.weeks, ever: isEver(w), hype: Math.min(12, (w.promo || 0) * 0.4), grp: w.grp ? (S.group ? grpName38(S) : "") : "" }); });
+  S.rivalWorks.forEach(function (r) { rows.push({ key: r.id, title: r.title, pub: r.pub, score: r.pop, mine: false, monster: !!r.monster, born: r.born, grp: r.grp || "", ever: S.t - r.born > 144 }); });
+  rows.sort(function (a, b) { return b.score - a.score; });
+  var prev = (S.chart && S.chart.rank) || {}, rank = {};
+  rows.forEach(function (r, i) { r.rank = i + 1; r.prev = prev[r.key] || 0; rank[r.key] = i + 1; });
+  var sub = rkSub36(S, rows);
+  S.chart = { t: S.t, rows: rows.slice(0, NEW.CHART_N), rank: rank, total: rows.length, sub: sub };
+  if (S.t % 6 === 0) { S.flags.snA = S.flags.snB || null; var m = {}; rows.forEach(function (r) { m[r.key] = r.score; }); S.flags.snB = m; }
+  var best = rows.filter(function (r) { return r.mine; })[0];
+  S.flags.bestRank = best ? best.rank : 0;
+  if (best) {
+    S.flags.bestRankQ = S.flags.bestRankQ ? Math.min(S.flags.bestRankQ, best.rank) : best.rank;
+    S.flags.bestRankY = S.flags.bestRankY ? Math.min(S.flags.bestRankY, best.rank) : best.rank;
+    if (best.rank === 1) {
+      S.flags.top1 = (S.flags.top1Last === S.t - 1 ? (S.flags.top1 || 0) : 0) + 1; S.flags.top1Last = S.t;
+      var w1 = W(S, best.wid); if (w1) { w1.boost += 0.03; }
+      if (S.flags.top1 === 1 || S.flags.top1 % 8 === 0) { S.fame += 0.8; S.money += 10; news.push("『" + best.title + "』が週間ランキング1位!(" + S.flags.top1 + "週連続)"); }
+      S.flags.top1Total = (S.flags.top1Total || 0) + 1;
+    } else if (best.rank <= 3) { var w3 = W(S, best.wid); if (w3) w3.boost += 0.012; }
+  }
+  // 新人・話題・定番の1位
+  ["new", "hot", "classic"].forEach(function (k) {
+    var top = sub[k].rows[0]; if (!top || !top.mine) return;
+    var w = W(S, top.key); if (!w) return;
+    w.subTop = w.subTop || {}; w.subTop[k] = (w.subTop[k] || 0) + 1;
+    if (w.subTop[k] === 3) {
+      if (k === "new") { S.fame += 1.2; w.boost += 2; news.push("『" + w.title + "』が新人ランキングで首位に立った。「期待の新人」と注目されている。"); }
+      else if (k === "hot") { S.fame += 0.8; w.boost += 3; news.push("『" + w.title + "』が「いま話題の作品」ランキングで首位になった。"); }
+      else { S.fame += 1.0; w.culture += 2; news.push("『" + w.title + "』が「定番作品」ランキングの首位に。長く愛される作品として知られている。"); }
+    }
+  });
+};
+
+/* ---------- 画面 ---------- */
+function chartRows37(rows, mineKeys) {
+  var h = '<ol class="chl">';
+  rows.forEach(function (r) {
+    var d = !r.prev ? '<i class="dl nw">NEW</i>' : r.rank < r.prev ? '<i class="dl up">▲' + (r.prev - r.rank) + '</i>' : r.rank > r.prev ? '<i class="dl dn">▼' + (r.rank - r.prev) + '</i>' : '<i class="dl">―</i>';
+    h += '<li class="' + (r.mine ? "mine" : "") + '"><b>' + r.rank + '</b><span class="tt">' + esc(r.title) + '<small>' + (r.mine ? (r.grp ? esc(r.grp) + "発" : "自社") : esc(r.pub) + (r.monster ? " ・ 話題の大型連載" : "") + (r.grp ? " ・ " + esc(r.grp) + "発" : "")) + '</small></span>' + d + '</li>';
+  });
+  return h + '</ol>';
+}
+chartCard = function (S) {
+  var c = S.chart; if (!c || !c.rows.length) return "";
+  var tab = G.chtab || "all", use = tab !== "all" && c.sub && c.sub[tab] ? c.sub[tab] : c;
+  var mine = {}; S.works.forEach(function (w) { mine[w.id] = 1; });
+  var best = 0; Object.keys(use.rank).forEach(function (k) { if (mine[k] && (!best || use.rank[k] < best)) best = use.rank[k]; });
+  var streak = tab === "all" && (S.flags.top1Last >= S.t - 1 && S.flags.top1) ? S.flags.top1 : 0;
+  var h = '<section class="card chart"><h2 class="h2">週刊ランキング <small class="muted">TOP' + use.rows.length + '</small></h2><div class="chips">' + CHT36.map(function (t) { return chip(t[1], "chtab", { v: t[0] }, tab === t[0]); }).join("") + '</div><p class="small muted">' + CHDESC36[tab] + '</p>' +
+    (streak ? '<p class="small"><span class="tag gold">1位 ' + streak + '週連続</span></p>' : (best ? '<p class="small muted">自社の最高位: 第' + best + '位(' + use.total + '作品中)</p>' : '<p class="small muted">' + (use.rows.length ? "自社の作品は、まだこの順位に入っていません。" : "該当する作品がまだありません。") + '</p>'));
+  return h + chartRows37(use.rows) + '</section>';
+};
+XACT.chtab = function (d) { G.chtab = d.v; se("tap"); render(); };
+
+/* ===== v1.9.0 一門・グループ(弟子・絵師・原作者を抱える) / 編集者ルートの廃止 ===== */
+
+var GL38 = [{ n: "一門", pr: 0, cap: 3 }, { n: "グループ", pr: 40, cap: 6 }, { n: "総合グループ", pr: 120, cap: 10 }, { n: "財閥", pr: 300, cap: 16 }];
+var GK38 = { deshi: ["弟子", 30, "門下に入って修業する若手。育つと、グループ発の新人としてデビューします。"], ill: ["絵師", 60, "絵を描く専属の人。所属の絵師は、企画のときに無料で組めます。"], auth: ["原作者", 120, "すでに実力のある原作者を招きます。グループ発の新作を送り出します。"] };
+
+function grpBase38(S) { var c = (S.company || "").replace(/(工房|書房|書院|出版社|出版|社|館|堂|プロダクション)$/, ""); return c || S.player.name; }
+function grpName38(S) { var g = S.group; return g ? g.base + GL38[g.lv].n : ""; }
+function grpOn38(S) { return !!S.group && !S.player.pub; }
+
+XACT.grpfound = function () {
+  var S = G.S;
+  if (S.group) return;
+  if (S.fame < 30) return toast("まだ名が知られていません(名声30以上)");
+  if (!spend(S, 200)) return toast("資金が足りません(200万円)");
+  S.group = { base: grpBase38(S), lv: 0, pr: 0, mem: [], supN: 0, at: S.t };
+  addLog(S, grpName38(S) + "を立ち上げた。");
+  queue(S, { k: "info", title: grpName38(S) + "の旗揚げ", text: "「" + grpName38(S) + "」を名乗り、弟子や絵師、原作者を迎え入れる土台ができた。ここから、人が人を呼ぶ。グループが大きくなるほど、そこから出る作品は注目されていく。" });
+  se("ok"); render();
+};
+XACT.grpadd = function (d) {
+  var S = G.S, g = S.group, k = d.k, kd = GK38[k]; if (!g || !kd) return;
+  if (g.mem.length >= GL38[g.lv].cap) return toast("これ以上は迎えられません。グループの格を上げましょう");
+  if (!spend(S, kd[1])) return toast("資金が足りません(" + kd[1] + "万円)");
+  var sk = k === "deshi" ? ri(10, 30) : k === "ill" ? ri(40, 78) : ri(48, 75);
+  g.mem.push({ id: uid("gm"), name: pname(), kind: k, skill: sk, pot: k === "deshi" ? cl(sk + ri(25, 50), sk, 92) : k === "ill" ? cl(sk + ri(0, 12), sk, 95) : cl(sk + ri(5, 20), sk, 92), sal: k === "deshi" ? 0 : k === "ill" ? 1.5 : 3, w: S.t, debuted: false, works: 0 });
+  var m = g.mem[g.mem.length - 1]; addLog(S, m.name + "を" + kd[0] + "として迎えた。"); toast(m.name + "を" + kd[0] + "に迎えました", true); se("ok"); render();
+};
+XACT.grptrain = function (d) {
+  var S = G.S, g = S.group, m = g && g.mem.find(function (x) { return x.id === d.id; }); if (!m) return;
+  if (S.ap < 1) return toast("行動点が足りません");
+  S.ap--; S.player.sta = Math.max(0, S.player.sta - 5); m.skill = Math.min(m.pot, m.skill + 2.2 + g.lv * 0.3); gainSkill(S, "eye", 0.6);
+  toast(m.name + "に稽古をつけた", true); se("ok"); render();
+};
+XACT.grpsup = function (d) {
+  var S = G.S, g = S.group, w = g && W(S, d.id); if (!w || w.state !== "serial") return;
+  if (S.ap < 1) return toast("行動点が足りません");
+  S.ap--; w.sup = S.t; w.boost += 3; w.q.story = Math.min(95, w.q.story + 1.2); w.q.hook = Math.min(98, w.q.hook + 1); g.supN++; gainSkill(S, "eye", 0.8);
+  toast("『" + w.title + "』を監修した", true); se("ok"); render();
+};
+
+function grpDebut38(S, m) {
+  var g = S.group, g1 = pick(GENRES).id, t = pick(THEMES).id, h = pick(HEROES).id, ills = g.mem.filter(function (x) { return x.kind === "ill"; }), ill = ills.sort(function (a, b) { return b.skill - a.skill; })[0];
+  var med = ill ? (ch(0.6) ? "manga" : "novel") : (ch(0.4) ? "manga" : "novel"), syn = synergy(g1, t, h), sk = m.skill + g.lv * 2;
+  var q = { story: cl(sk * 0.9 + nrm() * 6, 5, 95), art: cl(Math.max(sk * 0.85, ill ? ill.skill * 0.9 : 0) + nrm() * 6, 5, 95), hook: cl(sk * 0.65 + syn * 1.3 + ri(5, 15) + g.lv * 2, 5, 98), pol: cl(sk * 0.6 + 8, 5, 90) };
+  var w = mkWork(S, { title: mkTitle(), medium: med, genre: g1, theme: t, hero: h, author: { id: m.id, name: m.name, type: "npc" }, illus: med === "manga" && ill ? { name: ill.name, art: ill.skill } : null, q: q, syn: syn, pop: 8 + 4 + g.lv * 3 });
+  w.grp = true; w.boost += 2 + g.lv; m.works++;
+  var first = !m.debuted; m.debuted = true; if (m.kind === "deshi") m.kind = "auth";
+  S.fame += 0.3 + 0.25 * g.lv;
+  var msg = grpName38(S) + "発の新連載『" + w.title + "』が始まった(" + m.name + ")。" + (g.lv >= 1 ? "「" + grpName38(S) + "から出た作品」と話題になっている。" : "");
+  addLog(S, msg);
+  if (first) queue(S, { k: "info", title: "グループからの新人デビュー", text: m.name + "が『" + w.title + "』で連載デビューした。" + grpName38(S) + "の名のもと、周囲の注目を集めている。" });
+  return msg;
+}
+function grpPrestige38(S) {
+  var g = S.group, p = g.mem.length * 2 + g.supN * 1.5 + S.fame / 25;
+  S.works.forEach(function (w) { if (!w.grp) return; p += (w.peak || w.pop) / 8 + (w.hall ? 20 : 0) + Object.keys(w.media || {}).length * 4; });
+  return p;
+}
+function grpTick38(S, news) {
+  var g = S.group; if (!g || S.player.pub) return;
+  var sal = 0, hasIll = g.mem.some(function (m) { return m.kind === "ill"; });
+  g.mem.forEach(function (m) {
+    sal += m.sal || 0;
+    if (m.kind === "deshi") m.skill = Math.min(m.pot, m.skill + 0.1 + 0.04 * g.lv + (hasIll ? 0.02 : 0));
+    else m.skill = Math.min(m.pot, m.skill + 0.04);
+    if (m.kind === "deshi" && !m.debuted && m.skill >= 38 && S.t - m.w >= 12 && ch(0.05)) news.push(grpDebut38(S, m));
+    else if (m.kind === "auth" && S.t - m.w >= 8 && ch(0.016)) {
+      var live = S.works.filter(function (w) { return w.grp && w.state === "serial"; }).length;
+      if (live < 2 + g.lv * 2) news.push(grpDebut38(S, m));
+    }
+  });
+  if (sal) S.money -= sal;
+  S.works.forEach(function (w) { if (w.grp && w.state === "serial" && g.lv) w.boost += 0.015 * g.lv; });
+  if (S.t % 4 === 0) {
+    g.pr = grpPrestige38(S);
+    while (g.lv < GL38.length - 1 && g.pr >= GL38[g.lv + 1].pr) {
+      g.lv++; S.fame += 3 + g.lv * 2;
+      queue(S, { k: "info", title: grpName38(S) + "へ", text: "あなたの一門は、「" + grpName38(S) + "」と呼ばれるまでになった。所属できる人数が増え、グループから出る作品は、いっそう注目されるようになる。" });
+      addLog(S, "「" + grpName38(S) + "」となった。");
+    }
+  }
+}
+var _tick38 = tick;
+tick = function (S) {
+  var r = _tick38(S);
+  try { var nw = []; grpTick38(S, nw); if (nw.length) S.news = nw.concat(S.news || []).slice(0, 8); } catch (e) { console.error(e); }
+  return r;
+};
+
+/* 所属の絵師は、企画のときに無料で組める */
+var _genIllus38 = genIllus;
+genIllus = function (S) {
+  var l = _genIllus38(S);
+  if (grpOn38(S)) S.group.mem.filter(function (m) { return m.kind === "ill"; }).forEach(function (m) { l.unshift({ id: m.id, name: m.name + "(所属)", art: Math.round(m.skill) }); });
+  return l;
+};
+
+/* ---------- 画面 ---------- */
+function grpCard38(S) {
+  if (!grpOn38(S)) return "";
+  var g = S.group;
+  if (!g) {
+    var ok = S.fame >= 30;
+    return '<section class="card grp"><b>一門・グループをつくる</b><p class="small muted">弟子や絵師、実力のある原作者を迎えて、ひとつの一門にまとめられます。人が増え、実績がたまるほど「一門 → グループ → 総合グループ → 財閥」と格が上がり、そこから出る作品は話題になります。</p>' +
+      (ok ? btn("一門を立ち上げる(200万円)", "grpfound", null, "pri sm") : '<p class="small muted">名声が30になると、立ち上げられます(いま ' + Math.round(S.fame) + ')。</p>') + '</section>';
+  }
+  var lv = GL38[g.lv], nx = GL38[g.lv + 1], pr = g.pr || 0;
+  var h = '<section class="card grp"><div class="goalh"><b>' + esc(grpName38(S)) + '</b><span class="tag gold">' + lv.n + '</span></div>' +
+    '<p class="small muted">格 ' + Math.round(pr) + (nx ? " / 次の「" + nx.n + "」まで " + nx.pr : "(最高位)") + ' ・ 所属 ' + g.mem.length + ' / ' + lv.cap + ' 人 ・ グループ発の作品 ' + S.works.filter(function (w) { return w.grp; }).length + '本</p>' + (nx ? bar(pr, nx.pr) : "");
+  if (g.mem.length) {
+    h += '<ul class="plain grpl">';
+    g.mem.forEach(function (m) {
+      h += '<li><span><b>' + esc(m.name) + '</b> <span class="tag">' + GK38[m.kind === "auth" && !m.debuted && false ? "auth" : m.kind][0] + (m.kind === "auth" && m.works ? "・" + m.works + "作" : "") + '</span> <span class="small muted">' + (m.kind === "ill" ? "絵" : "実力") + ' ' + skWord(m.skill) + '</span></span>' + (m.skill < m.pot - 0.5 ? btn("稽古<small>行動点1</small>", "grptrain", { id: m.id }, "sm") : '<span class="small muted">成長しきった</span>') + '</li>';
+    });
+    h += '</ul>';
+  }
+  h += '<p class="small"><b>迎える</b> <span class="muted">(週の給与がかかる人もいます)</span></p><div class="grid2">' +
+    Object.keys(GK38).map(function (k) { return btn(GK38[k][0] + "<small>" + GK38[k][1] + "万円</small>", "grpadd", { k: k }, "sm"); }).join("") + '</div>' +
+    '<p class="small muted">' + Object.keys(GK38).map(function (k) { return GK38[k][0] + ": " + GK38[k][2]; }).join(" ") + '</p>';
+  var sup = S.works.filter(function (w) { return w.state === "serial" && w.author.type === "npc" && !(w.sup > S.t - 12); }).sort(function (a, b) { return b.pop - a.pop; }).slice(0, 3);
+  if (sup.length) h += '<p class="small"><b>作品を監修する</b> <span class="muted">(作品の質と勢いが上がり、格もたまります)</span></p>' + sup.map(function (w) { return '<div class="cand-f"><span class="small">『' + esc(w.title) + '』 ' + esc(w.author.name) + '</span>' + btn("監修<small>行動点1</small>", "grpsup", { id: w.id }, "sm") + '</div>'; }).join("");
+  return h + '</section>';
+};
+var _vScout38 = vScout;
+vScout = function (S) {
+  var o = _vScout38(S), card = grpCard38(S); if (!card) return o;
+  var i = o.indexOf('</h2>'); if (i < 0) return card + o;
+  var j = o.indexOf('</div>', i);
+  return o.slice(0, j < 0 ? i + 5 : j + 6) + card + o.slice(j < 0 ? i + 5 : j + 6);
+};
+
+/* ---------- 編集者(出版社に就職)から始める道は、ゲームから外す ---------- */
+var _vNew38 = vNew;
+vNew = function () {
+  G.form.ng.path = "author";
+  return _vNew38().replace(/<div class="fld"><span>進む道<\/span>[\s\S]*?<\/p><\/div>/, "");
+};
+
+/* ---------- 遊び方 ---------- */
+var _buildGuide38 = buildGuide;
+buildGuide = function () {
+  _buildGuide38();
+  var at = GUIDE.findIndex(function (g) { return g.h === "出版社に就職する道"; });
+  var pg = {
+    h: "一門・グループをつくる", b: [
+      "「会社」タブで、名声が30になると「一門」を立ち上げられます。弟子・絵師・原作者を迎えて、ひとつのグループにまとめる仕組みです。",
+      "弟子は稽古をつけると育ち、実力がつくと、グループ発の新人としてデビューします。絵師は、企画のときに無料で組めます。原作者は、グループ発の新作を送り出します。作品を「監修」すると、質と勢いが上がります。",
+      "人が増え、作品が成功し、名声が上がると、グループの格が「一門 → グループ → 総合グループ → 財閥」と上がります。格が高いほど、所属できる人数が増え、グループ発の作品は話題になって、ランキングでも有利になります。",
+      "迎えた人には、週ごとの給与がかかる場合があります。ランキングには、総合のほかに「新人」「話題」「定番」があります。"
+    ]
+  };
+  if (at >= 0) GUIDE.splice(at, 1, pg); else if (!GUIDE.some(function (g) { return g.h === pg.h; })) GUIDE.splice(Math.min(5, GUIDE.length), 0, pg);
 };
 buildGuide();
 
