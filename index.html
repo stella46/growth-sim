@@ -301,8 +301,13 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.16.0", SAVE_VER = 1;
+var GAME_VER = "1.17.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.17.0", date: "2026-11-16", notes: [
+    "作品の累計冊数の伸びを、じっくり育てる前提に調整しました。歴代の名作で1位になるには、長い年月が必要です。",
+    "歴代の名作に、キャッチコピーや筆名、逸話がつきました。出版社には社訓、ランキングの作品にはひとことが加わりました。",
+    "記録に、ときどき出版界の小ネタが流れます。"
+  ] },
   { ver: "1.16.0", date: "2026-11-16", notes: [
     "歴代の名作の頂点を、さらに大きな数字にしました。現実の最大ヒットを超える、空前の売れ行きです。",
     "会社の累計冊数に合わせて、アニメ化・映画化の数え方も見直しました。"
@@ -8377,7 +8382,7 @@ function chartRows37(rows, mineKeys) {
   var h = '<ol class="chl">';
   rows.forEach(function (r) {
     var d = !r.prev ? '<i class="dl nw">NEW</i>' : r.rank < r.prev ? '<i class="dl up">▲' + (r.prev - r.rank) + '</i>' : r.rank > r.prev ? '<i class="dl dn">▼' + (r.rank - r.prev) + '</i>' : '<i class="dl">―</i>';
-    h += '<li class="' + (r.mine ? "mine" : "") + '"><b>' + r.rank + '</b><span class="tt">' + esc(r.title) + '<small>' + (r.mine ? (r.grp ? esc(r.grp) + "発" : "自社") : esc(r.pub) + (r.monster ? " ・ 話題の大型連載" : "") + (r.grp ? " ・ " + esc(r.grp) + "発" : "")) + (r.pop != null ? " ・ 人気 " + r.pop : "") + (r.cp ? " ・ 累計 " + fmtCp41(r.cp) : "") + (r.med ? " ・ " + esc(r.med) : "") + '</small></span>' + d + '</li>';
+    h += '<li class="' + (r.mine ? "mine" : "") + '"><b>' + r.rank + '</b><span class="tt">' + esc(r.title) + '<small>' + (r.mine ? (r.grp ? esc(r.grp) + "発" : "自社") : esc(r.pub) + (r.monster ? " ・ 話題の大型連載" : "") + (r.grp ? " ・ " + esc(r.grp) + "発" : "")) + (r.pop != null ? " ・ 人気 " + r.pop : "") + (r.cp ? " ・ 累計 " + fmtCp41(r.cp) : "") + (r.med ? " ・ " + esc(r.med) : "") + '</small>' + chartCopy43(r) + '</span>' + d + '</li>';
   });
   return h + '</ol>';
 }
@@ -8572,7 +8577,7 @@ simWork = function (S, w, news) {
     var m = mult39(S, w), gain = w.fans - f0 * 0.99;
     if (gain > 0) w.fans = Math.max(0, f0 * 0.99 + gain * m);
     if (w.cp2 == null) { w.cp2 = 0; w.cpx = 1; w.cpz = 1; }
-    w.cp2 += r * m * 0.12;
+    w.cp2 += r * m * 0.004;
     w.rev += r * (m - 1) / 0.6;
     return r * m;
   }
@@ -8883,7 +8888,7 @@ vHall = function (S) {
   var mine = { name: S.company, score: ourScore(S), me: true, n: S.works.filter(function (w) { return w.state === "serial"; }).length, sales: S.works.reduce(function (a, w) { return a + (w.cp2 || 0); }, 0), films: S.works.filter(function (w) { return w.media && w.media.movie; }).length, anime: S.works.filter(function (w) { return w.media && w.media.anime; }).length };
   rows.push(mine); rows.sort(function (a, b) { return b.score - a.score; });
   var rk = rows.findIndex(function (c) { return c.me; }) + 1, show = rows.filter(function (c, i) { return i < (G.co42 || 10) || c.me; });
-  var li = function (c) { return '<li' + (c.me ? ' class="mine"' : '') + '><b>' + (rows.indexOf(c) + 1) + '. ' + esc(c.name) + '</b><span class="muted small"> 名声 ' + Math.round(c.score) + ' ・ 連載 ' + c.n + '本 ・ 累計 ' + fmtCp41(c.sales) + ' ・ アニメ化 ' + c.anime + '作 ・ 映画化 ' + c.films + '作' + (c.me ? " ・ あなた ★" : "") + '</span></li>'; };
+  var li = function (c) { return '<li' + (c.me ? ' class="mine"' : '') + '><b>' + (rows.indexOf(c) + 1) + '. ' + esc(c.name) + '</b><span class="muted small"> 名声 ' + Math.round(c.score) + ' ・ 連載 ' + c.n + '本 ・ 累計 ' + fmtCp41(c.sales) + ' ・ アニメ化 ' + c.anime + '作 ・ 映画化 ' + c.films + '作' + (c.me ? " ・ あなた ★" : "") + '</span><br><small class="muted">社訓「' + esc(motto43(c.name)) + '」</small></li>'; };
   var h = '<h3 class="h3">出版社ランキング <small class="muted">全' + rows.length + '社</small></h3><p class="small muted">いまの順位: 第' + rk + '位(名声で並びます)</p><ol class="rank">' + show.map(li).join("") + '</ol>' + (show.length < rows.length ? btn("さらに30社を見る(" + show.length + " / " + rows.length + ")", "comore", null, "sm") : "");
   return o.replace(re, h);
 };
@@ -9045,10 +9050,110 @@ vHall = function (S) {
   if (!re.test(o)) return o;
   var l = hofList42(S), n = Math.min(l.length, G.hof42 || 20);
   var h = '<h3 class="h3">歴代の名作 <small class="muted">TOP' + l.length + '</small></h3><p class="small muted">売れた冊数の順です。自社の作品も、実績しだいで入ります。</p><ol class="rank">' + l.slice(0, n).map(function (x) {
-    return '<li' + (x.mine ? ' class="mine"' : '') + '><b>' + x.rank + '. ' + esc(x.title) + '</b><span class="muted small">' + esc(x.author) + ' ・ ' + esc(x.co) + ' ・ 累計 ' + fmtCp41(x.cp) + (x.med.length ? ' ・ ' + x.med.join("・") : '') + (x.mine ? " ★" : "") + '</span></li>';
+    return '<li' + (x.mine ? ' class="mine"' : '') + '><b>' + x.rank + '. ' + esc(x.title) + '</b><span class="muted small">' + esc(x.author) + ' ・ ' + esc(x.co) + ' ・ 累計 ' + fmtCp41(x.cp) + (x.med.length ? ' ・ ' + x.med.join("・") : '') + (x.mine ? " ★" : "") + '</span>' + hofHtml43(x) + '</li>';
   }).join("") + '</ol>' + (n < l.length ? btn("さらに30作を見る(" + n + " / " + l.length + ")", "hofmore", null, "sm") : "");
   return o.replace(re, h);
 };
+
+/* ===== v1.17.0 遊び心(歴代の名作・会社・チャート・ニュース) ===== */
+function pk43(a, r) { return a[Math.floor(r() * a.length)]; }
+var PA43 = ["ねこ山", "もちもち", "月見里", "星屑", "ふわ田", "ぽんぽこ", "雲雀", "夜更かし", "砂糖", "鯖缶", "桜餅", "三日月", "ゆるふわ", "眠り", "にゃん田", "豆腐", "ひるね", "ぷかぷか", "金平糖", "ぐうたら", "白玉", "うさぎ小屋", "味噌煮", "ぬくぬく"];
+var PB43 = ["ぷりん", "だいふく", "ほしお", "めぐる", "くらげ", "らむね", "こむぎ", "ぺんぎん", "たまご", "みかん", "ひなた", "あずき", "ふくろう", "ことり", "もなか", "ぽてと", "てまり", "ゆず"];
+var TG43 = [
+  ["王座に居座りつづける", "ページをめくる手が止まらない", "本棚の主役になった", "世界が一度は読んだ", "辞書より分厚い人気を誇る", "書店の入口に像が立った", "国民の共通言語になった", "歴史の教科書に載りかけた"],
+  ["語り継がれる", "社会現象になった", "電車の中で全員が読んでいた", "二周目の読者が多すぎる", "学校の図書室で行列ができた", "名台詞が日常会話に混ざった", "グッズ売り場が迷路になった"],
+  ["堂々の名作", "ファンの熱量がおかしい", "気づけば全巻そろっていた", "読むと夜ふかしする", "「あの作品」で話が通じる", "泣いて笑って腹が減る", "町の本屋が大切に守った"],
+  ["隠れた傑作", "通が唸る", "じわじわ効く", "古本屋で見つけたら買い", "好きな人は一生好き", "なぜか手元に残っている", "最終巻で静かに泣ける"]
+];
+var NT43 = [
+  "連載中、作者の猫が三度、表紙の隅に紛れ込んだ。",
+  "最終回の日、書店に行列ができて店長が少し泣いた。",
+  "担当編集が原稿を待つあいだに、観葉植物を二十鉢そだてた。",
+  "単行本の帯に書かれた一言が、全国の教室で流行語になった。",
+  "作者いわく「主人公の名前は、冷蔵庫の中身から決めた」。",
+  "打ち上げの席で、全員がカレーを頼んだ伝説が残っている。",
+  "読者アンケートで一位を取った日、編集部に花束とコロッケが届いた。",
+  "電車で読んで吹き出した人が、多数目撃されている。",
+  "作中に出てくる架空のお菓子が、実際に商品化されそうになった。",
+  "第一話は、作者が徹夜明けの朝焼けを見ながら描いたという。",
+  "重版のたびに、帯の文句がだんだん大げさになっていった。",
+  "最終巻の発売日、町中のコンビニから本が消えた。",
+  "ファンレターの束が、編集部の机を一つ占領した。",
+  "二巻の後書きで、作者が「実は犬も飼っています」と突然告白した。",
+  "ブームの頃、書店員が手書きのポップで会話を始めていた。",
+  "作者の机の上には、いつも食べかけのみかんがあったらしい。",
+  "取材と称した温泉旅行が、そのまま第十話になった。",
+  "「面白さの九割は、締切前の二時間で決まった」と語り草になっている。",
+  "初版の部数が少なすぎて、発売日に慌てて増刷がかかった。",
+  "読者が勝手に作った考察ノートが、公式より分厚くなった。",
+  "表紙の色がだんだん派手になり、書店で目立ちすぎると噂された。",
+  "会議室の黒板に、主人公の落書きが消されずに残っている。",
+  "作者の最初の読者は、近所の喫茶店のマスターだった。",
+  "完結のあと、読者が「ありがとう」と書いた手紙が山になった。",
+  "サイン会の整理券が、開始五分で配りきれた。",
+  "作中の合言葉が、気づけば学校中で使われていた。",
+  "編集部では、新刊の日に全員が少しそわそわする。",
+  "町おこしで、作品の舞台と同じ名前の坂が作られた。",
+  "ある読者は「全巻を三回読んだ」と、誇らしげに言っていた。",
+  "書き下ろしの番外編が、なぜか一番人気になった。"
+];
+function hofFun43(x) {
+  if (!x.fun) {
+    var h = hstr(x.title + (x.author || "")), r = rng42(h + 4343), tier = (x.rank || 99) <= 20 ? 0 : (x.rank || 99) <= 100 ? 1 : (x.rank || 99) <= 400 ? 2 : 3;
+    var pen = (!x.mine && r() < 0.42) ? pk43(PA43, r) + " " + pk43(PB43, r) : null;
+    x.fun = { tag: pk43(TG43[tier], r), note: pk43(NT43, r), pen: pen };
+  }
+  return x.fun;
+}
+function hofHtml43(x) {
+  var f = hofFun43(x);
+  return '<br><span class="small" style="color:var(--acc,#b8860b)">「' + esc(f.tag) + '」</span> <span class="small muted">' + (f.pen ? '筆名・' + esc(f.pen) + ' ／ ' : '') + esc(f.note) + '</span>';
+}
+/* 会社の社訓 */
+var MOT43 = ["締切は友達、睡眠は恋人", "まず読め、それから飲め", "ページは裏切らない", "ボツは次のヒットの肥やし", "笑ったら採用", "泣かせたら重版", "会議は立って、おやつは座って", "ゲラは愛、赤字は筆", "作家は宝、校閲は神", "今日の誤字は明日の伝説", "売れる前に、まず面白く", "朝は遅く、原稿は早く", "ネタ切れは散歩で治す", "社長もコピーを取る", "猫は社員に準ずる", "編集部の灯りは消すな", "ヒット祈願で毎朝だんご", "読者の一言は金より重い", "表紙は顔、帯は口", "迷ったら、面白いほう", "冷蔵庫に常にプリン", "打ち合わせはカレーの香り", "全員、少年少女の心で", "売上より、まず愛", "ボールペンは三本持て", "休むのも仕事のうち", "新人の企画は最初に読む", "ヒットは地道、伝説は突然", "笑いのない会議は延期", "原稿の神様はコンビニにいる"];
+function motto43(name) { return MOT43[hstr(name) % MOT43.length]; }
+/* チャートのひとこと */
+var CPA43 = ["読むと", "三話読むと", "最終回で", "帯を読むと", "読み終えると", "通勤中に読むと"];
+var CPB43 = ["お腹が空く", "なぜか泣く", "猫が寄ってくる", "誰かに話したくなる", "夜ふかしする", "背筋が伸びる", "スキップしたくなる", "明日が少し楽しみになる", "お茶がおいしくなる", "友だちに連絡したくなる", "なぜか掃除したくなる", "空を見上げたくなる"];
+function chartCopy43(r) {
+  if (!r || !r.title) return "";
+  var h = hstr(r.title);
+  return '<small class="muted">「' + CPA43[h % CPA43.length] + CPB43[(h >> 3) % CPB43.length] + '」と評判</small>';
+}
+/* 毎週のちょっとしたニュース */
+var SN43 = [
+  "{c}の編集部で、猫が突然「編集長」を名乗りはじめた。社員は温かく見守っている。",
+  "『{t}』のファンが、書店のポップに詩を書き足していった。店員は消さずに残した。",
+  "{c}の社内食堂で、新メニュー「締切カレー」が大人気になっている。",
+  "書店の棚の前で、『{t}』の名台詞を小声で唱える人が目撃された。",
+  "{c}で、社員全員が同じ日にみかんを持参するという珍事があった。",
+  "『{t}』の最新刊を、電車で読んで乗り過ごす人が続出しているという。",
+  "出版業界で「今年のおやつ」が話題に。編集部ごとに人気がバラバラだった。",
+  "{c}の社長が、窓から見えた雲を「次のヒットだ」と言い切った。",
+  "町の古本屋で、『{t}』の初版を探す人の列ができた。",
+  "{c}の屋上で、編集者たちがこっそり星を数える会を始めたらしい。",
+  "『{t}』の主人公に似た犬が、散歩中に二度ほど話題になった。",
+  "業界の集まりで、今年も誰かが締切の言い訳大賞を取った。"
+];
+var _tick43 = tick;
+tick = function (S) {
+  var r = _tick43.apply(this, arguments);
+  try {
+    if (S.rivals && S.rivals.length && Math.random() < 0.05) {
+      var c = S.rivals[Math.floor(Math.random() * S.rivals.length)].name, t = HOF42[Math.floor(Math.random() * 120)].title;
+      addLog(S, pk43(SN43, Math.random).replace("{c}", c).replace("{t}", t));
+    }
+  } catch (e) { }
+  return r;
+};
+/* 遊び方 */
+var _buildGuide43 = buildGuide;
+buildGuide = function () {
+  _buildGuide43();
+  var p = GUIDE.find(function (g) { return g.h === "困ったときは"; });
+  if (p && !p.v43) { p.v43 = 1; p.b = p.b.concat(["歴代の名作や出版社には、キャッチコピーや社訓、ちょっとした逸話がついています。見比べるだけでも、にぎやかで楽しめます。記録には、ときどき出版界の小ネタも流れます。"]); }
+};
+buildGuide();
 
 function boot() {
   loadSettings();
