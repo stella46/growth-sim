@@ -301,8 +301,13 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.14.0", SAVE_VER = 1;
+var GAME_VER = "1.14.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.14.1", date: "2026-11-16", notes: [
+    "会社の累計冊数が、歴代の名作の数値と合うようになりました。",
+    "ゲームを始めた直後から、すべての会社に連載があるようにしました。",
+    "ランキングの順位表示が二重になっていたのを直しました。"
+  ] },
   { ver: "1.14.0", date: "2026-11-16", notes: [
     "業界の出版社が、500社になりました。すべての会社に連載があります。",
     "歴代の名作が、1000作になりました。出版した会社と、売れた冊数、展開の実績が見られます。",
@@ -8814,7 +8819,8 @@ function ensureRivals41(S) {
     if (have[x[0]]) return; var rg = SZ41[x[1]]; add = true;
     S.rivals.push({ name: x[0], score: ri(rg[0], rg[1]), k: 0.05 + rnd() * 0.5, size: x[1] });
   });
-  S.rivals.forEach(function (r) { if (r.sales == null) { r.sales = Math.round(r.score * r.score * 6 + ri(0, 800)); r.sx = 1; r.films = Math.round(r.score / 16); r.anime = Math.round(r.score / 11); } });
+  S.rivals.forEach(function (r) { if (r.sales == null) { r.sales = 0; r.films = 0; r.anime = 0; r.sx = 1; } });
+  S.rivals.forEach(function (r) { if (false) { r.sales = Math.round(r.score * r.score * 6 + ri(0, 800)); r.sx = 1; r.films = Math.round(r.score / 16); r.anime = Math.round(r.score / 11); } });
   if (!S.flags.pub41 && S.rivalWorks && S.rivalWorks.length) {
     S.flags.pub41 = 1; var pc = S.rivals;
     S.rivalWorks.forEach(function (w) { w.pub = weightedCo41(S).name; });
@@ -8846,9 +8852,9 @@ chartTick = function (S, news) {
   var med = {};
   (S.rivalWorks || []).forEach(function (r) {
     var wk = Math.pow(r.pop / 55, 3) * 12 * (r.monster ? 3 : 1); r.copies = (r.copies || 0) + wk; r.med = r.med || [];
-    var co = S.rivals.find(function (c) { return c.name === r.pub; }); if (co) co.sales = (co.sales || 0) + wk;
-    if (r.copies >= 1500 && r.med.indexOf("アニメ化") < 0 && ch(0.01)) { r.med.push("アニメ化"); if (co) co.anime = (co.anime || 0) + 1; }
-    if (r.copies >= 5000 && r.med.indexOf("映画化") < 0 && ch(0.006)) { r.med.push("映画化"); if (co) co.films = (co.films || 0) + 1; }
+    var co = S.rivals.find(function (c) { return c.name === r.pub; }); if (co) co.s2 = (co.s2 || 0) + wk;
+    if (r.copies >= 1500 && r.med.indexOf("アニメ化") < 0 && ch(0.01)) { r.med.push("アニメ化"); if (co) co.a2 = (co.a2 || 0) + 1; }
+    if (r.copies >= 5000 && r.med.indexOf("映画化") < 0 && ch(0.006)) { r.med.push("映画化"); if (co) co.f2 = (co.f2 || 0) + 1; }
     if (r.copies >= 3000 && r.med.indexOf("ドラマ化") < 0 && ch(0.004)) r.med.push("ドラマ化");
     med[r.id] = r.med.join("・");
   });
@@ -8866,7 +8872,7 @@ vHall = function (S) {
   var re = /<h3 class="h3">出版社ランキング<\/h3><ol class="rank">[\s\S]*?<\/ol>/;
   if (!re.test(o)) return o;
   ensureRivals41(S);
-  var rows = S.rivals.map(function (r) { return { name: r.name, score: r.score, me: false, n: coWorks41(S, r.name).length, sales: r.sales || 0, films: r.films || 0, anime: r.anime || 0 }; });
+  var rows = S.rivals.map(function (r) { return { name: r.name, score: r.score, me: false, n: coWorks41(S, r.name).length, sales: coStat42(r).cp, films: coStat42(r).films, anime: coStat42(r).anime }; });
   var mine = { name: S.company, score: ourScore(S), me: true, n: S.works.filter(function (w) { return w.state === "serial"; }).length, sales: S.works.reduce(function (a, w) { return a + (w.cp2 || 0); }, 0), films: S.works.filter(function (w) { return w.media && w.media.movie; }).length, anime: S.works.filter(function (w) { return w.media && w.media.anime; }).length };
   rows.push(mine); rows.sort(function (a, b) { return b.score - a.score; });
   var rk = rows.findIndex(function (c) { return c.me; }) + 1, show = rows.filter(function (c, i) { return i < (G.co42 || 10) || c.me; });
@@ -8942,14 +8948,18 @@ function assignPubs42(S, all) {
   var zero = cs.filter(function (c) { return !(cnt[c.name] > 0); });
   zero.forEach(function (c) { var donors = ws.filter(function (w) { return cnt[w.pub] > 1; }); if (!donors.length) return; var d = pick(donors); cnt[d.pub]--; d.pub = c.name; cnt[c.name] = 1; });
 }
+function ensureAll42(S) {
+  if (!S.rivals) return;
+  ensureRivals41(S);
+  if (!S.rivalWorks || !S.rivalWorks.length) rivalInit(S);
+  while (S.rivalWorks.length < V1.RIVAL_N) S.rivalWorks.push(newRivalWork(S));
+  if (!S.flags.pub42) { S.flags.pub42 = 1; assignPubs42(S, true); } else assignPubs42(S, false);
+}
 var _tick42 = tick;
 tick = function (S) {
   var r = _tick42(S);
   try {
-    if (S.rivals && S.rivals.length >= 400 && S.rivalWorks && S.rivalWorks.length >= 400) {
-      if (!S.flags.pub42) { S.flags.pub42 = 1; assignPubs42(S, true); }
-      else if (S.t % 4 === 0) assignPubs42(S, false);
-    }
+    if (!S.flags.pub42 || S.t % 4 === 0) ensureAll42(S);
     // 数値の桁を大きく(以前の保存分も、一度だけ直す)
     S.works.forEach(function (w) { if (w.cp2 != null && !w.cpx) { w.cp2 *= 10; w.cpx = 1; } });
     (S.rivalWorks || []).forEach(function (w) { if (w.copies && !w.cpx) { w.copies *= 10; w.cpx = 1; } });
@@ -8979,6 +8989,9 @@ var HOF42 = (function () {
   out.forEach(function (x, k) { var n = k < 20 ? 6 : k < 100 ? 5 : k < 250 ? 4 : k < 500 ? 3 : k < 800 ? 2 : 1; x.med = HM42.slice(0, n); x.rank = k + 1; });
   return out;
 })();
+var HB42 = {};
+HOF42.forEach(function (x) { var b = HB42[x.co] || (HB42[x.co] = { cp: 0, anime: 0, films: 0 }); b.cp += x.cp; if (x.med.indexOf("アニメ化") >= 0) b.anime++; if (x.med.indexOf("映画化") >= 0) b.films++; });
+function coStat42(r) { var b = HB42[r.name] || { cp: 0, anime: 0, films: 0 }; return { cp: b.cp + (r.s2 || 0), anime: b.anime + (r.a2 || 0), films: b.films + (r.f2 || 0) }; }
 function hofList42(S) {
   var min = HOF42[HOF42.length - 1].cp, mine = [];
   S.works.forEach(function (w) { if ((w.cp2 || 0) >= min) mine.push({ title: w.title, author: S.player.name, co: S.company, y: null, cp: w.cp2, med: Object.keys(w.media || {}).map(function (k) { return MEDIA[k] ? MEDIA[k].name : ""; }).filter(Boolean), mine: true }); });
@@ -8987,6 +9000,7 @@ function hofList42(S) {
 XACT.hofmore = function () { G.hof42 = (G.hof42 || 20) + 30; se("tap"); render(); };
 var _vHall42 = vHall;
 vHall = function (S) {
+  ensureAll42(S);
   var o = _vHall42(S), re = /<h3 class="h3">歴代の名作<\/h3><ol class="rank">[\s\S]*?<\/ol>/;
   if (!re.test(o)) return o;
   var l = hofList42(S), n = Math.min(l.length, G.hof42 || 20);
