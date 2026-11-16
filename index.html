@@ -301,8 +301,11 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.10.0", SAVE_VER = 1;
+var GAME_VER = "1.11.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.11.0", date: "2026-11-16", notes: [
+    "タイトル画面に、最新版をダウンロードするボタンを付けました。オフラインでも遊べます。"
+  ] },
   { ver: "1.10.0", date: "2026-11-16", notes: [
     "一門の立ち上げに、規模と集める人材の選択が加わりました。",
     "迎える人ごとに契約金が変わり、慕ってくれる人との関係も深まります。グループへの投資もできます。",
@@ -8715,6 +8718,63 @@ buildGuide = function () {
       "作品の人気は、当たれば桁違いに売れ、外れればほとんど伸びません。「会社」タブの「出費」では、広告・イベント・作家へのお礼など、50種類のお金の使い道から選べます(編集部を開いたあと)。"
     ];
   }
+};
+buildGuide();
+
+/* ===== v1.11.0 タイトル画面に「最新版をダウンロード」(オフライン対応) ===== */
+var DL40 = { st: "idle", msg: "", ready: null, latest: null };
+function swOK40() { return !!(window.navigator.serviceWorker) && /^https?:$/.test(location.protocol) && !/claude/.test(location.hostname); }
+function dlCheck40() {
+  if (!swOK40()) { DL40.ready = false; return; }
+  try {
+    caches.keys().then(function (ks) { DL40.ready = ks.some(function (k) { return k.indexOf("growth-sim-v") === 0; }) && !!navigator.serviceWorker.controller; if (G.screen === "title") render(); }).catch(function () { });
+  } catch (e) { }
+}
+function verNewer40(a, b) {
+  var x = String(a).split(".").map(Number), y = String(b).split(".").map(Number);
+  for (var i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); }
+  return false;
+}
+XACT.dlnew = function () {
+  if (DL40.st === "busy") return;
+  if (!navigator.onLine) { DL40.msg = "いまはオフラインです。通信できる場所で、もう一度押してください。"; return render(); }
+  DL40.st = "busy"; DL40.msg = "最新版を確認しています…"; render();
+  fetch("index.html?_=" + Date.now(), { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (t) {
+    var m = /GAME_VER = "([^"]+)"/.exec(t), v = m ? m[1] : null;
+    DL40.latest = v;
+    if (!v) throw 0;
+    var newer = verNewer40(v, GAME_VER);
+    var done = function (refreshed) {
+      DL40.st = "idle";
+      if (newer) { DL40.msg = "最新版(v" + v + ")を保存しました。再読み込みします…"; render(); setTimeout(function () { location.reload(); }, 900); }
+      else { DL40.msg = "すでに最新版です(v" + GAME_VER + ")。" + (swOK40() ? "オフラインでも遊べるよう保存されています。" : ""); render(); }
+      dlCheck40();
+    };
+    if (swOK40() && navigator.serviceWorker.controller) {
+      var ch = new MessageChannel(), to = setTimeout(function () { done(false); }, 12000);
+      ch.port1.onmessage = function () { clearTimeout(to); done(true); };
+      navigator.serviceWorker.controller.postMessage({ type: "refresh" }, [ch.port2]);
+    } else done(false);
+  }).catch(function () { DL40.st = "idle"; DL40.msg = "最新版を取得できませんでした。通信状態を確かめて、もう一度お試しください。"; render(); });
+};
+var _vTitle40 = vTitle;
+vTitle = function () {
+  var o = _vTitle40(), s = DL40.ready === true ? "オフライン用に保存済みです。通信がなくても遊べます。" : DL40.ready === false ? "この環境では、オフライン保存は使えません。" : "保存の状態を確認中…";
+  var card = '<section class="card dl40"><h2 class="h2">最新版のダウンロード</h2><p class="small muted">' + s + ' 通信できる場所で押すと、最新版を取得して、オフラインでも遊べる状態にします。セーブデータはそのまま残ります。</p>' +
+    btn(DL40.st === "busy" ? "確認中…" : "最新版をダウンロード", "dlnew", null, "sm" + (DL40.st === "busy" ? " dis" : "")) + (DL40.msg ? '<p class="small" role="status">' + esc(DL40.msg) + '</p>' : "") + '</section>';
+  var k = o.indexOf('<section class="card upd">');
+  return k >= 0 ? o.slice(0, k) + card + o.slice(k) : o.replace(/<\/div>\s*$/, card + "</div>");
+};
+window.addEventListener("online", function () { if (G.screen === "title") { DL40.msg = "通信がつながりました。最新版をダウンロードできます。"; render(); } });
+window.addEventListener("offline", function () { if (G.screen === "title") { DL40.msg = "オフラインになりました。保存済みの版で遊べます。"; render(); } });
+setTimeout(dlCheck40, 800);
+
+/* 遊び方 */
+var _buildGuide40 = buildGuide;
+buildGuide = function () {
+  _buildGuide40();
+  var p = GUIDE.find(function (g) { return g.h === "困ったときは"; });
+  if (p && !p.v11) { p.v11 = 1; p.b = p.b.concat(["オフラインで遊ぶには、一度、通信できる場所でゲームを開いてください。そのあとは通信がなくても遊べます。タイトル画面の「最新版をダウンロード」を押すと、新しい版に更新できます。"]); }
 };
 buildGuide();
 

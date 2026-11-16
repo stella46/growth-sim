@@ -1,6 +1,6 @@
 // 成長シミュレーター：オフライン対応
 // 開くたびに最新版を取りに行く。ただし 4 秒たっても取れなければ、保存してある版でそのまま起動する。
-const CACHE='growth-sim-v1.10.0';
+const CACHE='growth-sim-v1.11.0';
 const WAIT_MS=4000;
 const CORE=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 const tell=async(type)=>{try{const cs=await self.clients.matchAll({includeUncontrolled:true,type:'window'});cs.forEach(c=>c.postMessage({type}))}catch(e){}};
@@ -23,6 +23,16 @@ function netFirst(e,req){
   e.waitUntil(net.catch(()=>{}));
   return job;
 }
+// 画面からの「最新版をダウンロード」: 保存分をネットから取り直す
+self.addEventListener('message',e=>{
+  if(!e.data||e.data.type!=='refresh')return;
+  const port=e.ports&&e.ports[0];
+  e.waitUntil((async()=>{
+    let ok=true;
+    try{const c=await caches.open(CACHE);await Promise.all(CORE.map(async u=>{try{const r=await fetch(u,{cache:'reload'});if(r.ok)await c.put(u,r)}catch(x){ok=false}}))}catch(x){ok=false}
+    if(port)port.postMessage({ok});
+  })());
+});
 self.addEventListener('fetch',e=>{
   const req=e.request;if(req.method!=='GET')return;
   const url=new URL(req.url);
