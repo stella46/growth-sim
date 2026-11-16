@@ -301,8 +301,15 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.9.0", SAVE_VER = 1;
+var GAME_VER = "1.10.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.10.0", date: "2026-11-16", notes: [
+    "一門の立ち上げに、規模と集める人材の選択が加わりました。",
+    "迎える人ごとに契約金が変わり、慕ってくれる人との関係も深まります。グループへの投資もできます。",
+    "作品ごとの売れ方の差が、大きくなりました。",
+    "作品のタイトルと表紙の種類を、大きく増やしました。",
+    "お金の使い道が、50種類増えました。"
+  ] },
   { ver: "1.9.0", date: "2026-11-16", notes: [
     "作品の表紙を、漫画と小説で大きく描き分けました。現代的なアニメ調のイラストも加わりました。",
     "ランキングが、より厳しくなりました。新人・話題・定番のランキングも加わりました。",
@@ -8152,8 +8159,34 @@ function deco36(g, h, mode, hue) {
   return s;
 }
 
+
+/* 表紙のバリエーション(模様6 × 配色10 × 飾り5 × 額縁4 × 配置3 × タイトル3 = 10,800通り以上) */
+function pat36(h, mode) {
+  var v = (h >> 7) % 6, s = "", i, a = mode === "manga" ? "rgba(255,255,255,.14)" : "rgba(255,255,255,.4)";
+  if (v === 1) for (i = -2; i < 12; i++) s += '<line x1="' + (i * 11) + '" y1="0" x2="' + (i * 11 + 40) + '" y2="112" stroke="' + a + '" stroke-width="2.4"/>';
+  else if (v === 2) for (i = 0; i < 48; i++) s += '<circle cx="' + ((i % 8) * 10 + 4) + '" cy="' + (Math.floor(i / 8) * 13 + 6) + '" r="1.6" fill="' + a + '"/>';
+  else if (v === 3) for (i = 0; i < 16; i++) s += '<path d="M' + (hstr("p" + h + i) % 80) + ',' + (hstr("q" + h + i) % 100) + ' l1.2,2.8 2.8,1.2 -2.8,1.2 -1.2,2.8 -1.2,-2.8 -2.8,-1.2 2.8,-1.2z" fill="' + a + '"/>';
+  else if (v === 4) for (i = 0; i < 7; i++) s += '<path d="M0,' + (10 + i * 15) + ' q10,-7 20,0 t20,0 t20,0 t20,0" fill="none" stroke="' + a + '" stroke-width="2"/>';
+  else if (v === 5) for (i = 0; i < 6; i++) for (var j = 0; j < 8; j++) if ((i + j) % 2 === 0) s += '<rect x="' + (i * 14) + '" y="' + (j * 14) + '" width="14" height="14" fill="' + a + '"/>';
+  return s;
+}
+function orn36(h) {
+  var v = (h >> 10) % 5, c = "rgba(255,255,255,.85)";
+  if (v === 1) return '<path d="M4,100 v-10 M4,100 h10 M76,100 v-10 M76,100 h-10" stroke="' + c + '" stroke-width="1.4" fill="none"/>';
+  if (v === 2) return '<circle cx="12" cy="86" r="5" fill="none" stroke="' + c + '" stroke-width="1.2"/><circle cx="12" cy="86" r="2" fill="' + c + '"/>';
+  if (v === 3) return '<path d="M62,84 l2,5 5,2 -5,2 -2,5 -2,-5 -5,-2 5,-2z" fill="' + c + '"/>';
+  if (v === 4) return '<rect x="62" y="82" width="12" height="12" transform="rotate(45 68 88)" fill="none" stroke="' + c + '" stroke-width="1.3"/>';
+  return "";
+}
+function frame36(h, manga) {
+  var v = (h >> 13) % 4;
+  if (v === 1) return '<rect x="5" y="5" width="70" height="102" fill="none" stroke="rgba(255,255,255,.75)" stroke-width=".8"/>';
+  if (v === 2) return '<rect x="3" y="3" width="74" height="106" rx="6" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1" stroke-dasharray="3 2"/>';
+  if (v === 3) return '<path d="M0,0 H16 L0,16z M80,112 H64 L80,96z" fill="rgba(255,255,255,.55)"/>';
+  return "";
+}
 function cover36(w) {
-  var h = hstr(w.id + w.title), g = w.genre, hue = GHUE[g] || 200, id = "cv" + (h % 99999), manga = w.medium === "manga", t = w.title, i, s = "";
+  var h = hstr(w.id + w.title), g = w.genre, hue = ((GHUE[g] || 200) + (h >> 16) % 10 * 9) % 360, id = "cv" + (h % 99999), manga = w.medium === "manga", t = w.title, i, s = "";
   var fam = 'font-family="Dela Gothic One,Zen Kaku Gothic New,sans-serif"';
   if (manga) {
     var h2 = (hue + 150 + (h % 4) * 20) % 360;
@@ -8164,32 +8197,34 @@ function cover36(w) {
     for (i = 0; i < 26; i++) { var an = i / 26 * 6.2832, an2 = an + 0.07; s += '<polygon points="46,62 ' + (46 + Math.cos(an) * 120).toFixed(1) + ',' + (62 + Math.sin(an) * 120).toFixed(1) + ' ' + (46 + Math.cos(an2) * 120).toFixed(1) + ',' + (62 + Math.sin(an2) * 120).toFixed(1) + '" fill="rgba(255,255,255,' + (i % 2 ? ".16" : ".08") + ')"/>'; }
     // ハーフトーン
     for (i = 0; i < 30; i++) s += '<circle cx="' + ((i % 6) * 6 + 4 + (Math.floor(i / 6) % 2) * 3) + '" cy="' + (96 - Math.floor(i / 6) * 6) + '" r="' + (2.2 - Math.floor(i / 6) * 0.4).toFixed(1) + '" fill="rgba(0,0,0,.22)"/>';
-    s += deco36(g, h, "manga", hue);
+    s += pat36(h, "manga") + deco36(g, h, "manga", hue);
     s += '<circle cx="46" cy="62" r="30" fill="url(#' + id + 'g)"/>';
-    s += '<g transform="translate(46,69) scale(1.34)">' + animeChar36(h, g, true) + '</g>';
+    var cx = 46 + ((h >> 3) % 3 - 1) * 5;
+    s += '<g transform="translate(' + cx + ',69) scale(' + (1.26 + (h >> 5) % 3 * 0.06).toFixed(2) + ')">' + animeChar36(h, g, true) + '</g>';
     // 斜めの帯とタイトル
     s += '<polygon points="0,13 80,6 80,16 0,23" fill="rgba(20,20,40,.82)"/>';
-    s += '<g transform="rotate(-5 40 40)">';
+    var ta = (h >> 9) % 3, tx0 = ta === 0 ? 5 : ta === 1 ? 75 : 40, tan = ta === 0 ? "start" : ta === 1 ? "end" : "middle";
+    s += '<g transform="rotate(' + (ta === 1 ? 5 : -5) + ' 40 40)">';
     var L = [], q; for (q = 0; q < t.length && L.length < 3; q += 5) L.push(t.slice(q, q + 5));
-    s += L.map(function (l, k) { return '<text x="5" y="' + (35 + k * 12) + '" font-size="11.5" ' + fam + ' fill="#fff" stroke="#14142a" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round">' + esc(l) + '</text>'; }).join("");
+    s += L.map(function (l, k) { return '<text x="' + tx0 + '" y="' + (35 + k * 12) + '" text-anchor="' + tan + '" font-size="11.5" ' + fam + ' fill="#fff" stroke="#14142a" stroke-width="2.6" paint-order="stroke" stroke-linejoin="round">' + esc(l) + '</text>'; }).join("");
     s += '</g>';
     s += '<rect x="0" y="100" width="80" height="12" fill="#14142a"/><rect x="3" y="102.5" width="24" height="7" fill="#ffd21f"/><text x="15" y="108" text-anchor="middle" font-size="5.4" font-weight="700" fill="#14142a" font-family="IBM Plex Mono,monospace">COMIC</text><text x="77" y="108" text-anchor="end" font-size="5.2" fill="#fff" font-family="Zen Kaku Gothic New,sans-serif">' + esc(gname(g, GENRES)) + '</text>';
-    s += '<rect x="1" y="1" width="78" height="110" fill="none" stroke="#14142a" stroke-width="2"/>';
+    s += orn36(h) + frame36(h, true) + '<rect x="1" y="1" width="78" height="110" fill="none" stroke="#14142a" stroke-width="2"/>';
   } else {
     var hb = (hue + 40 + (h % 3) * 15) % 360;
     s += '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(' + hue + ',70%,82%)"/><stop offset=".6" stop-color="hsl(' + hb + ',75%,90%)"/><stop offset="1" stop-color="hsl(' + ((hb + 20) % 360) + ',60%,96%)"/></linearGradient></defs>';
     s += '<rect width="80" height="112" fill="url(#' + id + ')"/>';
     for (i = 0; i < 7; i++) s += '<circle cx="' + (hstr(t + i) % 80) + '" cy="' + (hstr(w.id + i) % 100) + '" r="' + (3 + hstr(i + t) % 9) + '" fill="rgba(255,255,255,.28)"/>';
-    s += deco36(g, h, "novel", hue);
+    s += pat36(h, "novel") + deco36(g, h, "novel", hue);
     // 地平線のやわらかい丘
     s += '<path d="M0,86 Q20,76 40,84 T80,80 V112 H0z" fill="hsla(' + hue + ',45%,70%,.55)"/>';
-    s += '<g transform="translate(40,74) scale(1.02)">' + animeChar36(h >> 2, g, false) + '</g>';
+    s += '<g transform="translate(' + (40 + ((h >> 3) % 3 - 1) * 9) + ',' + (74 + (h >> 5) % 3 * 2) + ') scale(1.02)">' + animeChar36(h >> 2, g, false) + '</g>';
     // 白いタイトルプレート
     s += '<rect x="6" y="18" width="68" height="' + (t.length > 6 ? 27 : 20) + '" rx="3" fill="rgba(255,255,255,.88)"/><rect x="8" y="20" width="64" height="' + (t.length > 6 ? 23 : 16) + '" rx="2" fill="none" stroke="hsl(' + hue + ',50%,55%)" stroke-width=".7"/>';
     var L2 = [], q2; for (q2 = 0; q2 < t.length && L2.length < 2; q2 += 6) L2.push(t.slice(q2, q2 + 6));
     s += L2.map(function (l, k) { return '<text x="40" y="' + (31 + k * 11.5) + '" text-anchor="middle" font-size="9" font-weight="700" fill="hsl(' + hue + ',60%,24%)" font-family="Zen Kaku Gothic New,sans-serif">' + esc(l) + '</text>'; }).join("");
     s += '<rect x="0" y="100" width="80" height="12" fill="rgba(255,255,255,.9)"/><text x="6" y="108" font-size="5.6" fill="hsl(' + hue + ',50%,36%)" font-family="IBM Plex Mono,monospace" letter-spacing=".6">NOVEL</text><text x="74" y="108" text-anchor="end" font-size="5.2" fill="hsl(' + hue + ',40%,36%)" font-family="Zen Kaku Gothic New,sans-serif">' + esc(gname(g, GENRES)) + '</text>';
-    s += '<rect x="2.5" y="2.5" width="75" height="107" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/>';
+    s += orn36(h) + frame36(h, false) + '<rect x="2.5" y="2.5" width="75" height="107" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/>';
   }
   return '<svg class="cover" viewBox="0 0 80 112" role="img" aria-label="' + esc(w.title) + 'の表紙">' + s + '</svg>';
 }
@@ -8472,6 +8507,214 @@ buildGuide = function () {
     ]
   };
   if (at >= 0) GUIDE.splice(at, 1, pg); else if (!GUIDE.some(function (g) { return g.h === pg.h; })) GUIDE.splice(Math.min(5, GUIDE.length), 0, pg);
+};
+buildGuide();
+
+/* ===== v1.10.0 グループの設立規模・契約・慕い度・投資 / 作品ごとの数値差 / タイトル300 / お金の使い道50 ===== */
+
+/* ---------- タイトル300 ---------- */
+var T39 = ["さよならの前に、オルガン", "さよならの前に、ノート", "さよならの前に、ラジオ", "さよならの前に、傘", "さよならの前に、写真", "さよならの前に、合唱", "さよならの前に、夕立", "さよならの前に、手紙", "さよならの前に、探し物", "さよならの前に、犬", "さよならの前に、白い花", "さよならの前に、秘密基地", "さよならの前に、約束", "さよならの前に、鍵", "はぐれた地下書庫の傘", "はぐれた地図の時計塔", "はぐれた屋根裏の写真", "はぐれた河川敷と合唱", "はぐれた海辺と鍵", "はぐれた海辺の写真", "はぐれた秘密基地の海辺", "ほどけた夕立", "ほどけた屋根裏と合唱", "ほどけた幽霊", "ほどけた幽霊の終電", "ほどけた星座", "ほどけた星座の古い映画館", "ほどけた月の裏側と手紙", "ほどけた温室と星座", "まだ名前のない地図の夏祭り", "まだ名前のない夏祭りと探し物", "まだ名前のない夕立", "まだ名前のない旧校舎と傘", "まだ名前のない書庫の主", "まだ名前のない温室と白い花", "まだ名前のない駅前と星座", "やさしい手紙の商店街", "やさしい海辺と鍵", "やさしい灯台とラジオ", "やさしい路地裏と傘", "やわらかなオルガン", "やわらかな地図の渡り廊下", "やわらかな星座の地下書庫", "やわらかな鍵", "オルガンが嘘をつく古い映画館", "オルガンが旅に出る時計塔", "オルガンの路地裏", "ノートが消える河川敷", "ノートの路地裏", "ラジオが泣き止む時計塔", "丘の上と写真と、わたし", "丘の上の向こう側", "傘が歌う旧校舎", "傘は旅に出る", "傘は朝を迎える", "八月の屋根裏と探し物", "八月の手紙の温室", "八月の星座", "八月の星座の月の裏側", "八月の花屋と合唱", "八月の雪国と写真", "写真が旅に出る商店街", "写真が朝を迎える路地裏", "写真が眠る渡り廊下", "写真の駅前", "写真は目を覚ます", "午後三時のオルガン", "午後三時のラジオ", "午後三時の傘", "午後三時の写真", "午後三時の地図", "午後三時の書庫の主", "午後三時の秘密基地", "午後三時の行商人", "午後三時の転校生", "午後三時の鍵", "古い映画館で星座を拾った", "古い映画館と地図と、わたし", "古い映画館と鍵と、わたし", "古びた傘の港町", "古びた商店街のオルガン", "古びた地図の旧校舎", "古びた書庫の主の港町", "古びた渡り廊下の書庫の主", "合唱が待っている河川敷", "合唱が走り出す海辺", "合唱が走り出す駅前", "合唱の古い映画館", "合唱は旅に出る", "合唱は泣き止む", "商店街で探し物を拾った", "商店街にいた地図", "商店街の合唱", "商店街の向こう側", "商店街の鍵", "地下書庫で鍵を拾った", "地下書庫にいた地図", "地下書庫にいた犬", "地下書庫の向こう側", "地下書庫の探し物", "地下書庫の星座", "地図の丘の上", "地図の終電", "夏祭りと傘と、わたし", "夏祭りにいた犬", "夏祭りにいた白い花", "夏祭りの写真", "夏祭りの向こう側", "夕立が嘘をつく旧校舎", "夕立が歌う海辺", "夕立が目を覚ます河川敷", "夕立の商店街", "夕立の夏祭り", "夕立は歌う", "夜更けの古い映画館の白い花", "夜更けの地図の灯台", "夜更けの屋根裏の約束", "夜更けの灯台と書庫の主", "夜更けの約束", "夜更けの約束の古い映画館", "夜更けの駅前の犬", "小さな写真", "小さな合唱の灯台", "小さな探し物", "小さな探し物の河川敷", "小さな星座", "小さな犬の時計塔", "小さな終電と夕立", "小さな転校生の港町", "屋根裏で犬を拾った", "屋根裏と行商人と、わたし", "屋根裏と転校生と、わたし", "屋根裏にいた探し物", "屋根裏のオルガン", "屋根裏の向こう側", "屋根裏の幽霊", "幽霊が嘘をつく夏祭り", "幽霊が目を覚ます終電", "幽霊が走り出す屋根裏", "幽霊の海辺", "幽霊の渡り廊下", "幽霊の花屋", "幽霊の駅前", "手紙が待っている古い映画館", "手紙は眠る", "探し物が嘘をつく港町", "探し物の旧校舎", "探し物の海辺", "探し物は咲く", "探し物は嘘をつく", "旧校舎で転校生を拾った", "旧校舎と幽霊と、わたし", "旧校舎と犬と、わたし", "旧校舎の向こう側", "旧校舎の地図", "星座が眠る灯台", "時計塔と書庫の主と、わたし", "時計塔と約束と、わたし", "時計塔の幽霊", "書庫の主が眠る花屋", "書庫の主の時計塔", "書庫の主は歌う", "月の裏側で探し物を拾った", "河川敷で傘を拾った", "河川敷で探し物を拾った", "河川敷で秘密基地を拾った", "河川敷のオルガン", "河川敷のラジオ", "河川敷の合唱", "河川敷の向こう側", "河川敷の犬", "河川敷の鍵", "海辺でノートを拾った", "海辺と写真と、わたし", "海辺と転校生と、わたし", "海辺にいた合唱", "海辺の向こう側", "渡り廊下で犬を拾った", "渡り廊下と手紙と、わたし", "渡り廊下にいた行商人", "渡り廊下にいた転校生", "渡り廊下の向こう側", "渡り廊下の手紙", "渡り廊下の犬", "温室で転校生を拾った", "温室と夕立と、わたし", "温室にいた書庫の主", "港町と夕立と、わたし", "港町と秘密基地と、わたし", "港町の向こう側", "溶けかけのノートの古い映画館", "溶けかけの夕立", "溶けかけの屋根裏と白い花", "溶けかけの河川敷とノート", "溶けかけの温室と合唱", "溶けかけの行商人", "溶けかけの雪国の夕立", "灯台とラジオと、わたし", "灯台にいた地図", "灯台にいた白い花", "灯台にいた行商人", "灯台の向こう側", "犬の河川敷", "犬は嘘をつく", "白い花の丘の上", "白い花の海辺", "白い花の温室", "白い花は消える", "眠らないラジオの商店街", "眠らない傘の丘の上", "眠らない手紙", "眠らない星座", "眠らない書庫の主", "眠らない河川敷の鍵", "眠らない秘密基地の駅前", "眠らない駅前と合唱", "眠らない駅前の書庫の主", "眠らない駅前の犬", "眠らない駅前の鍵", "秘密基地が咲く屋根裏", "秘密基地が泣き止む月の裏側", "秘密基地が眠る路地裏", "秘密基地が走り出す海辺", "秘密基地の古い映画館", "秘密基地は泣き止む", "約束が咲く夏祭り", "約束が待っている花屋", "約束のない温室の合唱", "約束のない雪国の転校生", "約束の月の裏側", "約束は旅に出る", "約束は泣き止む", "終電の写真", "終電の向こう側", "終電の約束", "終電の転校生", "花屋でオルガンを拾った", "花屋で写真を拾った", "花屋で書庫の主を拾った", "花屋とオルガンと、わたし", "花屋と探し物と、わたし", "花屋と犬と、わたし", "花屋と行商人と、わたし", "花屋にいた白い花", "花屋の幽霊", "花屋の約束", "行商人が眠る温室", "路地裏で夕立を拾った", "路地裏と写真と、わたし", "路地裏と幽霊と、わたし", "路地裏と秘密基地と、わたし", "路地裏にいた夕立", "転校生が嘘をつく花屋", "転校生が歌う渡り廊下", "転校生の花屋", "転校生の雪国", "転校生は歌う", "転校生は泣き止む", "遠回りの地下書庫の傘", "遠回りの夏祭りの約束", "遠回りの探し物の旧校舎", "遠回りの白い花", "遠回りの駅前と夕立", "鍵が待っている港町", "鍵の商店街", "鍵の月の裏側", "鍵は待っている", "雨の日のオルガン", "雨の日のノート", "雨の日のラジオ", "雨の日の傘", "雨の日の書庫の主", "雨の日の白い花", "雨の日の約束", "雨の日の行商人", "雨の日の転校生", "雨上がりのラジオ", "雨上がりのラジオの丘の上", "雨上がりの灯台の傘", "雨上がりの終電と犬", "雨上がりの花屋と秘密基地", "雨上がりの路地裏と転校生", "雪国で白い花を拾った", "雪国にいたオルガン", "雪国の向こう側", "静かなノート", "静かなラジオ", "静かなラジオの温室", "静かな渡り廊下と秘密基地", "静かな港町と書庫の主", "静かな転校生", "静かな鍵", "駅前でオルガンを拾った", "駅前で地図を拾った", "駅前で犬を拾った", "駅前で鍵を拾った", "駅前と書庫の主と、わたし", "駅前と犬と、わたし", "駅前にいた転校生", "駅前の向こう側"];
+var _raw39 = rawTitle31;
+rawTitle31 = function () { return ch(0.3) ? pick(T39) : _raw39(); };
+
+/* ---------- 作品ごとの数値差(当たれば桁違い・外れれば伸びない) ---------- */
+function mult39(S, w) {
+  var m = Math.min(8, Math.max(0.05, Math.pow(w.pop / 55, 3)));
+  if (w.boomUntil > S.t) m *= w.boomM;
+  return m;
+}
+var _simWork39 = simWork;
+simWork = function (S, w, news) {
+  var f0 = w.fans, r = _simWork39(S, w, news);
+  if (w.state === "serial" || w.state === "finished") {
+    if (w.state === "serial" && !(w.boomUntil > S.t)) {
+      if (w.pop >= 45 && ch(0.005 + w.pop / 22000)) { w.boomM = 1.8 + rnd() * 2.7; w.boomUntil = S.t + ri(8, 26); news.push("『" + w.title + "』が爆発的に売れている。書店では品切れが相次いでいる。"); }
+      else if (w.pop < 25 && w.weeks > 30 && ch(0.0015)) { w.boomM = 2 + rnd(); w.boomUntil = S.t + ri(8, 16); news.push("埋もれていた『" + w.title + "』が、思わぬきっかけで注目を集めはじめた。"); }
+    }
+    var m = mult39(S, w), gain = w.fans - f0 * 0.99;
+    if (gain > 0) w.fans = Math.max(0, f0 * 0.99 + gain * m);
+    w.copies = (w.copies || 0) + r * m * 1.6;
+    w.rev += r * (m - 1) / 0.6;
+    return r * m;
+  }
+  return r;
+};
+var _vWM39 = vWorkModal;
+vWorkModal = function (S, m) {
+  var o = _vWM39(S, m), w = W(S, m.wid); if (!w || !w.copies) return o;
+  var c = Math.round(w.copies), tx = c >= 10000 ? (Math.round(c / 1000) / 10) + "億部" : c + "万部";
+  return o.replace('<p class="small">' + stateWord(w), '<p class="small">累計発行 ' + tx + (w.boomUntil > S.t ? ' <span class="tag gold">爆発的ヒット中</span>' : "") + '</p><p class="small">' + stateWord(w));
+};
+
+/* ---------- グループ: 設立の規模・契約・慕い度・投資 ---------- */
+var SCALE39 = [{ n: "小さな一門", cost: 150, cap: 0, init: 0, pr: 0, note: "身ひとつで。人はこれから迎える。" }, { n: "中規模の一門", cost: 400, cap: 2, init: 2, pr: 12, note: "弟子と絵師を連れて旗揚げ。" }, { n: "大きな一門", cost: 1000, cap: 5, init: 4, pr: 30, note: "実力者をそろえて、最初から大所帯。" }];
+var TAL39 = [{ n: "若手中心", m: 0.7, lo: 10, hi: 30 }, { n: "標準", m: 1, lo: 25, hi: 50 }, { n: "実力派", m: 1.8, lo: 45, hi: 72 }];
+function grpCap39(g) { return GL38[g.lv].cap + (g.capB || 0) + Math.floor((g.inv || 0) / 600); }
+function grpCost39() { var f = G.gf || { sc: 0, tl: 1 }; return Math.round(SCALE39[f.sc].cost * TAL39[f.tl].m / 5) * 5; }
+function bondTag39(b) { return b >= 70 ? "慕っている" : b >= 45 ? "好意的" : b >= 25 ? "ふつう" : "冷めている"; }
+function genGM39(kind, lo, hi, bond) {
+  var sk = lo != null ? ri(lo, hi) : kind === "deshi" ? ri(10, 30) : kind === "ill" ? ri(40, 78) : ri(48, 75);
+  var pot = kind === "deshi" ? cl(sk + ri(25, 50), sk, 92) : kind === "ill" ? cl(sk + ri(0, 12), sk, 95) : cl(sk + ri(5, 20), sk, 92);
+  var b = bond != null ? bond : (ch(0.12) ? ri(65, 92) : ri(5, 45));
+  var cost = kind === "deshi" ? 10 + pot * 0.5 : kind === "ill" ? 20 + sk * 1.2 : 40 + sk * 1.8 + pot * 0.6;
+  var sal = kind === "deshi" ? 0 : kind === "ill" ? sk / 40 : sk / 20;
+  return { id: uid("gm"), name: pname(), kind: kind, skill: sk, pot: pot, bond: b, cost: Math.round(cost * (1 - b / 100 * 0.4)), sal: Math.round(sal * (1 - b / 200) * 10) / 10, debuted: false, works: 0 };
+}
+function grpCands39(g) {
+  g.cands = []; ["deshi", "deshi", "deshi", "ill", "ill", "auth", "auth"].forEach(function (k) { g.cands.push(genGM39(k)); });
+}
+XACT.grpsc = function (d) { G.gf = G.gf || { sc: 0, tl: 1 }; G.gf[d.k] = +d.v; se("tap"); render(); };
+XACT.grpfound = function () {
+  var S = G.S; if (S.group) return;
+  var f = G.gf || { sc: 0, tl: 1 }, sc = SCALE39[f.sc], tl = TAL39[f.tl], cost = grpCost39();
+  if (S.fame < 30) return toast("まだ名が知られていません(名声30以上)");
+  if (!spend(S, cost)) return toast("資金が足りません(" + cost + "万円)");
+  S.group = { base: grpBase38(S), lv: 0, pr: sc.pr, mem: [], supN: 0, at: S.t, capB: sc.cap, inv: 0, scale: f.sc };
+  var kinds = ["deshi", "ill", "auth", "deshi"];
+  for (var i = 0; i < sc.init; i++) { var m = genGM39(kinds[i % 4], tl.lo, tl.hi, ri(30, 55)); m.w = S.t; S.group.mem.push(m); }
+  grpCands39(S.group);
+  addLog(S, grpName38(S) + "を立ち上げた。");
+  queue(S, { k: "info", title: grpName38(S) + "の旗揚げ", text: "「" + grpName38(S) + "」(" + sc.n + ")が旗を揚げた。" + (sc.init ? "最初の仲間が" + sc.init + "人、集まった。" : "最初は、あなた一人から。") + "人が人を呼ぶ。グループが大きくなるほど、そこから出る作品は注目されていく。" });
+  se("ok"); render();
+};
+XACT.grphire = function (d) {
+  var S = G.S, g = S.group; if (!g) return;
+  var i = (g.cands || []).findIndex(function (c) { return c.id === d.id; }); if (i < 0) return;
+  var c = g.cands[i];
+  if (g.mem.length >= grpCap39(g)) return toast("これ以上は迎えられません。格を上げるか、投資で枠を広げましょう");
+  if (!spend(S, c.cost)) return toast("資金が足りません(契約金 " + c.cost + "万円)");
+  g.cands.splice(i, 1); c.w = S.t; g.mem.push(c);
+  addLog(S, c.name + "と契約した。"); toast(c.name + "と契約しました" + (c.bond >= 70 ? "(慕われていて、契約が安く済みました)" : ""), true); se("ok"); render();
+};
+XACT.grpscout = function () {
+  var S = G.S, g = S.group; if (!g || !spend(S, 10)) return toast("資金が足りません(10万円)");
+  grpCands39(g); toast("新しい候補を探しました", true); se("tap"); render();
+};
+XACT.grpinv = function (d) {
+  var S = G.S, g = S.group, n = +d.n; if (!g) return;
+  if (!spend(S, n)) return toast("資金が足りません(" + n + "万円)");
+  g.inv = (g.inv || 0) + n; toast("グループに" + n + "万円を投資しました。格と人数の枠が広がります", true); se("ok"); render();
+};
+var _gtrain39 = XACT.grptrain;
+XACT.grptrain = function (d) { var S = G.S, m = S.group && S.group.mem.find(function (x) { return x.id === d.id; }), ap = S.ap; _gtrain39(d); if (m && S.ap < ap) m.bond = Math.min(100, (m.bond || 30) + 3); };
+var _gprest39 = grpPrestige38;
+grpPrestige38 = function (S) { return _gprest39(S) + (S.group.inv || 0) / 80; };
+var _gt39 = grpTick38;
+grpTick38 = function (S, news) {
+  var g = S.group; if (!g || S.player.pub) return;
+  _gt39(S, news);
+  if (g.inv) S.money += g.inv * 0.0012;
+  if (S.t % 16 === 0) grpCands39(g);
+  if (!g.cands) grpCands39(g);
+  g.mem.slice().forEach(function (m) {
+    m.bond = Math.min(100, (m.bond == null ? 30 : m.bond) + 0.03);
+    if (m.bond >= 70 && ch(0.008)) {
+      if (ch(0.5)) { var gift = ri(20, 60) + Math.round(m.skill); S.money += gift; news.push(m.name + "が「お世話になった恩返しです」と、取引先を紹介してくれた。(+" + gift + "万円)"); }
+      else { var ws = S.works.filter(function (w) { return w.state === "serial"; }); if (ws.length) { var w = pick(ws); w.boost += 3; news.push(m.name + "が、寝る間を惜しんで『" + w.title + "』を手伝ってくれた。"); } }
+    }
+    if (m.bond <= 22 && m.skill >= 55 && ch(0.006)) {
+      g.mem = g.mem.filter(function (x) { return x !== m; });
+      news.push(m.name + "が「新しい環境で挑戦したい」と、グループを去った。");
+    }
+  });
+};
+grpCard38 = function (S) {
+  if (!grpOn38(S)) return "";
+  var g = S.group;
+  if (!g) {
+    var f = G.gf || { sc: 0, tl: 1 }, ok = S.fame >= 30;
+    return '<section class="card grp"><b>一門・グループをつくる</b><p class="small muted">弟子や絵師、実力のある原作者を迎えて、ひとつの一門にまとめられます。設立の規模と、集める人材の質で、費用が変わります。</p>' +
+      '<p class="small"><b>規模</b></p><div class="chips">' + SCALE39.map(function (x, i) { return chip(x.n + "(" + x.cost + "万円〜)", "grpsc", { k: "sc", v: i }, f.sc === i); }).join("") + '</div><p class="small muted">' + SCALE39[f.sc].note + (SCALE39[f.sc].init ? " 最初から" + SCALE39[f.sc].init + "人が所属します。" : "") + '</p>' +
+      (SCALE39[f.sc].init ? '<p class="small"><b>集める人材</b></p><div class="chips">' + TAL39.map(function (x, i) { return chip(x.n, "grpsc", { k: "tl", v: i }, f.tl === i); }).join("") + '</div>' : "") +
+      (ok ? btn("一門を立ち上げる(" + grpCost39() + "万円)", "grpfound", null, "pri sm") : '<p class="small muted">名声が30になると、立ち上げられます(いま ' + Math.round(S.fame) + ')。</p>') + '</section>';
+  }
+  g.mem.forEach(function (m) { if (m.bond == null) m.bond = 35; });
+  if (!g.cands) grpCands39(g);
+  var lv = GL38[g.lv], nx = GL38[g.lv + 1], pr = g.pr || 0, cap = grpCap39(g);
+  var h = '<section class="card grp"><div class="goalh"><b>' + esc(grpName38(S)) + '</b><span class="tag gold">' + lv.n + '</span></div>' +
+    '<p class="small muted">格 ' + Math.round(pr) + (nx ? " / 次の「" + nx.n + "」まで " + nx.pr : "(最高位)") + ' ・ 所属 ' + g.mem.length + ' / ' + cap + ' 人 ・ グループ発の作品 ' + S.works.filter(function (w) { return w.grp; }).length + '本' + (g.inv ? ' ・ 出資額 ' + g.inv + '万円(週 +' + Math.round(g.inv * 0.0012 * 10) / 10 + '万円)' : '') + '</p>' + (nx ? bar(pr, nx.pr) : "");
+  if (g.mem.length) {
+    h += '<ul class="plain grpl">';
+    g.mem.forEach(function (m) {
+      h += '<li><span><b>' + esc(m.name) + '</b> <span class="tag">' + GK38[m.kind][0] + (m.kind === "auth" && m.works ? "・" + m.works + "作" : "") + '</span> <span class="tag ' + (m.bond >= 70 ? "up" : m.bond < 25 ? "dn" : "") + '">' + bondTag39(m.bond) + '</span><br><span class="small muted">' + (m.kind === "ill" ? "絵" : "実力") + ' ' + skWord(m.skill) + (m.sal ? " ・ 週給" + m.sal + "万円" : "") + '</span></span>' + (m.skill < m.pot - 0.5 ? btn("稽古<small>行動点1</small>", "grptrain", { id: m.id }, "sm") : '<span class="small muted">成長しきった</span>') + '</li>';
+    });
+    h += '</ul>';
+  }
+  h += '<p class="small"><b>契約できる人</b> <span class="muted">(人によって契約金と週給が違います。慕ってくれている人は安く、長く力になってくれます)</span></p><ul class="plain grpl">';
+  (g.cands || []).forEach(function (c) {
+    h += '<li><span><b>' + esc(c.name) + '</b> <span class="tag">' + GK38[c.kind][0] + '</span> <span class="tag ' + (c.bond >= 70 ? "up" : "") + '">' + bondTag39(c.bond) + '</span><br><span class="small muted">' + (c.kind === "ill" ? "絵" : "実力") + ' ' + skWord(c.skill) + ' ・ 伸びしろ ' + skWord(c.pot) + (c.sal ? " ・ 週給" + c.sal + "万円" : "") + '</span></span>' + btn("契約<small>" + c.cost + "万円</small>", "grphire", { id: c.id }, "sm") + '</li>';
+  });
+  h += '</ul>' + btn("候補を探しなおす<small>10万円</small>", "grpscout", null, "sm") +
+    '<p class="small"><b>グループに投資する</b> <span class="muted">(格と人数の枠が広がり、毎週の配当が入ります)</span></p><div class="grid2">' +
+    [100, 300, 1000].map(function (n) { return btn(n + "万円", "grpinv", { n: n }, "sm"); }).join("") + '</div>';
+  var sup = S.works.filter(function (w) { return w.state === "serial" && w.author.type === "npc" && !(w.sup > S.t - 12); }).sort(function (a, b) { return b.pop - a.pop; }).slice(0, 3);
+  if (sup.length) h += '<p class="small"><b>作品を監修する</b> <span class="muted">(作品の質と勢いが上がり、格もたまります)</span></p>' + sup.map(function (w) { return '<div class="cand-f"><span class="small">『' + esc(w.title) + '』 ' + esc(w.author.name) + '</span>' + btn("監修<small>行動点1</small>", "grpsup", { id: w.id }, "sm") + '</div>'; }).join("");
+  return h + '</section>';
+};
+
+/* ---------- お金の使い道50 ---------- */
+/* [id, 名前, 費用(万円), 間隔(週), 説明, 効果, 必要な名声] 効果: f=名声 b=看板作品の勢い p=宣伝 n=ファン数 s=体力 k=[能力,量] d=絆 */
+var MU39 = [
+  ["sns1", "公式SNSの運用強化", 20, 8, "作品の公式SNSに力を入れる。", { p: 6 }, 0], ["sns2", "インフルエンサーに献本", 40, 10, "人気の発信者に作品を贈る。", { p: 10, n: 4000 }, 5], ["ad1", "電車の中づり広告", 60, 12, "通勤電車に広告を出す。", { p: 14 }, 10], ["ad2", "駅の大型ポスター", 120, 16, "駅の柱を作品で埋める。", { p: 20, n: 9000 }, 20],
+  ["ad3", "街頭ビジョンのCM", 300, 24, "繁華街の大画面で流れる。", { p: 30, n: 30000, f: 1 }, 35], ["fair1", "書店フェアを開く", 50, 10, "書店で作品の特設棚を作る。", { b: 3, n: 3000 }, 5], ["fair2", "全国書店キャンペーン", 200, 20, "全国の書店でフェア展開。", { b: 6, n: 20000, f: 1 }, 25], ["sign", "サイン会を開く", 30, 8, "ファンと直接交流する。", { n: 2500, f: 0.5 }, 5],
+  ["exh", "原画展を開く", 80, 14, "原画やラフを展示する。", { n: 6000, f: 1 }, 15], ["pop", "ポップアップストア", 150, 18, "期間限定のグッズ店を出す。", { n: 12000, f: 1.5 }, 25], ["good1", "グッズを作る", 40, 8, "缶バッジやステッカーを作る。", { n: 3000, p: 4 }, 5], ["good2", "限定フィギュア", 180, 20, "コレクター向けの一品。", { n: 14000, f: 1 }, 30],
+  ["cafe", "コラボカフェ", 100, 16, "作品をテーマにした期間限定カフェ。", { n: 8000, p: 8 }, 15], ["tour", "聖地巡礼マップの制作", 25, 10, "作品の舞台を巡る地図を配る。", { n: 2500, p: 4 }, 5], ["radio", "ラジオ番組のスポンサー", 70, 12, "ラジオで作品を紹介してもらう。", { p: 12 }, 10], ["pod", "ポッドキャストを始める", 35, 10, "制作の裏話を配信する。", { n: 3500, d: 1 }, 5],
+  ["yt", "公式動画チャンネル", 45, 10, "メイキング動画を公開する。", { n: 5000, p: 6 }, 8], ["trail", "PV(宣伝動画)を作る", 90, 14, "作品の予告編を作る。", { p: 16, n: 7000 }, 15], ["tv", "テレビ番組で特集", 250, 22, "情報番組で取り上げてもらう。", { p: 28, f: 1.5 }, 30], ["mag", "雑誌の表紙を飾る", 130, 18, "人気雑誌の表紙に。", { b: 5, f: 1 }, 20],
+  ["trans", "海外版の翻訳出版", 160, 24, "海外の読者へ届ける。", { n: 15000, f: 1.5 }, 30], ["fest", "海外の漫画祭に出展", 220, 24, "海外の祭典で作品を紹介。", { n: 18000, f: 2 }, 35], ["ebk", "電子版の無料キャンペーン", 55, 10, "1巻を無料で配る。", { n: 6000, p: 8 }, 8], ["aud", "オーディオブック化", 85, 16, "声優の朗読を収録する。", { n: 6500, f: 0.5 }, 15],
+  ["bd", "作家の誕生日を祝う", 15, 6, "ささやかなお祝いの席を。", { d: 3 }, 0], ["din", "作家との食事会", 25, 6, "高級店で本音を語る。", { d: 4 }, 0], ["trip", "作家と取材旅行", 60, 12, "ネタ探しの旅。", { d: 3, k: ["idea", 2] }, 5], ["spa", "作家の休養を手配", 40, 10, "温泉でゆっくり休んでもらう。", { d: 3, s: 20 }, 0],
+  ["desk", "仕事場の環境を整える", 70, 20, "椅子や机を良いものに。", { k: ["prose", 2], s: 10 }, 5], ["lib", "資料室を充実させる", 90, 24, "資料を買いそろえる。", { k: ["idea", 3] }, 10], ["sem", "外部の講師を招く", 50, 12, "業界のプロに学ぶ。", { k: ["biz", 3] }, 5], ["art", "画材と機材を新調", 55, 16, "画力を伸ばす道具を。", { k: ["art", 3] }, 5],
+  ["read", "書評家に読んでもらう", 30, 10, "目の肥えた人の意見をもらう。", { k: ["eye", 3] }, 5], ["mt", "合宿を開く", 65, 14, "缶詰めで鍛える。", { k: ["prose", 2], k2: ["idea", 2] }, 8], ["ws", "ワークショップを主催", 45, 12, "若手と交流する。", { f: 0.6, k: ["eye", 2] }, 5], ["con", "新人賞に協賛", 100, 18, "新人の発掘につながる。", { f: 1, k: ["eye", 2] }, 15],
+  ["char", "チャリティに寄付", 50, 12, "世の中に還元する。", { f: 1.2 }, 10], ["local", "地元のお祭りに協賛", 35, 10, "地域に根づく。", { f: 0.7, n: 2000 }, 5], ["sch", "学校に図書を寄贈", 40, 12, "子どもに本を届ける。", { f: 0.8, n: 3000 }, 5], ["lib2", "図書館に特設コーナー", 30, 10, "図書館で作品を紹介。", { n: 3500, p: 4 }, 5],
+  ["doc", "メイキングのドキュメンタリー", 140, 20, "制作の裏側を撮影する。", { f: 1.2, n: 9000 }, 25], ["book", "公式ガイドブックを出す", 60, 14, "設定資料を一冊に。", { n: 5000, b: 2 }, 10], ["cd", "イメージソングを作る", 110, 16, "作品の曲を制作する。", { n: 8000, p: 8 }, 15], ["mus", "朗読ミュージカル", 170, 22, "舞台で作品を表現する。", { f: 1.5, n: 12000 }, 28],
+  ["game", "スマホゲームの企画協力", 200, 24, "ゲーム会社と組む。", { n: 20000, p: 14 }, 32], ["ar", "AR体験を作る", 120, 18, "作品の世界が街に現れる。", { n: 9000, f: 1 }, 22], ["beat", "競合の動向を調べる", 30, 8, "市場を調査する。", { k: ["biz", 2], b: 1 }, 0], ["lawy", "顧問弁護士と契約", 80, 30, "権利を守る体制を。", { f: 0.5, k: ["biz", 3] }, 10],
+  ["pr", "広報担当を外部委託", 100, 24, "プロの広報に任せる。", { p: 18, f: 0.5 }, 15], ["off", "オフィスを模様替え", 45, 16, "働きやすい空間に。", { s: 15, d: 1 }, 0], ["party", "忘年会を盛大に", 55, 24, "一年の労をねぎらう。", { d: 3, s: 15 }, 0], ["bonus", "スタッフに特別手当", 90, 20, "感謝を形にする。", { d: 4 }, 5]
+];
+function muOn39(S, id) { S.flags.mu39 = S.flags.mu39 || {}; return S.flags.mu39[id]; }
+XACT.mu39 = function (d) {
+  var S = G.S, it = MU39.find(function (x) { return x[0] === d.id; }); if (!it) return;
+  var last = muOn39(S, it[0]);
+  if (last != null && S.t - last < it[3]) return toast("まだ間をあけたほうがよさそうです(あと" + (it[3] - (S.t - last)) + "週)");
+  if (S.fame < it[6]) return toast("名声 " + it[6] + "以上が必要です");
+  if (!spend(S, it[2])) return toast("資金が足りません(" + it[2] + "万円)");
+  S.flags.mu39[it[0]] = S.t;
+  var e = it[5], ws = S.works.filter(function (w) { return w.state === "serial"; }).sort(function (a, b) { return b.pop - a.pop; }), w = ws[0], out = [];
+  if (e.f) S.fame += e.f;
+  if (w) {
+    if (e.b) w.boost += e.b; if (e.p) w.promo += e.p; if (e.n) w.fans += e.n * (1 + w.pop / 100);
+  }
+  if (e.s) S.player.sta = Math.min(100, S.player.sta + e.s);
+  if (e.k) gainSkill(S, e.k[0], e.k[1]); if (e.k2) gainSkill(S, e.k2[0], e.k2[1]);
+  if (e.d) { S.authors.forEach(function (a) { a.bond = Math.min(100, (a.bond == null ? 30 : a.bond) + e.d); }); (S.staff || []).forEach(function (s) { s.bond = Math.min(100, (s.bond == null ? 30 : s.bond) + e.d); }); if (S.group) S.group.mem.forEach(function (m) { m.bond = Math.min(100, (m.bond || 30) + e.d); }); }
+  addLog(S, it[1] + "に" + it[2] + "万円を使った。"); toast(it[1] + "を行いました" + (w && (e.p || e.b || e.n) ? "(『" + w.title + "』に効果)" : ""), true); se("ok"); render();
+};
+SSEGS.push(["spend", "出費"]);
+var _vScout39 = vScout;
+vScout = function (S) {
+  if (G.sseg !== "spend" || !S.unlock.edit) return _vScout39(S);
+  var bar0 = '<div class="hseg sseg">' + SSEGS.map(function (s) { return '<button class="' + (G.sseg === s[0] ? "on" : "") + '" data-act="sseg" data-v="' + s[0] + '">' + s[1] + '</button>'; }).join("") + '</div>';
+  var h = '<h2 class="h1">会社</h2>' + bar0 + '<p class="small muted">お金を使って、作品や人を後押しします。同じものは、しばらく間をあける必要があります。</p>';
+  MU39.slice().sort(function (a, b) { return a[6] - b[6] || a[2] - b[2]; }).forEach(function (it) {
+    var last = muOn39(S, it[0]), cd = last != null ? Math.max(0, it[3] - (S.t - last)) : 0, lock = S.fame < it[6];
+    h += '<section class="card"><div class="cand-h"><b>' + it[1] + '</b><span class="tag">' + it[2] + '万円</span></div><p class="small muted">' + it[4] + (lock ? " ・ 名声 " + it[6] + "以上" : cd ? " ・ あと" + cd + "週" : "") + '</p>' + btn("実行する", "mu39", { id: it[0] }, "sm" + (lock || cd ? " dis" : "")) + '</section>';
+  });
+  return h;
+};
+
+/* ---------- 遊び方 ---------- */
+var _buildGuide39 = buildGuide;
+buildGuide = function () {
+  _buildGuide39();
+  var p = GUIDE.find(function (g) { return g.h === "一門・グループをつくる"; });
+  if (p && !p.v10) {
+    p.v10 = 1;
+    p.b = [
+      "「会社」タブで、名声が30になると「一門」を立ち上げられます。設立の「規模」(小さな一門・中規模・大きな一門)と、最初に集める人材の質で、費用が変わります。大きいほど最初から人がいて、人数の枠も広くなります。",
+      "迎える人は「契約できる人」から選びます。人によって契約金と週給が違い、実力や伸びしろが高いほど高くなります。あなたを慕ってくれている人は契約が安く、恩返しをしてくれることもあります。逆に、慕われていない実力者は、あるとき去ってしまうことがあります。稽古や贈り物、食事会で、慕い度は上がります。",
+      "弟子は稽古で育ち、グループ発の新人としてデビューします。絵師は企画のとき無料で組めます。原作者はグループ発の新作を送り出し、作品を「監修」すると質と勢いが上がります。",
+      "「グループに投資する」と、格と人数の枠が広がり、毎週の配当が入ります。格が「一門 → グループ → 総合グループ → 財閥」と上がるほど、グループ発の作品は話題になり、ランキングでも有利になります。",
+      "作品の人気は、当たれば桁違いに売れ、外れればほとんど伸びません。「会社」タブの「出費」では、広告・イベント・作家へのお礼など、50種類のお金の使い道から選べます(編集部を開いたあと)。"
+    ];
+  }
 };
 buildGuide();
 
