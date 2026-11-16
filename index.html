@@ -301,8 +301,13 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.14.1", SAVE_VER = 1;
+var GAME_VER = "1.15.0", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.15.0", date: "2026-11-16", notes: [
+    "出版社の名前を、遊び心のあるものに作り直しました。",
+    "会社の連載本数が、規模と累計冊数に見合うようになりました。",
+    "会社の名声が、累計冊数と釣り合うようになりました。アニメ化や映画化の数も、ぽんぽん増えないようにしました。"
+  ] },
   { ver: "1.14.1", date: "2026-11-16", notes: [
     "会社の累計冊数が、歴代の名作の数値と合うようになりました。",
     "ゲームを始めた直後から、すべての会社に連載があるようにしました。",
@@ -8821,11 +8826,6 @@ function ensureRivals41(S) {
   });
   S.rivals.forEach(function (r) { if (r.sales == null) { r.sales = 0; r.films = 0; r.anime = 0; r.sx = 1; } });
   S.rivals.forEach(function (r) { if (false) { r.sales = Math.round(r.score * r.score * 6 + ri(0, 800)); r.sx = 1; r.films = Math.round(r.score / 16); r.anime = Math.round(r.score / 11); } });
-  if (!S.flags.pub41 && S.rivalWorks && S.rivalWorks.length) {
-    S.flags.pub41 = 1; var pc = S.rivals;
-    S.rivalWorks.forEach(function (w) { w.pub = weightedCo41(S).name; });
-    pc.forEach(function (c) { var need = Math.max(1, Math.round(Math.max(0, c.score) / 18)); while (coWorks41(S, c.name).length < need) { var big = {}; S.rivalWorks.forEach(function (w) { big[w.pub] = (big[w.pub] || 0) + 1; }); var cand = S.rivalWorks.filter(function (w) { return !w.monster && (big[w.pub] || 0) > 1; }); if (!cand.length) break; pick(cand).pub = c.name; } });
-  }
   var ys = Math.floor(S.t / 48);
   if (add && ys > 0) S.rivals.forEach(function (r) { if (r.size != null) r.score += ys * ri(2, 6); });
 }
@@ -8872,7 +8872,7 @@ vHall = function (S) {
   var re = /<h3 class="h3">出版社ランキング<\/h3><ol class="rank">[\s\S]*?<\/ol>/;
   if (!re.test(o)) return o;
   ensureRivals41(S);
-  var rows = S.rivals.map(function (r) { return { name: r.name, score: r.score, me: false, n: coWorks41(S, r.name).length, sales: coStat42(r).cp, films: coStat42(r).films, anime: coStat42(r).anime }; });
+  var rows = S.rivals.map(function (r) { return { name: r.name, score: coFame42(coStat42(r).cp), me: false, n: coWorks41(S, r.name).length, sales: coStat42(r).cp, films: coStat42(r).films, anime: coStat42(r).anime }; });
   var mine = { name: S.company, score: ourScore(S), me: true, n: S.works.filter(function (w) { return w.state === "serial"; }).length, sales: S.works.reduce(function (a, w) { return a + (w.cp2 || 0); }, 0), films: S.works.filter(function (w) { return w.media && w.media.movie; }).length, anime: S.works.filter(function (w) { return w.media && w.media.anime; }).length };
   rows.push(mine); rows.sort(function (a, b) { return b.score - a.score; });
   var rk = rows.findIndex(function (c) { return c.me; }) + 1, show = rows.filter(function (c, i) { return i < (G.co42 || 10) || c.me; });
@@ -8918,52 +8918,79 @@ XACT.comore = function () { G.co42 = (G.co42 || 10) + 30; se("tap"); render(); }
 /* ===== v1.14.0 出版社500社 / 歴代名作1000作 / 数値の桁を大きく ===== */
 
 function rng42(seed) { var a = seed >>> 0; return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-var CW42 = ["紫苑", "琥珀", "南風", "雪華", "蒼穹", "白梅", "朝凪", "夕霧", "銀杏", "若葉", "潮騒", "桔梗", "星屑", "瑠璃", "黎明", "月桂", "天籟", "鶴亀", "小鳥遊", "風花", "灯火", "翡翠", "暁光", "雲雀", "波紋", "百合",
-  "霞草", "山吹", "浅葱", "萌黄", "銀河", "虹彩", "朧月", "夕凪", "紅葉", "霜月", "水無月", "長月", "如月", "卯月", "弥生", "皐月", "文月", "葉月", "神無月", "師走", "睦月", "鶯", "燕", "鷗", "鵲", "雁", "鶴", "鷹", "蛍", "蜻蛉", "蝶",
-  "珊瑚", "真珠", "水晶", "黒曜", "瑪瑙", "紅玉", "青磁", "白磁", "藍染", "茜空", "朱鷺", "梔子", "薄荷", "檸檬", "林檎", "葡萄", "無花果", "金木犀", "山茶花", "紫陽花", "向日葵", "水仙", "勿忘草", "竜胆", "撫子", "菫", "蓮華", "睡蓮",
-  "天道", "地平", "光芒", "夜明", "宵闇", "星影", "月光", "日向", "木漏れ日", "夕映", "潮風", "海原", "岬", "渚", "汀", "浜辺", "湖畔", "渓谷", "高原", "草原", "雪原", "砂丘", "群青", "紺碧", "薄紅", "瑠璃色", "若竹", "柳", "榛", "楢", "樫", "椎", "欅", "楓"];
-var CS42 = [["社", 4], ["書房", 3], ["書院", 2], ["出版", 3], ["堂", 2], ["館", 2], ["書林", 1], ["文庫", 1], ["舎", 1], ["ブックス", 1], ["プレス", 1], ["出版社", 1]];
+var KA42 = ["ふわふわ", "ぽかぽか", "のんびり", "ごろごろ", "きらきら", "もふもふ", "ゆるゆる", "ほくほく", "わくわく", "とことこ", "ぴょんぴょん", "くるくる", "うとうと", "ちゃっかり", "しんしん", "ほろほろ", "ぬくぬく", "そわそわ", "にこにこ", "ひらひら", "夜ふかしの", "寝坊助の", "気まぐれな", "三日月の", "雨のち晴れの", "午前三時の", "日曜日の", "月曜の", "放課後の", "ちいさな", "ひみつの", "迷子の", "あわてんぼうの", "ごきげんな", "ねむたい", "はらぺこの", "ひとりごとの", "ふたりぼっちの", "七色の", "まんまるの"];
+var NO42 = ["ねこ", "たぬき", "くじら", "ひつじ", "かえる", "ふくろう", "うさぎ", "きつね", "ことり", "かめ", "りす", "あざらし", "ラッコ", "カピバラ", "コアラ", "ハリネズミ", "ミミズク", "どんぐり", "おだんご", "コーヒー", "しおり", "万年筆", "紙ひこうき", "灯台", "豆の木", "風車", "ランプ", "ポスト", "きのこ", "雲", "月", "星くず", "インク", "ココア", "みかん", "ぬいぐるみ", "手紙", "栞", "本の虫", "屋根裏", "路地", "踏切", "駄菓子", "回転木馬", "てるてる坊主", "アルパカ", "ペリカン", "ヤドカリ", "クラゲ", "三毛猫"];
+var SU42 = ["書房", "堂", "舎", "ぶっくす", "出版", "ブックス", "工房", "社", "文庫", "スタジオ", "書店", "印刷所", "倶楽部", "商会", "図書館", "ラボ", "編集室", "出版局", "ライブラリー", "パブ"];
+var EN42 = ["Midnight", "Lantern", "Velvet", "Marble", "Paper", "Copper", "Sunday", "Orbit", "Maple", "Crimson", "Willow", "Echo", "Saffron", "Tangerine", "Moonlit", "Harbor", "Cobalt", "Juniper", "Pepper", "Nimbus", "Aurora", "Pixel", "Clover", "Ember", "Indigo", "Lumen", "Mosaic", "Quill", "Rosette", "Zephyr"];
+var ES42 = ["Press", "Works", "Studio", "House", "Lab", "Union", "Publishing", "Factory", "Club", "Books", "Workshop", "Guild"];
+var KT42 = ["ミッドナイト", "ランタン", "ベルベット", "マーブル", "コッパー", "サンデー", "オービット", "メイプル", "クリムゾン", "ウィロウ", "エコー", "サフラン", "タンジェリン", "ハーバー", "コバルト", "ジュニパー", "ペッパー", "ニンバス", "オーロラ", "ピクセル", "クローバー", "エンバー", "インディゴ", "ルーメン", "モザイク", "クイル", "ゼファー", "ノヴァ", "ルミナス", "エクリプス"];
+var KS42 = ["プレス", "ワークス", "スタジオ", "ハウス", "ラボ", "ユニオン", "パブリッシング", "ファクトリー", "クラブ", "ブックス", "ギルド", "ホールディングス", "グループ", "エンタテインメント"];
+var PH42 = ["三日月と万年筆", "夜更かしの猫", "雨のち晴れ", "喫茶『栞』", "午前三時の本屋さん", "しっぽの先", "すきま風", "豆の木", "おひさまの下", "風のゆりかご", "鳥と栞", "インクと珈琲", "ことのは", "ぬくもり", "カフェオレ", "おやつ", "ちいさな灯台", "ひなたぼっこ", "ゆびさき", "ひるねの森", "月曜日の羊", "さよならの前に", "ここだけの話", "あしたの天気", "きまぐれ", "ふたつ星", "まよなか", "てくてく", "もちもち", "ぽてと", "ココア", "みかん", "ZZZ", "Nap", "ひとやすみ", "ひとりごと", "なないろ", "ほしぞら", "かぜまかせ", "うたたね"];
 var CO42 = (function () {
-  var r = rng42(4242), out = [], seen = {}, i, j, ex = {}; IND41.forEach(function (x) { ex[x[0]] = 1; seen[x[0]] = 1; });
-  var pool = []; CW42.forEach(function (a) { CS42.forEach(function (s) { for (var k = 0; k < s[1]; k++) { /* 重み */ } pool.push(a + s[0]); }); });
-  for (i = pool.length - 1; i > 0; i--) { j = Math.floor(r() * (i + 1)); var t = pool[i]; pool[i] = pool[j]; pool[j] = t; }
-  var names = IND41.map(function (x) { return x[0]; }).concat(pool.filter(function (n) { return !seen[n] && COS.indexOf(n) < 0; })).slice(0, 500 - COS.length);
-  names.forEach(function (n, k) { var s = ex[n] ? IND41.find(function (x) { return x[0] === n; })[1] : (k < 20 ? 3 : k < 90 ? 2 : k < 250 ? 1 : 0); out.push([n, s]); });
-  return out;
+  var r = rng42(4242), seen = {}, out = [], tries = 0; COS.forEach(function (n) { seen[n] = 1; });
+  function pk(a) { return a[Math.floor(r() * a.length)]; }
+  function mk() {
+    var q = r();
+    if (q < 0.24) return pk(KA42) + pk(NO42) + pk(SU42);
+    if (q < 0.40) return pk(EN42) + (r() < 0.5 ? " " : " ") + pk(ES42);
+    if (q < 0.56) return pk(KT42) + (r() < 0.5 ? "・" : "") + pk(KS42);
+    if (q < 0.78) return pk(PH42) + pk(SU42);
+    if (q < 0.90) return pk(NO42) + "の" + pk(NO42) + pk(SU42);
+    return pk(KA42) + pk(PH42) + pk(SU42);
+  }
+  while (out.length < 493 && tries < 20000) { tries++; var n = mk(); if (n.length > 14 || seen[n]) continue; seen[n] = 1; out.push(n); }
+  return out.map(function (n, k) { return [n, k < 20 ? 3 : k < 90 ? 2 : k < 250 ? 1 : 0]; });
 })();
 IND41 = CO42;
-var _nr42 = newRivalWork;
-newRivalWork = function (S) { var r = _nr42(S); r.cpx = 1; return r; };
-V1.RIVAL_N = 900; NEW.RIVAL_N = 900;
 
-/* 各社に最低1本の連載を割り当てる */
+/* 各社の連載数は、会社の規模に応じる(大手は数十本、小さな出版社は数本) */
+function quota42(c) { var h = hstr(c.name), s = c.size == null ? 1 : c.size; return [1 + h % 3, 4 + h % 5, 10 + h % 11, 30 + h % 26][s]; }
 function assignPubs42(S, all) {
-  var cs = S.rivals.filter(function (c) { return c.size != null || true; }), ws = S.rivalWorks.filter(function (w) { return !w.monster; });
-  var cnt = {}; ws.forEach(function (w) { cnt[w.pub] = (cnt[w.pub] || 0) + 1; });
+  var cs = S.rivals, ws = S.rivalWorks.filter(function (w) { return !w.monster; }), i;
   if (all) {
-    var sh = ws.slice().sort(function () { return rnd() - 0.5; }), cc = cs.slice().sort(function () { return rnd() - 0.5; });
-    for (var i = 0; i < sh.length; i++) sh[i].pub = i < cc.length ? cc[i].name : weightedCo41(S).name;
+    var slots = []; cs.forEach(function (c) { var q = quota42(c); for (i = 0; i < q; i++) slots.push(c.name); });
+    slots.sort(function () { return rnd() - 0.5; }); ws.sort(function () { return rnd() - 0.5; });
+    ws.forEach(function (w, k) { w.pub = slots[k % slots.length]; });
     return;
   }
-  var zero = cs.filter(function (c) { return !(cnt[c.name] > 0); });
-  zero.forEach(function (c) { var donors = ws.filter(function (w) { return cnt[w.pub] > 1; }); if (!donors.length) return; var d = pick(donors); cnt[d.pub]--; d.pub = c.name; cnt[c.name] = 1; });
+  var cnt = {}, qt = {}; cs.forEach(function (c) { qt[c.name] = quota42(c); cnt[c.name] = 0; }); ws.forEach(function (w) { cnt[w.pub] = (cnt[w.pub] || 0) + 1; });
+  var surplus = []; ws.forEach(function (w) { if (cnt[w.pub] > (qt[w.pub] || 0)) { surplus.push(w); cnt[w.pub]--; } });
+  cs.forEach(function (c) { while (cnt[c.name] < qt[c.name] && surplus.length) { surplus.pop().pub = c.name; cnt[c.name]++; } });
+  surplus.forEach(function (w) { var c = cs[Math.floor(rnd() * cs.length)]; w.pub = c.name; });
+}
+function coFame42(cp) { return 20 * Math.log(1 + cp / 20) / Math.LN10; }
+function prep42(S) {
+  if (!S.rivals) return;
+  if (!S.flags.ren42) {
+    S.flags.ren42 = 1;
+    var okn = {}; CO42.forEach(function (c) { okn[c[0]] = 1; }); var have = {}; S.rivals.forEach(function (c) { have[c.name] = 1; });
+    var unused = CO42.filter(function (c) { return !have[c[0]]; }).map(function (c) { return c[0]; }), map = {};
+    S.rivals.forEach(function (c) { if (COS.indexOf(c.name) < 0 && !okn[c.name]) { var nn = unused.shift(); if (nn) { map[c.name] = nn; c.name = nn; } } });
+    (S.rivalWorks || []).forEach(function (w) { if (map[w.pub]) w.pub = map[w.pub]; });
+    S.rivals.forEach(function (c) { var d = CO42.find(function (x) { return x[0] === c.name; }); if (d) c.size = d[1]; });
+    S.flags.pub42 = 0;
+  }
+  ensureRivals41(S);
+  S.rivals.forEach(function (c) { if (c.size == null) c.size = COS.indexOf(c.name) >= 0 ? 3 : 1; });
+  var n = 0; S.rivals.forEach(function (c) { n += quota42(c); }); V1.RIVAL_N = n; NEW.RIVAL_N = n;
 }
 function ensureAll42(S) {
   if (!S.rivals) return;
-  ensureRivals41(S);
+  prep42(S);
   if (!S.rivalWorks || !S.rivalWorks.length) rivalInit(S);
   while (S.rivalWorks.length < V1.RIVAL_N) S.rivalWorks.push(newRivalWork(S));
   if (!S.flags.pub42) { S.flags.pub42 = 1; assignPubs42(S, true); } else assignPubs42(S, false);
 }
+var _nr42 = newRivalWork;
+newRivalWork = function (S) { var r = _nr42(S); r.cpx = 1; return r; };
 var _tick42 = tick;
 tick = function (S) {
+  try { prep42(S); } catch (e) { console.error(e); }
   var r = _tick42(S);
   try {
     if (!S.flags.pub42 || S.t % 4 === 0) ensureAll42(S);
-    // 数値の桁を大きく(以前の保存分も、一度だけ直す)
     S.works.forEach(function (w) { if (w.cp2 != null && !w.cpx) { w.cp2 *= 10; w.cpx = 1; } });
     (S.rivalWorks || []).forEach(function (w) { if (w.copies && !w.cpx) { w.copies *= 10; w.cpx = 1; } });
-    (S.rivals || []).forEach(function (c) { if (c.sales != null && !c.sx) { c.sales *= 10; c.sx = 1; } });
   } catch (e) { console.error(e); }
   return r;
 };
@@ -8979,11 +9006,11 @@ var HOF42 = (function () {
     if (q < 0.54) return pk(T.noun) + "の" + pk(T.noun2); if (q < 0.64) return pk(T.noun) + "は" + pk(T.verb); if (q < 0.72) return pk(T.adj) + pk(T.noun) + "と" + pk(T.noun);
     if (q < 0.80) return pk(T.num) + pk(T.noun); if (q < 0.87) return pk(T.kata) + "と" + pk(T.noun); if (q < 0.93) return pk(T.noun) + "のいない" + pk(T.noun); return pk(T.adj) + pk(T.kata);
   }
-  var big = CO42.filter(function (c) { return c[1] >= 2; }).map(function (c) { return c[0]; }), all = CO42.map(function (c) { return c[0]; }).concat(COS);
+  var top3 = CO42.filter(function (c) { return c[1] === 3; }).map(function (c) { return c[0]; }).concat(COS), mid = CO42.filter(function (c) { return c[1] >= 2; }).map(function (c) { return c[0]; }).concat(COS), all = CO42.map(function (c) { return c[0]; }).concat(COS);
   for (i = 0; i < 1000; i++) {
     var t = "", n = 0; do { t = r() < 0.2 ? pk(T39) : raw(); n++; } while (used[t] && n < 80); if (used[t]) t += "Ⅱ"; used[t] = 1;
     var cp = 50000 * Math.pow(0.006, i / 999) * (1 + (r() - 0.5) * 0.002);
-    out.push({ title: t, author: pk(SURN) + " " + pk(GIVEN), co: i < 120 ? pk(big.concat(COS)) : pk(all), y: 1965 + Math.floor(r() * 60), cp: Math.round(cp) });
+    out.push({ title: t, author: pk(SURN) + " " + pk(GIVEN), co: i < 150 ? pk(top3) : i < 450 ? pk(mid) : pk(all), y: 1965 + Math.floor(r() * 60), cp: Math.round(cp) });
   }
   out.sort(function (a, b) { return b.cp - a.cp; });
   out.forEach(function (x, k) { var n = k < 20 ? 6 : k < 100 ? 5 : k < 250 ? 4 : k < 500 ? 3 : k < 800 ? 2 : 1; x.med = HM42.slice(0, n); x.rank = k + 1; });
@@ -8991,7 +9018,12 @@ var HOF42 = (function () {
 })();
 var HB42 = {};
 HOF42.forEach(function (x) { var b = HB42[x.co] || (HB42[x.co] = { cp: 0, anime: 0, films: 0 }); b.cp += x.cp; if (x.med.indexOf("アニメ化") >= 0) b.anime++; if (x.med.indexOf("映画化") >= 0) b.films++; });
-function coStat42(r) { var b = HB42[r.name] || { cp: 0, anime: 0, films: 0 }; return { cp: b.cp + (r.s2 || 0), anime: b.anime + (r.a2 || 0), films: b.films + (r.f2 || 0) }; }
+function coStat42(r) {
+  var b = HB42[r.name] || { cp: 0, anime: 0, films: 0 }, h = hstr(r.name), sz = r.size == null ? 1 : r.size;
+  var base = [20 + h % 180, 300 + h % 2700, 3000 + h % 27000, 30000 + h % 70000][sz];
+  var cp = base + b.cp + (r.s2 || 0);
+  return { cp: cp, anime: Math.max(Math.floor(cp / 80000), b.anime) + (r.a2 || 0), films: Math.max(Math.floor(cp / 200000), b.films) + (r.f2 || 0) };
+}
 function hofList42(S) {
   var min = HOF42[HOF42.length - 1].cp, mine = [];
   S.works.forEach(function (w) { if ((w.cp2 || 0) >= min) mine.push({ title: w.title, author: S.player.name, co: S.company, y: null, cp: w.cp2, med: Object.keys(w.media || {}).map(function (k) { return MEDIA[k] ? MEDIA[k].name : ""; }).filter(Boolean), mine: true }); });
