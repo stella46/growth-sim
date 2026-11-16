@@ -301,8 +301,11 @@ svg.map{border-radius:12px}
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== データ定義 ===== */
-var GAME_VER = "1.11.0", SAVE_VER = 1;
+var GAME_VER = "1.11.1", SAVE_VER = 1;
 var UPDATES = [
+  { ver: "1.11.1", date: "2026-11-16", notes: [
+    "「自動セーブしました」の表示を、ひんぱんに出ないようにしました。"
+  ] },
   { ver: "1.11.0", date: "2026-11-16", notes: [
     "タイトル画面に、最新版をダウンロードするボタンを付けました。オフラインでも遊べます。"
   ] },
@@ -7840,7 +7843,7 @@ function save34(why) {
     saveSlot(G.slot, G.S).then(function (r) {
       AS34.busy = false; AS34.last = Date.now();
       if (typeof refreshSlots === "function") refreshSlots();
-      var el = document.getElementById("asv"); if (el) { el.className = "on"; clearTimeout(AS34.ft); AS34.ft = setTimeout(function () { el.className = ""; }, 1400); }
+      var el = document.getElementById("asv"); if (el && Date.now() - (AS34.shown || 0) > 300000) { AS34.shown = Date.now(); el.className = "on"; clearTimeout(AS34.ft); AS34.ft = setTimeout(function () { el.className = ""; }, 1400); }
     }, function () { AS34.busy = false; });
   } catch (e) { AS34.busy = false; }
 }
